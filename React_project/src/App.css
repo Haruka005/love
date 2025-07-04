@@ -1,10 +1,36 @@
 .App {
-  text-align: center;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background-image: url('/public/sougen.jpg');
+  background-size: cover;      /* 画面いっぱいに伸ばす */
+  background-position: center; /* 画像の中心を表示 */
+  background-repeat: no-repeat; /* 繰り返さない */
+  height: 100vh;               /* 画面全体の高さ */
+  width: 100%;
 }
 
-.App-logo {
+.App-header {
+  height: 100%;
+  position: relative;
+}
+
+
+
+.Anpan {
   height: 40vmin;
   pointer-events: none;
+  width: 100px;
+  height: auto;
+  z-index: 5;
+}
+
+p{
+  font-family: 'Zen Maru Gothic';
+  font-size: 35px;
+  color: hsl(313, 82%, 46%);
+  padding: 10px;
+  border-radius: 5px;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -14,25 +40,27 @@
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  background-color: transparent;
+
 }
 
-.App-link {
-  color: #61dafb;
-}
 
-@keyframes App-logo-spin {
+@keyframes Anpan-spin {
   from {
     transform: rotate(0deg);
   }
   to {
     transform: rotate(360deg);
   }
+}
+
+.Header{
+  background-color: #ffffff;
+  position: sticky;     /*スクロールしても画面上にくっついて残る*/
+  top: 0;   /*画面の一番上にくっつける指定。sticky のときに必要*/
+  z-index: 100;
+}
+
+.Header-logo{
+  height: 50px;
 }
