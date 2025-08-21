@@ -1,159 +1,153 @@
-/* ====== LOVEりべつ / App.css（完全版） ====== */
-/* フォント系（任意） */
-@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap');
-
-/* ベース */
-:root{
-  --ink:#1b1d22;
-  --muted:#667085;
-  --brand:#ff4da8;
-  --brand-2:#8b5cf6;
-  --glass:rgba(255,255,255,.85);
-  --glass-2:rgba(255,255,255,.75);
-  --line:rgba(240,240,240,.9);
+body {
+  font-family: 'Noto Sans JP', sans-serif;
 }
 
-*{ box-sizing:border-box; }
-html,body,#root{ height:100%; }
+.card-hover {
+  transition: all .3s ease;
+}
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, .1);
+}
+
+.event-dot {
+  width: 6px;
+  height: 6px;
+  background: #ff1493;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  right: 2px;
+}
+/* ===== Human Lab preset ===== */
+:root{
+  --ink:#e6e7ea;
+  --bg:#0b0b10;          /* ほぼ黒 */
+  --brand:#ff4da8;       /* マゼンタ */
+  --brand2:#8b5cf6;      /* バイオレット */
+  --glass:rgba(255,255,255,.08);
+  --glassLine:rgba(255,255,255,.18);
+}
+
+html,body,#root{height:100%;}
 body{
   margin:0;
   color:var(--ink);
-  font-family:'M PLUS Rounded 1c','Zen Maru Gothic',system-ui,sans-serif;
   background:
-    radial-gradient(1000px 600px at 20% -10%, #ffe5f3 0%, transparent 60%),
-    radial-gradient(1200px 800px at 120% 10%, #efe6ff 0%, transparent 50%),
-    #f9fafb;
+    radial-gradient(1000px 600px at 20% -10%, rgba(255,77,168,.10), transparent 60%),
+    radial-gradient(1000px 600px at 110% 0%, rgba(139,92,246,.10), transparent 60%),
+    var(--bg);
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ===== Human Lab 風 ヒーロー ===== */
+/* ---- HERO ---- */
 .hl-wrap{
-  position: relative;
-  height: min(92vh, 740px);
-  border-radius: 28px;
-  overflow: hidden;
-  background: #0b0b10;           /* ほぼ黒 */
-  color:#fff;
-  box-shadow: 0 40px 90px rgba(15,19,28,.25);
+  position:relative;
+  height:min(92vh, 720px);
+  border-radius:28px;
+  overflow:hidden;
+  background:#0d0f14;
+  box-shadow:0 40px 90px rgba(3,5,10,.35);
 }
 
-/* 背景：格子＋グロー */
+/* background layers */
 .hl-grid{
   position:absolute; inset:0;
   background-image:
-    radial-gradient(transparent 0 98%, rgba(255,255,255,.085) 100%),
-    repeating-linear-gradient(0deg, rgba(255,255,255,.045) 0 1px, transparent 1px 42px),
-    repeating-linear-gradient(90deg, rgba(255,255,255,.045) 0 1px, transparent 1px 42px);
-  background-size: 320px 320px, 100% 42px, 42px 100%;
-  background-position: center;
-  opacity:.65;
+    radial-gradient(transparent 0 98%, rgba(255,255,255,.08) 100%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.06) 0 1px, transparent 1px 44px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.06) 0 1px, transparent 1px 44px);
+  background-size:320px 320px, 100% 44px, 44px 100%;
+  background-position:center;
+  opacity:.6;
 }
 .hl-noise{
   position:absolute; inset:0;
   background-image:url("data:image/svg+xml;utf8,\
 <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'>\
-<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncA type='table' tableValues='0 0 .07 .12 .07 0'/></feComponentTransfer></filter>\
+<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/>\
+<feColorMatrix type='saturate' values='0'/>\
+<feComponentTransfer><feFuncA type='table' tableValues='0 0 .08 .14 .08 0'/></feComponentTransfer></filter>\
 <rect width='120' height='120' filter='url(%23n)'/></svg>");
   mix-blend-mode:soft-light;
   pointer-events:none;
 }
-
-/* 温泉の写真をうっすら被せたいとき（任意） */
 .hl-photo{
   position:absolute; inset:-6%;
-  background-image:url('/images/noboribetsu_onsen.png'); /* あれば使われます */
+  background-image:url('/images/noboribetsu_onsen.png'); /* 任意 */
   background-size:cover; background-position:center;
-  filter: saturate(120%) contrast(1.05) brightness(.55) blur(2px);
+  filter:saturate(120%) contrast(1.05) brightness(.55) blur(2px);
   opacity:.35;
 }
 
-/* 中身 */
+/* content */
 .hl-container{
   position:relative; z-index:2;
   height:100%;
-  max-width: 980px;
-  margin:0 auto;
+  max-width:980px; margin:0 auto;
   padding:clamp(24px,4vw,48px);
   display:flex; align-items:center; justify-content:center;
   flex-direction:column; text-align:center;
 }
 
-/* タイトル（強タイポ・微光） */
+/* strong typographic title */
 .hl-title{
-  font-size: clamp(42px, 12vw, 120px);
-  line-height:.9;
-  font-weight: 900;
-  letter-spacing:-.02em;
-  margin:0;
-  text-transform: uppercase;
-  background: linear-gradient(90deg, #fff 0%, #f3f3f3 50%, #fff 100%);
+  font-size:clamp(44px, 12vw, 128px);
+  line-height:.9; font-weight:900; letter-spacing:-.02em; margin:0;
+  background:linear-gradient(90deg, #fff 0%, #e9ecf2 50%, #fff 100%);
   -webkit-background-clip:text; background-clip:text; color:transparent;
-  filter: drop-shadow(0 0 10px rgba(255,255,255,.06));
+  filter:drop-shadow(0 0 12px rgba(255,255,255,.06));
 }
-
-/* 日本語のサブコピー */
 .hl-sub{
   margin-top:clamp(14px,3vw,26px);
-  font-size:clamp(14px,2.3vw,20px);
+  font-size:clamp(14px,2.2vw,20px);
   color:rgba(255,255,255,.86);
 }
-
-/* 細いアンダーライン */
 .hl-underline{
-  width:140px; height:2px;
-  margin: clamp(12px, 2vw, 20px) auto 0;
-  background: linear-gradient(90deg, var(--brand), var(--brand-2));
-  transform-origin:left center;
-  border-radius:999px;
+  width:140px; height:2px; margin:clamp(12px,2vw,20px) auto 0;
+  background:linear-gradient(90deg, var(--brand), var(--brand2));
+  border-radius:999px; transform-origin:left center;
 }
-
-/* スクロール誘導 */
 .hl-scroll{
-  position:absolute; left:50%; bottom:24px; transform:translateX(-50%);
-  color:rgba(255,255,255,.65);
-  font-size:12px; letter-spacing:.12em; text-transform:uppercase;
+  position:absolute; left:50%; bottom:22px; transform:translateX(-50%);
+  color:rgba(255,255,255,.65); font-size:12px; letter-spacing:.12em; text-transform:uppercase;
 }
 
-/* ゆる鬼（Hero右上でプカプカさせる時の影だけ強め） */
-.yuruoni{
-  filter: drop-shadow(0 8px 18px rgba(0,0,0,.35));
-  user-select:none; -webkit-user-drag:none;
-}
+/* floating mascot */
+.yuruoni{ filter:drop-shadow(0 10px 22px rgba(0,0,0,.45)); user-select:none; -webkit-user-drag:none; }
 
-/* ===== 汎用カード（ヒーロー以外） ===== */
+/* ---- GLASS CARDS ---- */
 .hero-card{
-  background: linear-gradient(180deg, var(--glass), var(--glass-2));
-  border:1px solid rgba(255,255,255,.6);
-  border-radius:24px;
-  box-shadow:0 14px 44px rgba(0,0,0,.08);
-  backdrop-filter: blur(8px);
+  background:rgba(255,255,255,.06);
+  border:1px solid var(--glassLine);
+  border-radius:22px;
+  backdrop-filter:saturate(130%) blur(8px);
+  box-shadow:0 18px 44px rgba(0,0,0,.25);
 }
 .motion-card{
-  background: rgba(255,255,255,.92);
-  border:1px solid var(--line);
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--glassLine);
   border-radius:20px;
-  box-shadow:0 12px 30px rgba(0,0,0,.06);
+  backdrop-filter:saturate(130%) blur(6px);
+  box-shadow:0 14px 36px rgba(0,0,0,.22);
 }
 
-/* カレンダー（既存クラスを生かす） */
-.calendar-day{ transition:all .2s ease; }
+/* calendar markers (既存利用) */
+.calendar-day{ transition:all .22s ease; }
 .calendar-day:hover{ background:#ff69b4; color:#fff; transform:scale(1.06); }
-.event-dot{
-  width:6px; height:6px; background:#ff1493; border-radius:50%;
-  position:absolute; top:2px; right:2px;
-}
+.event-dot{ width:6px; height:6px; background:#ff1493; border-radius:50%; position:absolute; top:2px; right:2px; }
 
-/* ふわっとカード */
-.card-hover{ transition:transform .28s ease, box-shadow .28s ease; }
-.card-hover:hover{ transform:translateY(-4px); box-shadow:0 20px 38px rgba(0,0,0,.08); }
-
-/* アニメを控えたいユーザー配慮 */
+/* accessibility */
 @media (prefers-reduced-motion: reduce){
-  *{ animation:none !important; transition:none !important; }
+  *{animation:none !important; transition:none !important;}
 }
 
-/* レスポンシブ微調整 */
-@media (max-width: 640px){
-  .hl-wrap{ border-radius:20px; }
-  .motion-card, .hero-card{ border-radius:16px; }
+/* small screens */
+@media (max-width:640px){
+  .hl-wrap{border-radius:20px;}
+  .motion-card,.hero-card{border-radius:16px;}
 }
+
+
+

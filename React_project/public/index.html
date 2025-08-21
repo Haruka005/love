@@ -1,43 +1,140 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="ja">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
+    <title>LOVEりべつ</title>
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
+    <!-- Tailwind (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- ページ固有のスタイル（グラデ背景・ヒーロー装飾・カード系） -->
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800;900&family=Zen+Maru+Gothic:wght@500;700&display=swap');
+
+      :root{
+        --ink:#1b1d22;
+        --brand:#ff4da8;
+        --brand-2:#8b5cf6;
+        --glass:rgba(255,255,255,.85);
+        --glass-2:rgba(255,255,255,.75);
+        --line:rgba(240,240,240,.9);
+      }
+
+      html,body,#root{height:100%}
+      body{
+        margin:0;
+        color:var(--ink);
+        font-family:'M PLUS Rounded 1c','Zen Maru Gothic',system-ui,sans-serif;
+        background:
+          radial-gradient(1000px 600px at 20% -10%, #ffe5f3 0%, transparent 60%),
+          radial-gradient(1200px 800px at 120% 10%, #efe6ff 0%, transparent 50%),
+          #f9fafb;
+      }
+
+      /* ===== Human Lab 風 ヒーロー ===== */
+      .hl-wrap{
+        position: relative;
+        height: min(92vh, 740px);
+        border-radius: 28px;
+        overflow: hidden;
+        background: #0b0b10;
+        color:#fff;
+        box-shadow: 0 40px 90px rgba(15,19,28,.25);
+      }
+      .hl-grid{
+        position:absolute; inset:0;
+        background-image:
+          radial-gradient(transparent 0 98%, rgba(255,255,255,.085) 100%),
+          repeating-linear-gradient(0deg, rgba(255,255,255,.045) 0 1px, transparent 1px 42px),
+          repeating-linear-gradient(90deg, rgba(255,255,255,.045) 0 1px, transparent 1px 42px);
+        background-size: 320px 320px, 100% 42px, 42px 100%;
+        background-position:center;
+        opacity:.65;
+      }
+      .hl-noise{
+        position:absolute; inset:0;
+        background-image:url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'>\
+<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncA type='table' tableValues='0 0 .07 .12 .07 0'/></feComponentTransfer></filter>\
+<rect width='120' height='120' filter='url(%23n)'/></svg>");
+        mix-blend-mode:soft-light;
+        pointer-events:none;
+      }
+      .hl-photo{
+        position:absolute; inset:-6%;
+        background-image:url('/images/noboribetsu_onsen.png');
+        background-size:cover; background-position:center;
+        filter:saturate(120%) contrast(1.05) brightness(.55) blur(2px);
+        opacity:.35;
+      }
+      .hl-container{
+        position:relative; z-index:2;
+        height:100%;
+        max-width:980px;
+        margin:0 auto;
+        padding:clamp(24px,4vw,48px);
+        display:flex; align-items:center; justify-content:center;
+        flex-direction:column; text-align:center;
+      }
+      .hl-title{
+        font-size: clamp(42px, 12vw, 120px);
+        line-height:.9;
+        font-weight:900;
+        letter-spacing:-.02em;
+        margin:0;
+        text-transform:uppercase;
+        background:linear-gradient(90deg,#fff 0%,#f3f3f3 50%,#fff 100%);
+        -webkit-background-clip:text; background-clip:text; color:transparent;
+        filter:drop-shadow(0 0 10px rgba(255,255,255,.06));
+      }
+      .hl-sub{
+        margin-top:clamp(14px,3vw,26px);
+        font-size:clamp(14px,2.3vw,20px);
+        color:rgba(255,255,255,.86);
+      }
+      .hl-underline{
+        width:140px; height:2px;
+        margin:clamp(12px,2vw,20px) auto 0;
+        background:linear-gradient(90deg,var(--brand),var(--brand-2));
+        transform-origin:left center;
+        border-radius:999px;
+      }
+      .hl-scroll{
+        position:absolute; left:50%; bottom:24px; transform:translateX(-50%);
+        color:rgba(255,255,255,.65);
+        font-size:12px; letter-spacing:.12em; text-transform:uppercase;
+      }
+      .yuruoni{ filter:drop-shadow(0 8px 18px rgba(0,0,0,.35)); user-select:none; -webkit-user-drag:none; }
+
+      /* カード */
+      .motion-card{
+        background: rgba(255,255,255,.92);
+        border:1px solid var(--line);
+        border-radius:20px;
+        box-shadow:0 12px 30px rgba(0,0,0,.06);
+      }
+
+      /* カレンダー */
+      .calendar-day{ transition:all .2s ease; }
+      .calendar-day:hover{ background:#ff69b4; color:#fff; transform:scale(1.06); }
+      .event-dot{ width:6px; height:6px; background:#ff1493; border-radius:50%;
+        position:absolute; top:2px; right:2px; }
+
+      @media (prefers-reduced-motion:reduce){
+        *{animation:none !important; transition:none !important;}
+      }
+      @media (max-width:640px){
+        .hl-wrap{border-radius:20px}
+        .motion-card{border-radius:16px}
+      }
+    </style>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
   </body>
 </html>
+
+
+
+
