@@ -1,44 +1,32 @@
-import React from 'react';  //reactを使うための宣言
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';  //画面遷移をする道具を使う宣言
-import Login from './Login';  //遷移先をインポート
-import Signup from './Signup';
-import LoginComplete from './LoginComplete';
-import AccountCreated from './AccountCreated';
+// src/App.js
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-function App() {  //App関数を作る
-  return (  //画面の表示内容を以下に記述
-    <BrowserRouter>   {/*全体を遷移できる道具で管理する*/}
-      <Routes>  {/*URLに応じてどのページを表示するかを決めるブロック*/}
+// 各ページコンポーネントをインポート
+import MainPage from "./MainPage";
+import Login from "./Login";
+import Signup from "./Signup";
+import LoginComplete from "./LoginComplete";
+import AccountCreated from "./AccountCreated";
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
         {/* トップページ */}
-        <Route path="/" element={   //'/'は最初に開くURLのことelementはその中身のこと
-
-          <div>   {/*パスが最初のURLだったら以下を表示するよ！*/}
-            <h1>トップページ</h1>
-            
-            <Link to="/login">
-              <button>ログインページへ</button>
-            </Link>
-
-            <Link to = "/Signup">
-              <button>新規会員登録</button>
-            </Link>
-
-          </div>
-
-        } />
+        <Route path="/" element={<MainPage />} />
 
         {/* ログインページ */}
-        <Route path="/login" element={<Login />} />   {/*"/Login"にアクセスしたらLoginページを表示するよ！*/}
+        <Route path="/login" element={<Login />} />
+
+        {/* サインアップページ */}
+        <Route path="/signup" element={<Signup />} />
 
         {/* ログイン完了ページ */}
-        <Route path = "/LoginComplete" element = {<LoginComplete/>} />
+        <Route path="/login-complete" element={<LoginComplete />} />
 
-        {/* 新規会員登録 */}
-        <Route path = "/Signup" element = {<Signup/>} />
-
-        {/* 会員登録完了ページ */}
-        <Route path = "/AccountCreated" element = {<AccountCreated/>} />
-
+        {/* アカウント作成完了ページ */}
+        <Route path="/account-created" element={<AccountCreated />} />
       </Routes>
     </BrowserRouter>
   );
