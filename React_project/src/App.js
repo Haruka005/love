@@ -299,7 +299,7 @@ export default function App() {
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[
-                { name: ", rate: "★★★★★ 4.8", genre: "本格懐石料理", price: "¥¥¥¥" },
+                { name: "", rate: "★★★★★ 4.8", genre: "本格懐石料理", price: "¥¥¥¥" },
                 { name: "地獄谷カフェ", rate: "★★★★☆ 4.3", genre: "カフェ・スイーツ", price: "¥¥" },
                 { name: "登別ラーメン横丁", rate: "★★★★☆ 4.6", genre: "ラーメン・麺類", price: "¥¥" }
               ].map((r, i) => (
