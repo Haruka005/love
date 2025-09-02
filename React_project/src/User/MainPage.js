@@ -54,11 +54,11 @@ export default function MainPage() {
   const [isOpen, setIsOpen] = useState(false); // メニューの開閉状態
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="main-container">
       {/* ヘッダー */}
       <header className="bg-white shadow-md">
         <div className="container mx-auto flex justify-between items-center py-4 px-6">
-          <h1 className="text-2xl font-bold">登別観光情報</h1>
+          <h1 className="text-2xl font-bold">Loveりべつ</h1>
           <nav className="hidden md:flex space-x-6">
             <Link to="/" className="hover:text-blue-600">ホーム</Link>
             <Link to="/events" className="hover:text-blue-600">イベント</Link>
@@ -70,9 +70,8 @@ export default function MainPage() {
       </header> 
 
       {/* ハンバーガーボタン */}
-      <nav /*style = {StyleSheet.navber}*/>
-        <button 
-          //style = {StyleSheet.humburger}
+      <nav className="humburger-nav">
+        <button className="humburger-btn"
           onClick = {() => setIsOpen(!isOpen)}  //クリックで開閉切り替え
         >≡</button>
 
@@ -113,11 +112,11 @@ export default function MainPage() {
 
 
       {/* メイン */}
-      <main className="flex-1 container mx-auto px-6 py-10">
+      <main className="main-content">
         {/* タイトル */}
-        <section className="text-center mb-12">
+        <section className="title-section">
           <motion.h2
-            className="text-4xl font-bold mb-4"
+            className="title-text"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1 }}
@@ -129,17 +128,17 @@ export default function MainPage() {
             wrapper="span"
             cursor={true}
             repeat={Infinity}
-            className="text-2xl text-blue-600"
+            className="typing-text"
           />
         </section>
 
         {/* カレンダー */}
         <Reveal>
-          <section className="mb-12">
-            <h3 className="text-2xl font-semibold mb-4">イベントカレンダー</h3>
-            <div className="grid grid-cols-7 gap-2 text-center">
+          <section className="clendar-section">
+            <h3 className="clendar-title">イベントカレンダー</h3>
+            <div className="clendar-grid">
               {DOW.map((day) => (
-                <div key={day} className="font-bold">{day}</div>
+                <div key={day} className="clendar-header">{day}</div>
               ))}
               {useMonthCells(today.getFullYear(), today.getMonth() + 1).map((week, i) =>
                 week.map((day, j) => {
@@ -148,7 +147,7 @@ export default function MainPage() {
                   return (
                     <div
                       key={`${i}-${j}`}
-                      className={`border p-2 cursor-pointer ${hasEvent ? "bg-yellow-200" : ""}`}
+                      className={`calendar-cell ${hasEvent ? "bg-yellow-200" : ""}`}
                       onClick={() => setSelectedDateStr(dateStr)}
                     >
                       {day || ""}
@@ -159,7 +158,7 @@ export default function MainPage() {
             </div>
             {/* イベント詳細 */}
             {selectedDateStr && (
-              <div className="mt-4 p-4 border rounded bg-gray-50">
+              <div className="event-detail">
                 {events.filter((e) => e.date === selectedDateStr).map((e, i) => (
                   <div key={i}>
                     <h4 className="font-bold">{e.title}</h4>
@@ -174,9 +173,9 @@ export default function MainPage() {
 
         {/* 飲食店リスト */}
         <Reveal>
-          <section>
-            <h3 className="text-2xl font-semibold mb-4">おすすめ飲食店</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <section className="restaurant-section">
+            <h3 className="section-title">おすすめ飲食店</h3>
+            <div className="section-grid">
               {[
                 { name: "登別温泉旅館", rate: "★★★★☆ 4.8", genre: "本格懐石料理", price: "¥¥¥¥" },
                 { name: "地元ラーメン店", rate: "★★★★☆ 4.2", genre: "ラーメン", price: "¥¥" },
@@ -199,7 +198,7 @@ export default function MainPage() {
       </main>
 
       {/* フッター */}
-      <footer className="bg-gray-800 text-white text-center py-4">
+      <footer className="footer">
         <p>&copy; 2023 登別観光情報</p>
       </footer>
     </div>
