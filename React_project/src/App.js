@@ -3,11 +3,11 @@ import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // 各ページコンポーネントをインポート
-import MainPage from "./MainPage";
-import Login from "./Login";
-import Signup from "./Signup";
-import LoginComplete from "./LoginComplete";
-import AccountCreated from "./AccountCreated";
+import MainPage from "./User/MainPage";
+import Login from "./User/Login";
+import Signup from "./User/Signup";
+import LoginComplete from "./User/LoginComplete";
+import AccountCreated from "./User/AccountCreated";
 
 function App() {
   return (
@@ -27,6 +27,8 @@ function App() {
 
         {/* アカウント作成完了ページ */}
         <Route path="/account-created" element={<AccountCreated />} />
+
+        
       </Routes>
     </BrowserRouter>
   );
