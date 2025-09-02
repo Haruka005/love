@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { TypeAnimation } from "react-type-animation";
 import { Link } from "react-router-dom";
 
+
 // イベント情報
 const events = [
   { date: "2023-09-10", title: "花火大会", description: "大規模な夏祭りと花火大会", time: "19:00" },
@@ -49,6 +50,8 @@ function Reveal({ children }) {
 export default function MainPage() {
   const today = new Date();
   const [selectedDateStr, setSelectedDateStr] = useState(null);
+  //ハンバーガーボタンメニュー開閉状態  
+  const [isOpen, setIsOpen] = useState(false); // メニューの開閉状態
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -64,7 +67,50 @@ export default function MainPage() {
             <Link to="/signup" className="hover:text-blue-600">サインアップ</Link>
           </nav>
         </div>
-      </header>
+      </header> 
+
+      {/* ハンバーガーボタン */}
+      <nav /*style = {StyleSheet.navber}*/>
+        <button 
+          //style = {StyleSheet.humburger}
+          onClick = {() => setIsOpen(!isOpen)}  //クリックで開閉切り替え
+        >≡</button>
+
+        {/* メニュー（isOpen が true のとき表示） */}
+        {isOpen && (
+          <ul /*style = {style.menu}*/>
+            <li>
+              <Link to="/">ホーム</Link>
+            </li>
+
+            <li>
+                <Link to="/login">ログイン</Link>
+            </li>
+
+            <li>
+              <Link to="/signup">サインアップ</Link>
+            </li>
+
+            <li>
+              <Link to="/MyPage">マイページ</Link>
+            </li>
+
+
+            <li>
+              <Link to="/ReportForm">問い合わせ・通報フォーム</Link>
+            </li>
+
+            <li>
+              <Link to="/RestaurantDetail">飲食店詳細</Link>
+            </li>
+
+            <li>
+              <Link to="/EventDetail">イベント詳細</Link>
+            </li>
+          </ul>
+        )}
+      </nav>
+
 
       {/* メイン */}
       <main className="flex-1 container mx-auto px-6 py-10">
