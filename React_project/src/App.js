@@ -1,48 +1,68 @@
 // src/App.js
+<<<<<<< HEAD
 import React, { useMemo, useState } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { TypeAnimation } from "react-type-animation";
+=======
 
-/* ---- ダミーイベント ---- */
-const events = {
-  "2024-04-15": [
-    { name: "登別温泉まつり", time: "14:00-18:00", location: "温泉街中央広場", icon: "🎭" },
-    { name: "夜桜ライトアップ", time: "18:30-21:00", location: "地獄谷周辺", icon: "🌸" }
-  ],
-  "2024-04-20": [{ name: "温泉グルメフェス", time: "11:00-16:00", location: "登別駅前", icon: "🍜" }],
-  "2024-04-25": [{ name: "鬼火の路", time: "19:00-21:30", location: "地獄谷遊歩道", icon: "👹" }],
-  "2024-04-28": [{ name: "春の音楽祭", time: "15:00-20:00", location: "温泉公園", icon: "🎵" }]
-};
-const DOW = ["日", "月", "火", "水", "木", "金", "土"];
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-/* ---- 42マス月カレンダー ---- */
-function useMonthCells(base = new Date()) {
-  return useMemo(() => {
-    const first = new Date(base.getFullYear(), base.getMonth(), 1);
-    const start = new Date(first);
-    start.setDate(start.getDate() - first.getDay()); // 日曜始まり
-    return Array.from({ length: 42 }, (_, i) => {
-      const d = new Date(start);
-      d.setDate(start.getDate() + i);
-      return d;
-    });
-  }, [base]);
-}
+// 各ページコンポーネントをインポート
+import MainPage from "./User/MainPage";
+import Login from "./User/Login";
+import Signup from "./User/Signup";
+import LoginComplete from "./User/LoginComplete";
+import AccountCreated from "./User/AccountCreated";
+import ReportForm from "./User/ReportForm";
+import MyPage from "./User/MyPage";
+import RestaurantDetail from "./User/RestaurantDetail"
+import EventDitail from "./User/EventDetail"
+import Inquiry from "./User/Inquiry"
 
-/* ---- スクロール出現の薄いラッパー ---- */
-function Reveal({ children, delay = 0 }) {
+
+function App() {
   return (
-    <motion.div
-      initial={{ y: 24, opacity: 0 }}
-      whileInView={{ y: 0, opacity: 1 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.6, ease: "easeOut", delay }}
-    >
-      {children}
-    </motion.div>
+    <BrowserRouter>
+      <Routes>
+        {/* トップページ */}
+        <Route path="/" element={<MainPage />} />
+
+        {/* ログインページ */}
+        <Route path="/login" element={<Login />} />
+>>>>>>> d41209c20931db079fdda3ac2b6bf4d708e672ab
+
+        {/* サインアップページ */}
+        <Route path="/signup" element={<Signup />} />
+
+        {/* ログイン完了ページ */}
+        <Route path="/login-complete" element={<LoginComplete />} />
+
+        {/* アカウント作成完了ページ */}
+        <Route path="/account-created" element={<AccountCreated />} />
+
+        {/* 通報ページ */}
+        <Route path="/ReportForm" element={<ReportForm />} />
+
+        {/* マイページ */}
+        <Route path="/MyPage" element={<MyPage />} />
+
+        {/* 飲食店詳細 */}
+        <Route path="/RestaurantDetail" element={<RestaurantDetail />} />
+
+        {/* イベント詳細 */}
+        <Route path="/EventDetail" element={<EventDitail />} />
+
+        {/* お問い合わせ*/}
+        <Route path="/Inquiry" element={<Inquiry />} />
+
+        
+      </Routes>
+    </BrowserRouter>
   );
 }
 
+<<<<<<< HEAD
 export default function App() {
   const today = new Date();
   const [selectedDateStr, setSelectedDateStr] = useState(null);
@@ -399,3 +419,6 @@ export default function App() {
 
 
 
+=======
+export default App;
+>>>>>>> d41209c20931db079fdda3ac2b6bf4d708e672ab
