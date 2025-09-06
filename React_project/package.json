@@ -1,11 +1,5 @@
 {
-<<<<<<< HEAD
   "name": "React_project",
-=======
-
-  "name": "my_frontend",
-
->>>>>>> d41209c20931db079fdda3ac2b6bf4d708e672ab
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -14,19 +8,11 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.10.0",
-<<<<<<< HEAD
     "framer-motion": "^12.23.12",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "^5.0.1",
     "react-type-animation": "^3.2.0",
-=======
-
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-
->>>>>>> d41209c20931db079fdda3ac2b6bf4d708e672ab
     "web-vitals": "^2.1.4"
   },
   "scripts": {
