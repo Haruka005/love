@@ -1,69 +1,99 @@
-<!DOCTYPE html>
-<html lang="ja">
-    <head>
-        <meta charset="UTF-8">
-        <title>パスワード再設定</title>
-        </head>
-        <body>
+// src/User/reset-pass.js
+import React, { useState } from 'react'; // React本体と、状態管理用のuseStateを読み込み
 
-            <h1>パスワード再設定</h1>
+// パスワード再設定フォームのコンポーネント
+function ResetPass() {
+  // フォームの入力値を管理するためのstate（状態）
+  const [formData, setFormData] = useState({
+    current: '', // 現在のパスワード
+    newPw: '',    // 新しいパスワード
+    confirmPw: '', // 新しいパスワード（確認用）
+    email: 'hello@reallygreatsite.com', // 初期値付きのメールアドレス
+  });
 
-            <form id="resetForm">
+  // 入力欄が変更されたときに呼ばれる関数
+  const handleChange = (e) => {
+    // 入力欄のIDをキーにして、対応する値を更新
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
 
-            //「この入力欄は何のためか」を説明するラベル。for属性は、対応する入力欄のIDを指定します。
+  // フォームが送信されたときに呼ばれる関数
+  const handleSubmit = (e) => {
+    e.preventDefault(); // ページの再読み込みを防ぐ
 
-            <label for="current-password">現在のパスワード</label><br>
-            //パスワード入力欄。入力した文字は「●」などで隠されます。
+    // 入力値を分割して取り出す（分割代入）
+    const { current, newPw, confirmPw, email } = formData;
 
-            <input type="password" id="current-password"><br><br>
+    // 未入力の項目がある場合は警告を表示
+    if (!current || !newPw || !confirmPw || !email) {
+      alert('全ての項目を入力してください');
+      return;
+    }
 
-            <label for="confirm-password">新規パスワード（確認用）</label><br>
-            <label type="password" id="confirm-password"><br><><br>
+    // 新しいパスワードと確認用パスワードが一致しない場合
+    if (newPw !== confirmPw) {
+      alert('新規パスワードと確認用パスワードが一致しません');
+      return;
+    }
 
-            <label for="email">メールアドレス（送信用）</label><br>
-            <input type="email" id="email" value="hello@reallygreatsite.com"><br><br>
+    // パスワードの条件（英大小文字・数字・記号を含む8文字以上）をチェック
+    const pwRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#?$%&]).{8,}$/;
+    if (!pwRegex.test(newPw)) {
+      alert('パスワードは英大小文字、数字、記号を含む8文字以上で入力してください');
+      return;
+    }
 
-            <button type="submit">再設定</button>
-            </form>
+    // すべての条件を満たした場合の成功メッセージ
+    alert('パスワード再設定を受付けました!');
+  };
 
-            <script>
-                document.getElementById("resetForm").addEventListener("submit",function(event)){
-                    event.preventDefault();}
-                    
+  // JSXでフォームのUIを定義
+  return (
+    <div>
+      <h1>パスワード再設定</h1>
+      <form onSubmit={handleSubmit}>
+        {/* 現在のパスワード入力欄 */}
+        <label htmlFor="current">現在のパスワード</label><br />
+        <input
+          type="password"
+          id="current"
+          value={formData.current}
+          onChange={handleChange}
+        /><br /><br />
 
-                    const current=document.getElementById("current-password").value;
-                    const newPw=document.getElementById("new-password").value;
-                    const confirmPw=document.getElementById("confirm-password").value;
-                    const email=document.getElementById("email").value;
+        {/* 新しいパスワード入力欄 */}
+        <label htmlFor="newPw">新規パスワード</label><br />
+        <input
+          type="password"
+          id="newPw"
+          value={formData.newPw}
+          onChange={handleChange}
+        /><br /><br />
 
-                    if(!current || !newPw || !confirmPw || !email){
-                        alert("全ての項目を入力してください");
-                        return;
-                    }
+        {/* 新しいパスワード（確認用）入力欄 */}
+        <label htmlFor="confirmPw">新規パスワード（確認用）</label><br />
+        <input
+          type="password"
+          id="confirmPw"
+          value={formData.confirmPw}
+          onChange={handleChange}
+        /><br /><br />
 
-                    // false（値も型も同じ → 一致している）
-                    // true（値は同じでも型が違う → 不一致
-                    //"abc" !== "def" // true（値が違う → 不一致
+        {/* メールアドレス入力欄 */}
+        <label htmlFor="email">メールアドレス（送信用）</label><br />
+        <input
+          type="email"
+          id="email"
+          value={formData.email}
+          onChange={handleChange}
+        /><br /><br />
 
-                    //パスワード一致チェック
-                    if(newPw !== confirmPw){
-                        alert("新規パスワードと確認用パスワードと一致しません。");
-                        return;
-                    }
+        {/* 送信ボタン */}
+        <button type="submit">再設定</button>
+      </form>
+    </div>
+  );
+}
 
-                    //パスワード条件チェック（英大小文字+記号+数字+記号)
-                    cost pwRegex=/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#?$%&]).{8,}$/;
-                    if(!pwRegex.test(newPw)){
-                        alert("パスワードは英大小文字、数字、記号を含む8文字以上で入力してください。");
-                        return
-                    }
-
-
-                    //成功メッセージ
-                    alert("パスワード再設定を受付けました!");
-                    });
-                    </script>
-
-                    </body>
-                    </html>
-                    
+// 他のファイルからこのコンポーネントを使えるようにする
+export default ResetPass;

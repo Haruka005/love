@@ -14,6 +14,7 @@ import MyPage from "./User/MyPage";
 import RestaurantDetail from "./User/RestaurantDetail"
 import EventDitail from "./User/EventDetail"
 import Inquiry from "./User/Inquiry"
+import ResetPass from "./User/reset-pass";
 
 
 function App() {
@@ -49,6 +50,9 @@ function App() {
 
         {/* お問い合わせ*/}
         <Route path="/Inquiry" element={<Inquiry />} />
+
+        {/*パスワード再設定ページ*/}
+        <Route path="/reset-pass" element={<ResetPass/>}/>
 
         
       </Routes>
