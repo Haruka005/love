@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 
 function ResetPass() {
   const [formData, setFormData] = useState({
-    current: '',
-    newPw: '',
-    confirmPw: '',
+    current: '****',
+    newPw: '****',
+    confirmPw: '****',
     email: 'hello@reallygreatsite.com',
   });
 
@@ -42,10 +42,17 @@ function ResetPass() {
       <h1>パスワード再設定</h1>
       <form onSubmit={handleSubmit}>
         <label htmlFor="current">現在のパスワード</label><br />
-        <input type="password" id="current" value={formData.current} onChange={handleChange} /><br /><br />
 
+        <input type="password" id="current" value={formData.current} onChange={handleChange} /><br /><br />
+         {/* パスワードの注意書き */}
+        <p style={{ color: "#555", fontSize: "14px", marginBottom: "10px" }}>
+        パスワードは <strong>英大小文字・半角数字・記号（!@,#,?,$,%,&）</strong> を含む
+        <strong>8文字以上</strong>で作成してください。
+        </p>
         <label htmlFor="newPw">新規パスワード</label><br />
         <input type="password" id="newPw" value={formData.newPw} onChange={handleChange} /><br /><br />
+       
+
 
         <label htmlFor="confirmPw">新規パスワード（確認用）</label><br />
         <input type="password" id="confirmPw" value={formData.confirmPw} onChange={handleChange} /><br /><br />

@@ -64,9 +64,9 @@ export default function MyPage(){
     <div>
         <h3>メニュー</h3>
          <div style={gridStyle}>
-          <button style={buttonStyle} onClick={() => navigate("/visit-list")}>
+          <button style={buttonStyle} onClick={() => navigate("/VisitList")}>
           来店一覧</button>
-          <button style={buttonStyle}>お気に入り一覧</button>
+           <button style={buttonStyle} onClick={() => navigate("/Favoriteslist")}>お気に入り一覧</button>
            {/*reset-passと紐づけ↓*/}
           <button style={buttonStyle} onClick={() => navigate("/reset-pass")}>
           アカウント編集 </button>

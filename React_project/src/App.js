@@ -16,6 +16,8 @@ import EventDitail from "./User/EventDetail"
 import Inquiry from "./User/Inquiry"
 import ResetPass from "./User/reset-pass";
 import VisitList from "./User/VisitList";
+import FavoritesList from "./User/FavoritesList"; 
+
 
 function App() {
   return (
@@ -55,8 +57,10 @@ function App() {
         <Route path="/reset-pass" element={<ResetPass/>}/>
 
         {/*来店一覧*/}
-        <Route path="/visit-list" element={<VisitList />} />
+        <Route path="/VisitList" element={<VisitList />} />
 
+        {/* お気に入り一覧ページ */}
+<Route path="/FavoritesList" element={<FavoritesList />} />
         
       </Routes>
     </BrowserRouter>
