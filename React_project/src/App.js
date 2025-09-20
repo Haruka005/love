@@ -15,7 +15,7 @@ import RestaurantDetail from "./User/RestaurantDetail"
 import EventDitail from "./User/EventDetail"
 import Inquiry from "./User/Inquiry"
 import ResetPass from "./User/reset-pass";
-
+import VisitList from "./User/VisitList";
 
 function App() {
   return (
@@ -53,6 +53,9 @@ function App() {
 
         {/*パスワード再設定ページ*/}
         <Route path="/reset-pass" element={<ResetPass/>}/>
+
+        {/*来店一覧*/}
+        <Route path="/visit-list" element={<VisitList />} />
 
         
       </Routes>
