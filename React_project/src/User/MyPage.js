@@ -64,14 +64,12 @@ export default function MyPage(){
     <div>
         <h3>メニュー</h3>
          <div style={gridStyle}>
-          <button style={buttonStyle} onClick={() => navigate("/VisitList")}>
-          来店一覧</button>
-           <button style={buttonStyle} onClick={() => navigate("/Favoriteslist")}>お気に入り一覧</button>
+          <button style={buttonStyle} onClick={() => navigate("/VisitList")}>来店一覧</button>
+           <button style={buttonStyle} onClick={() => navigate("/FavoritesList")}>お気に入り一覧</button>
            {/*reset-passと紐づけ↓*/}
-          <button style={buttonStyle} onClick={() => navigate("/reset-pass")}>
-          アカウント編集 </button>
-          <button style={buttonStyle}>閲覧履歴一覧</button>
-          <button style={buttonStyle}>イベント申請確認</button>
+          <button style={buttonStyle} onClick={() => navigate("/reset-pass")}>アカウント編集 </button>
+         <button style={buttonStyle} onClick={() => navigate("/HistoryList")}>閲覧履歴一覧</button>
+          <button style={buttonStyle} onClick={() => navigate("/EventApplicationHistory")}>イベント申請確認</button>
           <button style={buttonStyle}>イベント新規登録</button>
         </div>
     </div>

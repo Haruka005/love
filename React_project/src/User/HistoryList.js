@@ -4,22 +4,22 @@ import React, { useState } from "react";
 // React Router の useNavigate を読み込むことで、ページ遷移ができるようになる
 import { useNavigate } from "react-router-dom";
 
-// このファイルで定義するコンポーネントの名前は FavoritesList
-function FavoritesList() {
+// 閲覧履歴一覧のメインコンポーネント
+function HistoryList() {
   // ページ遷移に使う関数。navigate("/URL") で指定したページに移動できる
   const navigate = useNavigate();
 
-  // 表示するカテゴリ（"restaurant" または "event"）を保存する状態変数
-  const [category, setCategory] = useState("restaurant"); // 初期値は "restaurant"
+  // 表示するカテゴリ（"event" または "restaurant"）を保存する状態変数
+  const [category, setCategory] = useState("event"); // 初期値は "event"
 
-  // お気に入りデータを保存する状態変数（初期値として4件登録）
-  const [favorites, setFavorites] = useState([
+  // 閲覧履歴データ（仮のデータ）を保存する状態変数
+  const [history] = useState([
     {
       id: 1,
-      type: "restaurant", // 種類（飲食店）
-      name: "びくどん", // 店名
-      image: "🍴", // 絵文字アイコン
-      detail: "びくどんは洋食レストランです。", // 詳細説明
+      type: "restaurant",
+      name: "びくどん",
+      image: "🍴",
+      detail: "びくどんは洋食レストランです。",
     },
     {
       id: 2,
@@ -44,25 +44,14 @@ function FavoritesList() {
     },
   ]);
 
-  // 現在のページ番号を保存する状態変数（今はダミー構造）
+  // 現在のページ番号（今はダミー構造）を保存する状態変数
   const [page, setPage] = useState(1);
 
   // 詳細を表示するアイテムのID（nullなら何も展開されていない）
   const [expandedId, setExpandedId] = useState(null);
 
-  // 選択されたカテゴリに一致するデータだけを抽出する
-  const filtered = favorites.filter((item) => item.type === category);
-
-  // お気に入り解除処理（ハートボタンを押すと削除）
-  const removeFavorite = (id) => {
-    // IDが一致しないものだけを残して更新する
-    setFavorites(favorites.filter((item) => item.id !== id));
-
-    // 展開中のアイテムを削除した場合は詳細表示を閉じる
-    if (expandedId === id) {
-      setExpandedId(null);
-    }
-  };
+  // 選択されたカテゴリに一致する履歴だけを抽出する
+  const filtered = history.filter((item) => item.type === category);
 
   // JSX（画面に表示する内容）を return で返す
   return (
@@ -90,17 +79,33 @@ function FavoritesList() {
       </button>
 
       {/* ページタイトル */}
-      <h2 style={{ textAlign: "center", marginTop: "0" }}>お気に入り一覧</h2>
+      <h2 style={{ textAlign: "center", marginTop: "0" }}>閲覧履歴一覧</h2>
 
       {/* カテゴリ切り替えボタン（イベント／飲食店） */}
       <div style={{ marginBottom: "20px", textAlign: "center" }}>
-        {/* 飲食店ボタン */}
+        {/* イベントボタン */}
         <button
-          onClick={() => setCategory("restaurant")}
+          onClick={() => setCategory("event")} // イベントを選択したら状態を更新
           style={{
             padding: "12px 24px",
             fontSize: "40px",
             marginRight: "10px",
+            borderRadius: "8px",
+            backgroundColor: category === "event" ? "#c2c9d1ff" : "#d7dce1ff", // 選択中なら濃い色
+            color: "#0b0b0bff",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          イベント
+        </button>
+
+        {/* 飲食店ボタン */}
+        <button
+          onClick={() => setCategory("restaurant")} // 飲食店を選択したら状態を更新
+          style={{
+            padding: "12px 24px",
+            fontSize: "40px",
             borderRadius: "8px",
             backgroundColor: category === "restaurant" ? "#c2c9d1ff" : "#d7dce1ff",
             color: "#010101ff",
@@ -110,77 +115,59 @@ function FavoritesList() {
         >
           飲食店
         </button>
-
-        {/* イベントボタン */}
-        <button
-          onClick={() => setCategory("event")}
-          style={{
-            padding: "12px 24px",
-            fontSize: "40px",
-            borderRadius: "8px",
-            backgroundColor: category === "event" ? "#c2c9d1ff" : "#d7dce1ff",
-            color: "#0b0b0bff",
-            border: "none",
-            cursor: "pointer",
-          }}
-        >
-          イベント
-        </button>
       </div>
 
-      {/* お気に入りリストの表示（カテゴリに一致するものだけ） */}
+      {/* 閲覧履歴カードの一覧表示 */}
       {filtered.map((item) => (
         <div
           key={item.id} // Reactが要素を識別するための一意なキー
           style={{
-            border: "1px solid #ccc",
-            borderRadius: "6px",
-            padding: "10px",
-            marginBottom: "10px",
-            backgroundColor: "#f9f9f9",
+            border: "1px solid #ccc", // 枠線
+            borderRadius: "6px", // 角丸
+            padding: "10px", // 内側余白
+            marginBottom: "10px", // 下の余白
+            backgroundColor: "#f9f9f9", // 背景色
           }}
         >
           {/* タイトル部分（クリックで詳細を開閉） */}
           <div
             onClick={() =>
-              setExpandedId(expandedId === item.id ? null : item.id)
+              setExpandedId(expandedId === item.id ? null : item.id) // 同じIDなら閉じる、違うIDなら開く
             }
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              cursor: "pointer",
+              display: "flex", // 横並び
+              alignItems: "center", // 垂直方向中央揃え
+              justifyContent: "flex-start", // 左寄せ
+              gap: "10px", // アイコンと名前の間隔
+              cursor: "pointer", // マウスカーソルをポインターに
             }}
           >
-            {/* アイコンと店名／イベント名 */}
-            <span>{item.image} {item.name}</span>
-
-            {/* お気に入り解除ボタン（ハート） */}
-            <button onClick={() => removeFavorite(item.id)}>❤️解除</button>
+            <span>{item.image}</span> {/* 絵文字アイコン */}
+            <span>{item.name}</span> {/* タイトル */}
           </div>
 
           {/* 詳細表示（展開されている場合のみ） */}
           {expandedId === item.id && (
             <div style={{ marginTop: "10px", fontSize: "14px", color: "#555" }}>
-              {/* 仮画像（灰色の四角）を表示 */}
+              {/* 仮画像（灰色の四角） */}
               <div
                 style={{
-                  width: "100%",
-                  height: "150px",
-                  backgroundColor: "#ddd",
-                  borderRadius: "4px",
+                  width: "100%", // 横幅いっぱい
+                  height: "150px", // 高さ150px
+                  backgroundColor: "#ddd", // 灰色の背景
+                  borderRadius: "4px", // 少し角丸
                   marginBottom: "10px",
-                  display: "flex",
+                  display: "flex", // 中央揃えのためにflexを使う
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "18px",
+                  fontSize: "24px",
                   color: "#666",
                 }}
               >
-                画像（仮）
+                画像（仮）{/* 後で本物の画像に差し替え可能 */}
               </div>
 
-              {/* 詳細テキストの表示 */}
+              {/* 詳細テキスト */}
               <p>{item.detail}</p>
             </div>
           )}
@@ -205,4 +192,4 @@ function FavoritesList() {
 }
 
 // 他のファイルからこのコンポーネントを使えるようにする
-export default FavoritesList;
+export default HistoryList;

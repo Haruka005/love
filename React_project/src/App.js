@@ -17,6 +17,9 @@ import Inquiry from "./User/Inquiry"
 import ResetPass from "./User/reset-pass";
 import VisitList from "./User/VisitList";
 import FavoritesList from "./User/FavoritesList"; 
+import HistoryList from "./User/HistoryList"; 
+import EventApplicationHistory from "./User/EventApplicationHistory";
+
 
 
 function App() {
@@ -60,8 +63,16 @@ function App() {
         <Route path="/VisitList" element={<VisitList />} />
 
         {/* お気に入り一覧ページ */}
-<Route path="/FavoritesList" element={<FavoritesList />} />
+        <Route path="/FavoritesList" element={<FavoritesList />} />
         
+        {/*閲覧履歴一覧ページのルートを追加 */}
+        <Route path="/HistoryList" element={<HistoryList />} />
+
+      　{/*閲覧履歴一覧ページのルートを追加 */}
+        <Route path="/EventApplicationHistory" element={<EventApplicationHistory />} />
+
+
+
       </Routes>
     </BrowserRouter>
   );

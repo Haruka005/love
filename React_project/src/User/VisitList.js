@@ -1,56 +1,119 @@
+// Reactの基本機能（コンポーネント作成・状態管理）を読み込む
 import React, { useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-// MapContainer, 地図全体を表示するコンテナ（地図の枠）
- //TileLayer,地図の背景（OpenStreetMapなどの地図画像）
- //Marker, 地図上のピン（店舗の位置を示す）
- //Popup,ピンをクリックしたときに表示される吹き出し（店名などを表示）
- 
 
+// Leaflet（地図ライブラリ）のコンポーネントを読み込む
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+
+// 地図表示に必要なCSSを読み込む（これがないと地図が表示されない）
 import "leaflet/dist/leaflet.css";
 
-// 店舗一覧画面コンポーネント
-export default function VisitList() {
-  // 検索キーワードとジャンル絞り込みの状態
-  const [searchTerm, setSearchTerm] = useState("");
-  const [genreFilter, setGenreFilter] = useState("");
-  const [expandedIndex, setExpandedIndex] = useState(null); // プルダウン展開用
+// React Router のページ遷移機能を読み込む（✕ボタンでマイページに戻るため）
+import { useNavigate } from "react-router-dom";
 
-  // 店舗データ（緯度・経度付き）
+// 地図を指定された位置に移動するための補助コンポーネント
+function FlyToLocation({ lat, lng }) {
+  const map = useMap(); // 現在表示されている地図インスタンスを取得
+
+  // 緯度・経度が変更されたときに地図を移動する
+  React.useEffect(() => {
+    if (lat && lng) {
+      map.flyTo([lat, lng], 16); // 指定された座標にズーム付きで移動
+    }
+  }, [lat, lng, map]); // lat/lng/map のいずれかが変わったら実行される
+
+  return null; // このコンポーネント自体は画面に何も表示しない
+}
+
+// 店舗一覧画面のメインコンポーネント
+export default function VisitList() {
+  const navigate = useNavigate(); // ✕ボタンでページ遷移するための関数
+
+  // 検索キーワード（店名や住所）を保存する状態
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // ジャンル絞り込み（洋食・定食・デザートなど）を保存する状態
+  const [genreFilter, setGenreFilter] = useState("");
+
+  // 展開されている店舗のインデックス（何番目の店舗か）を保存する状態
+  const [expandedIndex, setExpandedIndex] = useState(null);
+
+  // 地図を移動するための座標（緯度・経度）を保存する状態
+  const [flyToCoords, setFlyToCoords] = useState(null);
+
+  // 店舗データ（仮のデータ）
   const stores = [
-    { name: "びくどん", genre: "洋食", address: "北海道室蘭市東町1丁目3", lat: 42.342621, lng: 141.018801},
-    { name: "すきや", genre: "定食", address: "北海道登別", lat: 42.415, lng: 141.102 },
-    { name: "クレープ屋", genre: "デザート", address: "北海道登別", lat: 42.418, lng: 141.108 },
+    {
+      name: "びくどん",
+      genre: "洋食",
+      address: "北海道室蘭市東町1丁目3",
+      lat: 42.342621,
+      lng: 141.018801,
+    },
+    {
+      name: "すきや",
+      genre: "定食",
+      address: "北海道登別",
+      lat: 42.415,
+      lng: 141.102,
+    },
+    {
+      name: "クレープ屋",
+      genre: "デザート",
+      address: "北海道登別",
+      lat: 42.418,
+      lng: 141.108,
+    },
   ];
 
-  // 検索とジャンル絞り込みを適用
+  // 検索キーワードとジャンルで店舗を絞り込む
   const filteredStores = stores.filter((store) => {
     const matchesSearch =
-      // 店名に検索語が含まれているか
-      store.name.includes(searchTerm) ||
-      // 住所に検索語が含まれているか
-      store.address.includes(searchTerm);
-    const matchesGenre = genreFilter === "" || store.genre === genreFilter;
-    // 両方の条件を満たす店舗だけを表示対象にする
-    return matchesSearch && matchesGenre;
+      store.name.includes(searchTerm) || store.address.includes(searchTerm); // 店名または住所に検索語が含まれるか
+    const matchesGenre = genreFilter === "" || store.genre === genreFilter; // ジャンルが一致するか（空ならすべて）
+    return matchesSearch && matchesGenre; // 両方の条件を満たす店舗だけ表示
   });
 
+  // JSX（画面に表示する内容）を返す
   return (
-    <div style={{ padding: "20px", fontFamily: "sans-serif" }}>
-      <h2>来店店舗一覧</h2>
+    // ✕ボタンを固定表示するために position: "relative" を追加
+    <div style={{ padding: "20px", fontFamily: "sans-serif", position: "relative" }}>
+      
+      {/* ✕ 閉じるボタン（画面左上に固定表示） */}
+      <button
+        onClick={() => navigate("/MyPage")} // マイページに戻る
+        style={{
+          position: "absolute", // 画面の左上に固定配置
+          top: "10px",
+          left: "10px",
+          backgroundColor: "#eee", // 背景色（薄いグレー）
+          color: "#333", // 文字色
+          border: "none", // 枠線なし
+          borderRadius: "50%", // 丸型にする
+          width: "40px",
+          height: "40px",
+          fontSize: "20px",
+          cursor: "pointer", // マウスカーソルをポインターに
+        }}
+      >
+        ✕
+      </button>
 
-      {/* 検索バー */}
+      {/* ページタイトル */}
+      <h2 style={{ textAlign: "center", marginTop: "0" }}>来店店舗一覧</h2>
+
+      {/* 検索バー（店名や住所で検索） */}
       <input
         type="text"
         placeholder="店名・住所で検索"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
+        value={searchTerm} // 入力された文字列を表示
+        onChange={(e) => setSearchTerm(e.target.value)} // 入力が変わるたびに状態を更新
         style={{ padding: "8px", width: "100%", marginBottom: "10px" }}
       />
 
-      {/* ジャンル絞り込み */}
+      {/* ジャンル絞り込みのセレクトボックス */}
       <select
-        value={genreFilter}
-        onChange={(e) => setGenreFilter(e.target.value)}
+        value={genreFilter} // 選択されたジャンルを表示
+        onChange={(e) => setGenreFilter(e.target.value)} // 選択が変わるたびに状態を更新
         style={{ padding: "8px", width: "100%", marginBottom: "20px" }}
       >
         <option value="">すべてのジャンル</option>
@@ -61,19 +124,31 @@ export default function VisitList() {
 
       {/* 地図表示（Leaflet） */}
       <MapContainer center={[42.415, 141.106]} zoom={14} style={{ height: "300px", marginBottom: "20px" }}>
+        {/* 地図の背景画像（OpenStreetMap） */}
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+        {/* 地図を移動するためのコンポーネント（座標がセットされていれば移動） */}
+        {flyToCoords && <FlyToLocation lat={flyToCoords.lat} lng={flyToCoords.lng} />}
+
+        {/* 店舗の位置にピンを表示 */}
         {filteredStores.map((store, index) => (
           <Marker key={index} position={[store.lat, store.lng]}>
-            <Popup>{store.name}</Popup>
+            <Popup>{store.name}</Popup> {/* ピンをクリックすると店名を表示 */}
           </Marker>
         ))}
       </MapContainer>
 
-      {/* 店舗一覧（クリックで詳細展開） */}
+      {/* 店舗一覧（クリックで詳細表示＋地図移動） */}
       {filteredStores.map((store, index) => (
         <div
           key={index}
-          onClick={() => setExpandedIndex(index === expandedIndex ? null : index)}
+          onClick={() => {
+            // 展開されている店舗なら閉じる、そうでなければ開く
+            setExpandedIndex(index === expandedIndex ? null : index);
+
+            // 地図をこの店舗の位置に移動する
+            setFlyToCoords({ lat: store.lat, lng: store.lng });
+          }}
           style={{
             border: "1px solid #ccc",
             borderRadius: "6px",
@@ -83,10 +158,11 @@ export default function VisitList() {
             cursor: "pointer",
           }}
         >
+          {/* 店名とジャンルの表示 */}
           <p><strong>店名:</strong> {store.name}</p>
           <p><strong>ジャンル:</strong> {store.genre}</p>
 
-          {/* プルダウン詳細表示 */}
+          {/* 詳細情報（展開されている場合のみ表示） */}
           {expandedIndex === index && (
             <div style={{ marginTop: "10px", fontSize: "14px", color: "#555" }}>
               <p><strong>住所:</strong> {store.address}</p>
