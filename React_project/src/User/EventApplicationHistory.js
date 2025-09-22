@@ -12,6 +12,9 @@ export default function EventApplicationHistory() {
   // 展開されているイベントのIDを保存する状態変数（nullなら何も開いていない）
   const [expandedId, setExpandedId] = useState(null);
 
+   // ページ番号の状態を追加
+    const [page, setPage] = useState(1);
+
   // 表示するイベント申請履歴のデータ（仮のデータ）
   const events = [
     {
@@ -116,6 +119,19 @@ export default function EventApplicationHistory() {
           )}
         </div>
       ))}
+ {/* ページ送り（今はダミー構造） */}
+      <div style={{ marginTop: "20px", textAlign: "center" }}>
+        {/* 前のページボタン（1ページ目なら無効） */}
+        <button onClick={() => setPage(page - 1)} disabled={page === 1}>
+          前のページ
+        </button>
+
+        {/* 現在のページ番号表示 */}
+        <span style={{ margin: "0 10px" }}>ページ {page}</span>
+
+        {/* 次のページボタン */}
+        <button onClick={() => setPage(page + 1)}>次のページ</button>
+      </div>
     </div>
   );
 }

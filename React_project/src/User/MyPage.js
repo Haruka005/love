@@ -70,7 +70,7 @@ export default function MyPage() {
           <button style={buttonStyle} onClick={() => navigate("/reset-pass")}>アカウント編集</button>
           <button style={buttonStyle} onClick={() => navigate("/HistoryList")}>閲覧履歴一覧</button>
           <button style={buttonStyle} onClick={() => navigate("/EventApplicationHistory")}>イベント申請確認</button>
-          <button style={buttonStyle} onClick={() => navigate("/EventForm")}>イベント新規登録</button>
+          <button style={buttonStyle} onClick={() => navigate("/EventForm")}>イベント申請新規登録</button>
         </div>
       </div>
 
@@ -78,7 +78,7 @@ export default function MyPage() {
       <div style={{ marginTop: "20px" }}>
         <button
           style={closeButtonStyle}
-          onClick={() => navigate("/MainPage")} // ← ここでメインページに戻る
+          onClick={() => navigate("/")} // ← ここでメインページに戻る
         >
           ✕
         </button>
