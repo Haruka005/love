@@ -14,6 +14,13 @@ import MyPage from "./User/MyPage";
 import RestaurantDetail from "./User/RestaurantDetail"
 import EventDitail from "./User/EventDetail"
 import Inquiry from "./User/Inquiry"
+import ResetPass from "./User/reset-pass";
+import VisitList from "./User/VisitList";
+import FavoritesList from "./User/FavoritesList"; 
+import HistoryList from "./User/HistoryList"; 
+import EventApplicationHistory from "./User/EventApplicationHistory";
+import EventForm from "./User/EventForm";
+
 
 
 function App() {
@@ -50,7 +57,27 @@ function App() {
         {/* お問い合わせ*/}
         <Route path="/Inquiry" element={<Inquiry />} />
 
+        {/*パスワード再設定ページ*/}
+        <Route path="/reset-pass" element={<ResetPass/>}/>
+
+        {/*来店一覧*/}
+        <Route path="/VisitList" element={<VisitList />} />
+
+        {/* お気に入り一覧ページ */}
+        <Route path="/FavoritesList" element={<FavoritesList />} />
         
+        {/*閲覧履歴一覧*/}
+        <Route path="/HistoryList" element={<HistoryList />} />
+
+      {/*イベント親戚確認 */}
+        <Route path="/EventApplicationHistory" element={<EventApplicationHistory />} />
+
+       {/*イベント新規登録 */}
+        <Route path="/EventForm" element={<EventForm />} />
+
+
+
+
       </Routes>
     </BrowserRouter>
   );
