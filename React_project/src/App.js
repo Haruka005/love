@@ -19,6 +19,7 @@ import VisitList from "./User/VisitList";
 import FavoritesList from "./User/FavoritesList"; 
 import HistoryList from "./User/HistoryList"; 
 import EventApplicationHistory from "./User/EventApplicationHistory";
+import EventForm from "./User/EventForm";
 
 
 
@@ -65,11 +66,15 @@ function App() {
         {/* お気に入り一覧ページ */}
         <Route path="/FavoritesList" element={<FavoritesList />} />
         
-        {/*閲覧履歴一覧ページのルートを追加 */}
+        {/*閲覧履歴一覧*/}
         <Route path="/HistoryList" element={<HistoryList />} />
 
-      　{/*閲覧履歴一覧ページのルートを追加 */}
+      {/*イベント親戚確認 */}
         <Route path="/EventApplicationHistory" element={<EventApplicationHistory />} />
+
+       {/*イベント新規登録 */}
+        <Route path="/EventForm" element={<EventForm />} />
+
 
 
 
