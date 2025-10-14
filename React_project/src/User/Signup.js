@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+//laravelと連携する為に追加した
+import axios from 'axios';
 
 
 export default function Signup(){
@@ -12,7 +14,7 @@ export default function Signup(){
     const [showconfi_Pass,setShowconfi_Pass] = useState(false)
     const [error,setError] = useState(''); //エラーメッセージをいれる、空ならエラーなし
 
-    const handleSubmit = (e) => {    //関数handleSubmitを作りフォーム送信情報が入ってきたら{}を実行する
+    const handleSubmit = async (e) => {    //関数handleSubmitを作りフォーム送信情報が入ってきたら{}を実行する
         e.preventDefault();   // リロードさせない
 
         if(password.length < 12){
@@ -34,13 +36,31 @@ export default function Signup(){
             setError('パスワードが一致しません');
             return;   
         }
-        setError("");
-        //登録成功したら遷移
-        navigate('/AccountCreated');
+        setError(""); //エラーをリセット
+    try {
+    // LaravelのAPIにPOSTリクエストを送信
+    const response = await axios.post('http://127.0.0.1:8000/api/register', {
+      name: name,
+      email: Email,
+      password: password
+    });
 
-        //確認用（ここでAPIに送るらしい）
-        console.log('登録情報：',{name,Email,password});
-    };
+    //登録成功したら遷移
+    navigate('/AccountCreated');
+     //確認用（ここでAPIに送るらしい）
+     console.log('登録情報：',{name,Email,password});
+
+  } catch (error) {
+    // バリデーションエラーなどが返ってきた場合
+    if (error.response && error.response.status === 422) {
+      const errors = error.response.data.errors;
+      const firstError = Object.values(errors)[0][0]; // 最初のエラーだけ表示
+      setError(firstError);
+    } else {
+      setError('通信エラーが発生しました');
+    }
+  }
+};
 
     //ここからは画面に表示する内容
     return(
@@ -96,4 +116,4 @@ export default function Signup(){
             <button type = "submit">登録</button>
         </form>
     );
-};
+}
