@@ -46,7 +46,13 @@ export default function Signup(){
     });
 
     //登録成功したら遷移
-    navigate('/AccountCreated');
+    navigate('/AccountCreated', {
+    state: {
+    name: name,
+    email: Email
+  }
+});
+
      //確認用（ここでAPIに送るらしい）
      console.log('登録情報：',{name,Email,password});
 
