@@ -1048,3 +1048,4 @@ Stack trace:
 #59 /home/genki-shimizu/my_project/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(23): require_once('...')
 #60 {main}
 "} 
+[2025-10-15 06:43:38] local.INFO: 登録リクエスト受信: {"name":"iida","email":"hc431000@g","password":"555AAass@@@@@@@@"} 
