@@ -12,6 +12,9 @@ class AuthController extends Controller
     //registerという名前の関数（新規登録処理）
     public function register(Request $request)
     {
+        //stangeのlaravlelogを開いて一番下に表示されている
+        Log::info('登録リクエスト受信:', $request->all());
+        
         //バリデーション（入力チェック）を行う
         //$request->all()で送られてきた全データを取得
         //配列でルールを設定:name,email,passwordに対して条件を付ける
