@@ -2,7 +2,7 @@
 
 // React本体とフック(useState)を読み込む
 // useStateはコンポーネント内で値（状態）を保持・更新するために使います
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 
 // リンク切り替え用のコンポーネントを読み込む（ページ遷移を行う）
 import { Link } from "react-router-dom";
@@ -10,29 +10,23 @@ import { Link } from "react-router-dom";
 
 // ---------------------- 表示データ（サンプル） ----------------------
 
-// eventsByMonthはキーを "YYYY-MM" の文字列で管理します。
-// 例："2025-09" のようにして、年と月でイベントを引けるようにしています。
-// 新しい年・月のイベントを追加するには、ここに同じ形式でキーを追加してください。
-const eventsByMonth = {
-  // 2024年9月のイベント（サンプル）
-  "2024-09": [
-    { title: "2024年 秋祭り", date: "2024-09-20", description: "2024年の秋祭りです" },
-    { title: "2024年 温泉花火大会", date: "2024-09-25", description: "温泉街を彩る花火ショー" }
-  ],
+// events
+const [monthlyEvents, setMonthlyEvents] = useState([]); //[ここは取得したイベントいれる,ここは左の中身変えたいときに使う関数]空の配列に入れる
 
-  // 2025年9月のイベント（サンプル）
-  "2025-09": [
-    { title: "秋の収穫祭", date: "2025-09-23", description: "地元野菜の販売と試食会" },
-    { title: "登別陶芸体験教室", date: "2025-09-27", description: "土に触れて器づくりを体験" },
-    { title: "登別地獄まつり", date: "2025-09-28", description: "鬼みこしや閻魔大王の練り歩きが見どころ" }
-  ],
-
-  // 2025年10月のイベント（サンプル）
-  "2025-10": [
-    { title: "紅葉ライトアップ", date: "2025-10-10", description: "温泉街の紅葉を幻想的に照らす" },
-    { title: "登別グルメフェス", date: "2025-10-22", description: "地元の味覚が集結する食の祭典" }
-  ]
-};
+//ページを開いたときにAPI呼ぶ(useEffect)
+useEffect(() => {
+  const fetchEvents = async () => { //async･･･awaitから結果帰ってくるまで次の処理しないで待つ
+    try {
+      const res = await fetch(`/events/${year}/${manth}`); // await･･･結果取得できるまで次の処理しないで待つ
+      const data = await res.json(); // JSONをJavaScriptの配列に変換
+      setMonthlyEvents(data); // stateに保存
+    } catch (err) {
+      console.error("イベント取得失敗", err);
+      setMonthlyEvents([]); // 失敗したら空配列
+    }
+  };
+   fetchEvents();//画面が表示されたときに実行されたいのでここで実行処理書く
+}, [year, month]); // 年月が変わるたびに呼び出す
 
 // ジャンル別の飲食店データ（簡易サンプル）
 const shopDataByGenre = {

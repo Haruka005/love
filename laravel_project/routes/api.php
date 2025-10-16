@@ -1,7 +1,7 @@
 <?php
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\event_get;
+use App\Http\Controllers\EventGetController;
 
 //イベントを月ごとに取得
-Route::get('/events/{yaer}/{month}', [EventController::class, 'getByMonth']); 
+Route::get('/events/{year}/{month}', [EventGetController::class, 'getByMonth']); 
