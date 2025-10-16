@@ -26,7 +26,7 @@ useEffect(() => {
     }
   };
    fetchEvents();//画面が表示されたときに実行されたいのでここで実行処理書く
-}, [year, month]); // 年月が変わるたびに呼び出す
+}, [selectedYear, selectedMonth]); // 年月が変わるたびに呼び出す
 
 // ジャンル別の飲食店データ（簡易サンプル）
 const shopDataByGenre = {
@@ -95,10 +95,6 @@ export default function MainPage() {
 
   // key: eventsByMonth オブジェクトのキー（"YYYY-MM"）を作成する
   const key = `${selectedYear}-${selectedMonth}`;
-
-  // monthlyEvents: 選択中の年・月に対応するイベント配列を取得
-  // 該当データがなければ空配列を使う（エラー回避のため）
-  const monthlyEvents = eventsByMonth[key] || [];
 
   // cardStyle: イベントや店舗カードで使う共通のスタイル（オブジェクト）
   // JSX の style にそのまま渡せます
