@@ -1,7 +1,7 @@
 <?php
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\event_get;
 
-Route::get('/message', function () {
-    return ['message' => 'こんにちは、React！'];
-});
+//イベントを月ごとに取得
+Route::get('/events/{yaer}/{month}', [EventController::class, 'getByMonth']); 
