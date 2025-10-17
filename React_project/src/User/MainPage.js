@@ -200,9 +200,18 @@ export default function MainPage() {
             alignItems: "center",
             justifyContent: "center",
             borderRadius: "8px"
-          }}>
+          }}
+          >
             {/* 表示用テキスト（画像差し替え時に削除） */}
-            <span style={{ fontSize: "48px", color: "#888" }}>画像挿入予定</span>
+            <img
+              src="/images/229.png"
+              alt ="登別トップ画面"
+              style={{
+                width:"100%",
+                height:"aouto",
+                borderRadius:"0px"
+              }}
+              />
           </div>
 
           {/* ウェルカムテキスト */}
