@@ -59,9 +59,23 @@ const events = [
 export default function MainPage() {
   // ------------------ 状態（state）の定義 ------------------
 
-  // イベント一覧
-  const [selectedYear, setSelectedYear] = useState(2025);
-  const [selectedMonth, setSelectedMonth] = useState(9);
+  {/* 直近のイベント */}
+  useEffect(() => {
+    const fetchUpcomingEvents = async () => { //async･･･awaitから結果帰ってくるまで次の処理しないで待つ
+      try {
+
+
+      }catch{
+        
+      }
+    }
+  }
+  )
+
+  {/* イベント一覧 */}
+  const now = new Date();
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1); //月は0始まりなので+1
   const [monthlyEvents, setMonthlyEvents] = useState([]); //[ここは取得したイベントいれる,ここは左の中身変えたいときに使う関数]空の配列に入れる
   const [error, setError] = useState(null);
 
@@ -76,7 +90,10 @@ export default function MainPage() {
         const res = await fetch(
           `http://localhost:8000/api/events/${selectedYear}/${selectedMonth}`
         ); // await･･･結果取得できるまで次の処理しないで待つ
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
 
         const data = await res.json();  // JSONをJavaScriptの配列に変換
         setMonthlyEvents(data);  // stateに保存
@@ -90,6 +107,7 @@ export default function MainPage() {
         setError("イベント取得に失敗しました"); // エラー表示用
       }
     };
+
     fetchEvents();//画面が表示されたときに実行されたいのでここで実行処理書く
   }, [selectedYear, selectedMonth]); // 年月が変わるたびに呼び出す
 

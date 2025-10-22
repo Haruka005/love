@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\GetEvent; //Eventモデル使う
+use App\Models\test_events; //Eventモデル使う
 use Carbon\Carbon; //日付処理簡単になるやつ使う
 
-class EventGetController extends Controller
+class EventController extends Controller
 {
     //mainpageの/api/events/2025/10から呼び出される
     //指定された年月のイベントを取得する
@@ -33,5 +33,17 @@ class EventGetController extends Controller
 
         // JSONで返す
         return response()->json($events);
+    }
+
+    public function getUpComingEvent()
+    {
+        $now = Carbon::now();
+        $year = $now->year;
+        $month = $now->month;
+        
+        //今月のイベントを既存のgetByMonth()メソッドから取得
+        //そこから今月のイベントに絞る
+        return $this->getByMonth($year, $month);
+
     }
 }

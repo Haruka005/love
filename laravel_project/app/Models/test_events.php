@@ -1,11 +1,13 @@
 <?php
 
+//モデルは1テーブルにつき1個（基本的には）
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class GetEvent extends Model
+class test_events extends Model
 {
     use HasFactory;
 
