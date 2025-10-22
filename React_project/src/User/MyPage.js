@@ -70,7 +70,11 @@ export default function MyPage() {
           <button style={buttonStyle} onClick={() => navigate("/reset-pass")}>アカウント編集</button>
           <button style={buttonStyle} onClick={() => navigate("/HistoryList")}>閲覧履歴一覧</button>
           <button style={buttonStyle} onClick={() => navigate("/EventApplicationHistory")}>イベント申請確認</button>
-          <button style={buttonStyle} onClick={() => navigate("/EventForm")}>イベント申請新規登録</button>
+          <button style={buttonStyle} onClick={() => navigate("/EventForm")}>イベント申請新規登録（仮）</button>
+          <button style={buttonStyle} onClick={() => navigate("/ShopForm")}>店登録（仮）</button>
+          
+
+
         </div>
       </div>
 

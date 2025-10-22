@@ -1,7 +1,7 @@
 // src/App.js
-
-import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthContext } from "./contexts/AuthContext";
+import React, { useState } from "react";
 
 // 各ページコンポーネントをインポート
 import MainPage from "./User/MainPage";
@@ -20,11 +20,19 @@ import FavoritesList from "./User/FavoritesList";
 import HistoryList from "./User/HistoryList"; 
 import EventApplicationHistory from "./User/EventApplicationHistory";
 import EventForm from "./User/EventForm";
-
+import ShopForm from "./User/ShopForm";
 
 
 function App() {
+  // 仮のログインユーザー情報（本番ではログイン処理と連携）
+  const [currentUser] = useState({
+    id: 123,
+    has_image_folder: 0,
+  });
+
   return (
+    //ReactのContext APIを使って「ログインユーザー情報（currentUser）」をアプリ全体に共有するための仕組みらしい
+    <AuthContext.Provider value={currentUser}>
     <BrowserRouter>
       <Routes>
         {/* トップページ */}
@@ -75,11 +83,12 @@ function App() {
        {/*イベント新規登録 */}
         <Route path="/EventForm" element={<EventForm />} />
 
-
-
+        {/*イベント新規登録 */}
+        <Route path="/ShopForm" element={<ShopForm />} />
 
       </Routes>
     </BrowserRouter>
+    </AuthContext.Provider>
   );
 }
 
