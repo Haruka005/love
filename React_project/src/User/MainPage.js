@@ -174,7 +174,7 @@ export default function MainPage() {
             <li><Link to="/MyPage">マイページ</Link></li>
             <li><Link to="/ReportForm">問い合わせ・通報フォーム</Link></li>
             <li><Link to="/RestaurantDetail">飲食店詳細</Link></li>
-            <li><Link to="/EventDetail">イベント詳細</Link></li>
+            <li><Link to="/EventDetai">イベント詳細</Link></li>
           </ul>
         )}
       </nav>

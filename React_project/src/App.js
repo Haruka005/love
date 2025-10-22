@@ -40,7 +40,7 @@ function App() {
         <Route path="/login-complete" element={<LoginComplete />} />
 
         {/* アカウント作成完了ページ */}
-        <Route path="/account-created" element={<AccountCreated />} />
+        <Route path="/AccountCreated" element={<AccountCreated />} />
 
         {/* 通報ページ */}
         <Route path="/ReportForm" element={<ReportForm />} />
