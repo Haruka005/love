@@ -22,4 +22,5 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
-/storage/laravel.log
+/storage/logs/*.log
+
