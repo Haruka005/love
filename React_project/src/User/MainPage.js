@@ -2,37 +2,13 @@
 
 // React本体とフック(useState)を読み込む
 // useStateはコンポーネント内で値（状態）を保持・更新するために使います
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 
 // リンク切り替え用のコンポーネントを読み込む（ページ遷移を行う）
 import { Link } from "react-router-dom";
 
 
 // ---------------------- 表示データ（サンプル） ----------------------
-
-// eventsByMonthはキーを "YYYY-MM" の文字列で管理します。
-// 例："2025-09" のようにして、年と月でイベントを引けるようにしています。
-// 新しい年・月のイベントを追加するには、ここに同じ形式でキーを追加してください。
-const eventsByMonth = {
-  // 2024年9月のイベント（サンプル）
-  "2024-09": [
-    { title: "2024年 秋祭り", date: "2024-09-20", description: "2024年の秋祭りです" },
-    { title: "2024年 温泉花火大会", date: "2024-09-25", description: "温泉街を彩る花火ショー" }
-  ],
-
-  // 2025年9月のイベント（サンプル）
-  "2025-09": [
-    { title: "秋の収穫祭", date: "2025-09-23", description: "地元野菜の販売と試食会" },
-    { title: "登別陶芸体験教室", date: "2025-09-27", description: "土に触れて器づくりを体験" },
-    { title: "登別地獄まつり", date: "2025-09-28", description: "鬼みこしや閻魔大王の練り歩きが見どころ" }
-  ],
-
-  // 2025年10月のイベント（サンプル）
-  "2025-10": [
-    { title: "紅葉ライトアップ", date: "2025-10-10", description: "温泉街の紅葉を幻想的に照らす" },
-    { title: "登別グルメフェス", date: "2025-10-22", description: "地元の味覚が集結する食の祭典" }
-  ]
-};
 
 // ジャンル別の飲食店データ（簡易サンプル）
 const shopDataByGenre = {
@@ -83,6 +59,41 @@ const events = [
 export default function MainPage() {
   // ------------------ 状態（state）の定義 ------------------
 
+  // イベント一覧
+  const [selectedYear, setSelectedYear] = useState(2025);
+  const [selectedMonth, setSelectedMonth] = useState(9);
+  const [monthlyEvents, setMonthlyEvents] = useState([]); //[ここは取得したイベントいれる,ここは左の中身変えたいときに使う関数]空の配列に入れる
+  const [error, setError] = useState(null);
+
+  //ページを開いたときにAPI呼ぶ(useEffect)
+  useEffect(() => {
+    const fetchEvents = async () => { //async･･･awaitから結果帰ってくるまで次の処理しないで待つ
+      try {
+
+        //文字列の可能性があるselectedMonthを数値に変換
+        const monthNumber = parseInt(selectedMonth, 10);
+
+        const res = await fetch(
+          `http://localhost:8000/api/events/${selectedYear}/${selectedMonth}`
+        ); // await･･･結果取得できるまで次の処理しないで待つ
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+        const data = await res.json();  // JSONをJavaScriptの配列に変換
+        setMonthlyEvents(data);  // stateに保存
+        setError(null);   // 成功したらエラーリセット
+
+        console.log(`イベント取得成功: ${data.length}件`, data);
+
+      } catch (error) {
+        console.error("イベント取得失敗", error);
+        setMonthlyEvents([]); // 失敗したら空配列
+        setError("イベント取得に失敗しました"); // エラー表示用
+      }
+    };
+    fetchEvents();//画面が表示されたときに実行されたいのでここで実行処理書く
+  }, [selectedYear, selectedMonth]); // 年月が変わるたびに呼び出す
+
+
   // isOpen: ハンバーガーメニュー（右上の三本線）の開閉状態を保持する boolean
   // 初期は false（閉じている）
   const [isOpen, setIsOpen] = useState(false);
@@ -90,21 +101,6 @@ export default function MainPage() {
   // selectedGenre: 洋食／定食／デザート など、選択中の飲食ジャンルを保持
   // 初期は "洋食"
   const [selectedGenre, setSelectedGenre] = useState("洋食");
-
-  // selectedYear: 年の選択値（"2024" や "2025" の文字列で管理）
-  // 年を増やす場合はセレクトに option を追加してください
-  const [selectedYear, setSelectedYear] = useState("2025");
-
-  // selectedMonth: 月の選択値（"01"〜"12" の文字列で管理）
-  // 初期は "09"（9月）
-  const [selectedMonth, setSelectedMonth] = useState("09");
-
-  // key: eventsByMonth オブジェクトのキー（"YYYY-MM"）を作成する
-  const key = `${selectedYear}-${selectedMonth}`;
-
-  // monthlyEvents: 選択中の年・月に対応するイベント配列を取得
-  // 該当データがなければ空配列を使う（エラー回避のため）
-  const monthlyEvents = eventsByMonth[key] || [];
 
   // cardStyle: イベントや店舗カードで使う共通のスタイル（オブジェクト）
   // JSX の style にそのまま渡せます
@@ -234,7 +230,7 @@ export default function MainPage() {
 
           {/* カードを横並びにして、画面幅に応じて折り返す */}
           <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", justifyContent: "center" }}>
-            {/* events 配列を map で回してカードを作る */}
+            {/* events 配列を map で回してカードを作る mapを使うことで何件データが来ても繰り返し表示できる */}
             {events.map((event, i) => (
               // key は配列をレンダリングする際に React が要素を識別するために必要
               <div key={i} style={cardStyle}>
@@ -316,9 +312,16 @@ export default function MainPage() {
               <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", justifyContent: "center" }}>
                 {monthlyEvents.map((event, i) => (
                   <div key={i} style={cardStyle}>
-                    <h4 style={{ fontWeight: "bold", fontSize: "18px" }}>{event.title}</h4>
-                    <p>開始日: {event.date}</p>
-                    <p style={{ fontSize: "14px", color: "#555" }}>{event.description}</p>
+                    {/*　イベント名 */}
+                    <h3 style={{ fontWeight: "bold", fontSize: "20px" }}>{event.name}</h3>
+                    {/*　見出し */}
+                    <h4 style={{ fontWeight: "bold", fontSize: "18px" }}>{event.catchphrase}</h4>
+                    {/*　開催日・終了日 */}
+                    <p>
+                      開始日: {event.start_date} <br />
+                      終了日: {event.end_date}
+                    </p>
+
                   </div>
                 ))}
               </div>
