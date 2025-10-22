@@ -59,8 +59,7 @@ const events = [
 export default function MainPage() {
   // ------------------ 状態（state）の定義 ------------------
 
-  // events
-
+  // イベント一覧
   const [selectedYear, setSelectedYear] = useState(2025);
   const [selectedMonth, setSelectedMonth] = useState(9);
   const [monthlyEvents, setMonthlyEvents] = useState([]); //[ここは取得したイベントいれる,ここは左の中身変えたいときに使う関数]空の配列に入れる
@@ -79,12 +78,11 @@ export default function MainPage() {
         ); // await･･･結果取得できるまで次の処理しないで待つ
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
-
         const data = await res.json();  // JSONをJavaScriptの配列に変換
         setMonthlyEvents(data);  // stateに保存
         setError(null);   // 成功したらエラーリセット
 
-         console.log(`イベント取得成功: ${data.length}件`, data);
+        console.log(`イベント取得成功: ${data.length}件`, data);
 
       } catch (error) {
         console.error("イベント取得失敗", error);
