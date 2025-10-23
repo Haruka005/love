@@ -33,21 +33,21 @@ const events = [
     title: "秋の収穫祭",
     description: "地元野菜の販売と試食会",
     time: "10:00",
-    image: "https://via.placeholder.com/300x200?text=秋の収穫祭"
+    //image: "https://via.placeholder.com/300x200?text=秋の収穫祭"
   },
   {
     date: "2025-09-27",
     title: "登別陶芸体験教室",
     description: "土に触れて器づくりを体験",
     time: "13:00",
-    image: "https://via.placeholder.com/300x200?text=陶芸体験"
+    //image: "https://via.placeholder.com/300x200?text=陶芸体験"
   },
   {
     date: "2025-09-28",
     title: "登別地獄まつり",
     description: "鬼みこしや閻魔大王の練り歩きが見どころ",
     time: "19:00",
-    image: "https://via.placeholder.com/300x200?text=地獄まつり"
+    //image: "https://via.placeholder.com/300x200?text=地獄まつり"
   }
 ];
 
@@ -60,7 +60,7 @@ export default function MainPage() {
   // ------------------ 状態（state）の定義 ------------------
 
   {/* 直近のイベント */}
-  useEffect(() => {
+  {/*useEffect(() => {
     const fetchUpcomingEvents = async () => { //async･･･awaitから結果帰ってくるまで次の処理しないで待つ
       try {
 
@@ -71,7 +71,7 @@ export default function MainPage() {
     }
   }
   )
-
+  */}
   {/* イベント一覧 */}
   const now = new Date();
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());

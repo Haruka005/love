@@ -69,7 +69,7 @@ function App() {
         {/*閲覧履歴一覧*/}
         <Route path="/HistoryList" element={<HistoryList />} />
 
-      {/*イベント親戚確認 */}
+       {/*イベント親戚確認 */}
         <Route path="/EventApplicationHistory" element={<EventApplicationHistory />} />
 
        {/*イベント新規登録 */}
