@@ -6,6 +6,8 @@ import React, { useState,useEffect } from "react";
 
 // リンク切り替え用のコンポーネントを読み込む（ページ遷移を行う）
 import { Link } from "react-router-dom";
+import GetEvents from "./conponents/GetEvents";
+import UpComingEvents from "./conponents/UpComingEvets";
 
 
 // ---------------------- 表示データ（サンプル） ----------------------
@@ -33,21 +35,21 @@ const events = [
     title: "秋の収穫祭",
     description: "地元野菜の販売と試食会",
     time: "10:00",
-    //image: "https://via.placeholder.com/300x200?text=秋の収穫祭"
+    image: "https://via.placeholder.com/300x200?text=秋の収穫祭"
   },
   {
     date: "2025-09-27",
     title: "登別陶芸体験教室",
     description: "土に触れて器づくりを体験",
     time: "13:00",
-    //image: "https://via.placeholder.com/300x200?text=陶芸体験"
+    image: "https://via.placeholder.com/300x200?text=陶芸体験"
   },
   {
     date: "2025-09-28",
     title: "登別地獄まつり",
     description: "鬼みこしや閻魔大王の練り歩きが見どころ",
     time: "19:00",
-    //image: "https://via.placeholder.com/300x200?text=地獄まつり"
+    image: "https://via.placeholder.com/300x200?text=地獄まつり"
   }
 ];
 
@@ -60,7 +62,7 @@ export default function MainPage() {
   // ------------------ 状態（state）の定義 ------------------
 
   {/* 直近のイベント */}
-  {/*useEffect(() => {
+  useEffect(() => {
     const fetchUpcomingEvents = async () => { //async･･･awaitから結果帰ってくるまで次の処理しないで待つ
       try {
 
@@ -71,7 +73,7 @@ export default function MainPage() {
     }
   }
   )
-  */}
+
   {/* イベント一覧 */}
   const now = new Date();
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
@@ -243,109 +245,11 @@ export default function MainPage() {
 
 
         {/* ---------- 直近イベント（カード） ---------- */}
-        <section style={{ marginBottom: "30px", textAlign: "center" }}>
-          <h3 style={{ fontSize: "20px", marginBottom: "10px" }}>直近のイベント</h3>
+       <UpComingEvents />
 
-          {/* カードを横並びにして、画面幅に応じて折り返す */}
-          <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", justifyContent: "center" }}>
-            {/* events 配列を map で回してカードを作る mapを使うことで何件データが来ても繰り返し表示できる */}
-            {events.map((event, i) => (
-              // key は配列をレンダリングする際に React が要素を識別するために必要
-              <div key={i} style={cardStyle}>
-                {/* 画像（サンプルURL） */}
-                <img src={event.image} alt={event.title} style={{ width: "100%", borderRadius: "6px", marginBottom: "10px" }} />
+       {/* ---------- イベント一覧 ---------- */}
+       <GetEvents />
 
-                {/* イベントタイトル */}
-                <h4 style={{ fontWeight: "bold", fontSize: "18px" }}>{event.title}</h4>
-
-                {/* 日付・時間・説明 */}
-                <p>開始日: {event.date}</p>
-                <p>時間: {event.time}</p>
-                <p style={{ fontSize: "14px", color: "#555" }}>{event.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-
-        {/* ---------- 年・月別イベント（ここが複数年対応のポイント） ---------- */}
-        <section style={{ marginBottom: "30px", textAlign: "center" }}>
-          <h3 style={{ fontSize: "20px", marginBottom: "10px" }}>月別イベント</h3>
-
-          {/* 年の選択セレクトボックス */}
-          <div style={{ marginBottom: "10px" }}>
-            <label>
-              年を選択：
-              {/* selectedYear を使って年を切り替える（onChange で state を更新） */}
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-                style={{ marginLeft: "8px" }}
-              >
-                {/* 必要な年をここに追加する（動的に生成する方法もあります） */}
-                <option value="2024">2024</option>
-                <option value="2025">2025</option>
-              </select>
-            </label>
-          </div>
-
-          {/* 月選択ボタン群（1月〜12月） */}
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "8px", marginBottom: "20px" }}>
-            {/* [...Array(12)] を使って 12 個のボタンを作る（i は 0〜11）*/}
-            {[...Array(12)].map((_, i) => {
-              // 月を "01" から "12" のゼロ埋め文字列にする
-              const month = String(i + 1).padStart(2, "0");
-              return (
-                <button
-                  key={month}
-                  onClick={() => setSelectedMonth(month)} // 押したら selectedMonth を更新
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: "6px",
-                    border: selectedMonth === month ? "2px solid #000" : "1px solid #ccc",
-                    backgroundColor: selectedMonth === month ? "#eee" : "#fff",
-                    fontWeight: selectedMonth === month ? "bold" : "normal",
-                    cursor: "pointer"
-                  }}
-                >
-                  {/* 表示は 1月なら "1月" のように数値にしている */}
-                  {parseInt(month)}月
-                </button>
-              );
-            })}
-          </div>
-
-          {/* 選択中の年・月の見出し */}
-          <div>
-            <h4 style={{ fontSize: "18px", marginBottom: "10px" }}>
-              {selectedYear}年 {parseInt(selectedMonth)}月 のイベント
-            </h4>
-
-            {/* イベントが無ければメッセージ、あればカードで表示 */}
-            {monthlyEvents.length === 0 ? (
-              // データが空のときの案内
-              <p>この月のイベント情報はまだありません。</p>
-            ) : (
-              // イベントがあるときにカードで表示
-              <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", justifyContent: "center" }}>
-                {monthlyEvents.map((event, i) => (
-                  <div key={i} style={cardStyle}>
-                    {/*　イベント名 */}
-                    <h3 style={{ fontWeight: "bold", fontSize: "20px" }}>{event.name}</h3>
-                    {/*　見出し */}
-                    <h4 style={{ fontWeight: "bold", fontSize: "18px" }}>{event.catchphrase}</h4>
-                    {/*　開催日・終了日 */}
-                    <p>
-                      開始日: {event.start_date} <br />
-                      終了日: {event.end_date}
-                    </p>
-
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
 
 
         {/* ---------- ジャンル別おすすめ飲食店 ---------- */}
