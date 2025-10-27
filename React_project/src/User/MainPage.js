@@ -131,7 +131,7 @@ export default function MainPage() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           {/* サイトタイトル */}
           <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>Loveりべつ</h1>
-          {/* 将来的に右側にユーザー情報やボタンを追加できます（今は空） */}
+          {/* 将来的に右側にユーザー情報やボタンを追加（今は空） */}
         </div>
       </header>
 
