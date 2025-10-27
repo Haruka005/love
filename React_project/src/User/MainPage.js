@@ -187,15 +187,14 @@ export default function MainPage() {
       {/* ------------------ メインコンテンツ ------------------ */}
       <main style={{ padding: "20px" }}>
 
-        {/* ---------- メインビジュアル（仮） ---------- */}
         <section style={{ marginBottom: "30px", textAlign: "center" }}>
-          {/* 仮の大きな画像領域（本物の画像を入れる場合は <img> に差し替え） */}
+          {/* これでメインの画像のサイズいじれる */}
           <div style={{
             width: "100%",
             maxWidth: "1000px",
             margin: "0 auto 20px",
             height: "500px",
-            backgroundColor: "#ddd",
+            //backgroundColor: "#ddd",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
