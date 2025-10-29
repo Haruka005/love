@@ -100,22 +100,6 @@ export default function MainPage() {
           {/* ウェルカムテキスト */}
           <h2 style={{ fontSize: "50px", fontWeight: "bold", color: "#000" }}>ようこそ登別へ</h2>
 
-          {/* 検索入力（まだ機能はついていない、見た目のため） */}
-          <input
-            type="text"
-            placeholder="イベント・飲食を検索"
-            style={{
-              marginTop: "10px",
-              padding: "8px 12px",
-              fontSize: "16px",
-              width: "80%",
-              maxWidth: "400px",
-              border: "1px solid #ccc",
-              borderRadius: "6px",
-              backgroundColor: "#fff",
-              color: "#000"
-            }}
-          />
         </section>
 
 
