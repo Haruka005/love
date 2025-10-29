@@ -1,26 +1,47 @@
 //ログイン画面
+
 import { useState } from "react";   //Reactの中からuseStateっていう便利機能を取りだして使うよっていう宣言
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext"; 
 
 export default function Login(){    //外に持って行ってOKなLoginっていう名前の部品作るよっていう宣言
-
     const [email,setEmail] = useState('');  //emailっていう変数用意して最初は空にしとく、メールの内容をリアルタイムで保存できる
     const [password,setpassword] = useState('');
     const navigate = useNavigate();
     const [error, setError] = useState('');
+    const{login}=useAuth();
 
-    const handleSubmit = (e) => {   //handle＝操作、submit＝送信つまり送信された時にやること(e)はイベント情報が入っている（いつどのキーがクリックされた？）=>とはこれ(送信操作)がされたら次の処理を実行して！ということ
+    const handleSubmit = async(e) => {   //handle＝操作、submit＝送信つまり送信された時にやること(e)はイベント情報が入っている（いつどのキーがクリックされた？）=>とはこれ(送信操作)がされたら次の処理を実行して！ということ
         e.preventDefault(); //フォーム送信時は自動でリロードされてしまい、入力内容が消えてしまう。そのためページのリロードを防ぐ関数を用いる
+        setError('');
 
-        if(email.trim() !== "" && password.trim() !== ""){
-            navigate('/LoginComplete')
-        }else{
-            setError("メールアドレスまたはパスワードが違います");
-        }
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-        console.log('ログイン情報：',{email,password});     //開発者用画面(F12)で表示される。無くてもいいがちゃんと動いてるか確認ができるから便利
-    };
+      const data = await response.json();
 
+      if (response.ok) {
+        login({
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+        });
+        navigate('/MyPage');
+      } else {
+        setError(data.message || 'ログインに失敗しました');
+      }
+    } catch (err) {
+      console.error('通信エラー:', err);
+      setError('サーバーに接続できませんでした');
+    }
+  };
+  
     return(     //ここからどんな見た目にするか書く
         <form onSubmit = {handleSubmit}>    {/*formは入力フォームを作るタグでonSubmitはこのフォームが送信されたときという意味={handleSubmit}でこのフォームを送信したときにhandleSubmitを実行して！という意味 */}
             <h2>ログイン</h2> 

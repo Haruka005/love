@@ -1,3 +1,5 @@
+//新規会員ページ
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 //laravelと連携する為に追加した

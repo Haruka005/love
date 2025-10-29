@@ -1,9 +1,26 @@
 // マイページ
+
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+//ログイン状態を確認する
+import { useAuth } from "./AuthContext";
 
 // このファイルで定義するコンポーネント（部品）の名前は MyPage
 export default function MyPage() {
   const navigate = useNavigate();
+  //ここでログイン状態を取得する
+  const {isLoggedIn} =useAuth();
+
+  useEffect(()=> {
+    if(!isLoggedIn){
+      navigate("/login");
+    }
+  },[isLoggedIn,navigate]);
+
+//未ログイン時に表示されない様にする
+  if(!isLoggedIn){
+    return null;
+  }
 
   // グリッドレイアウト用のスタイル
   const gridStyle = {
@@ -46,7 +63,10 @@ export default function MyPage() {
     backgroundColor: "#fff",
   };
 
+  
+
   // return の中に、このコンポーネントが画面に表示する内容を書く
+  //ログイン済みならマイページ表示
   return (
     <div style={{ maxWidth: "400px", margin: "0 auto", textAlign: "center", fontFamily: "sans-serif" }}>
       <h1>マイページ</h1>
@@ -54,10 +74,12 @@ export default function MyPage() {
       {/* ユーザーアイコンと名前 */}
       <div>
         <img
-          src="https://via.placeholder.com/100"
+          src="/images/yuru-oni.png"
           alt="ユーザーアイコン"
           style={avatarStyle}
         />
+        {/*→currentUser.nameを使用すればログインユーザーに応じて
+          動的にできる*/}
         <p><strong>ユーザー名: のぼりべつ赤鬼代表</strong></p>
       </div>
 

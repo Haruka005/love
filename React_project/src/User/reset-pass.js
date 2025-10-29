@@ -1,3 +1,5 @@
+//パスワード再設定ページ
+
 // Reactの基本機能（コンポーネント作成・状態管理）を読み込む
 import React, { useState } from 'react';
 

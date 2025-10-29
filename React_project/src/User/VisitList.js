@@ -1,4 +1,5 @@
-// Reactの基本機能（コンポーネント作成・状態管理）を読み込む
+//行ったことあるところ反映
+
 import React, { useState } from "react";
 
 // Leaflet（地図ライブラリ）のコンポーネントを読み込む
@@ -126,7 +127,7 @@ export default function VisitList() {
         <option value="デザート">デザート</option>
       </select>
 
-      {/* 地図表示（Leaflet） */}
+      {/* 地図表示（Leaflet）openstreetmap */}
       <MapContainer center={[42.415, 141.106]} zoom={14} style={{ height: "300px", marginBottom: "20px" }}>
         {/* 地図の背景画像（OpenStreetMap） */}
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />

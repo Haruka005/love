@@ -1,4 +1,5 @@
-// Reactライブラリから useState（状態管理）を読み込む
+//飲食店フォーム
+
 import React, { useState } from "react";
 
 // React Router の useNavigate（ページ遷移用）を読み込む

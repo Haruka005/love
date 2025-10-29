@@ -1,7 +1,9 @@
 // src/App.js
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthContext } from "./contexts/AuthContext";
+//import { AuthContext } from "./contexts/AuthContext";
 import React, { useState } from "react";
+import { AuthProvider } from "./User/AuthContext";
 
 // 各ページコンポーネントをインポート
 import MainPage from "./User/MainPage";
@@ -13,7 +15,6 @@ import ReportForm from "./User/ReportForm";
 import MyPage from "./User/MyPage";
 import RestaurantDetail from "./User/RestaurantDetail"
 import EventDitail from "./User/EventDetail"
-import Inquiry from "./User/Inquiry"
 import ResetPass from "./User/reset-pass";
 import VisitList from "./User/VisitList";
 import FavoritesList from "./User/FavoritesList"; 
@@ -23,16 +24,17 @@ import EventForm from "./User/EventForm";
 import ShopForm from "./User/ShopForm";
 
 
+
 function App() {
   // 仮のログインユーザー情報（本番ではログイン処理と連携）
-  const [currentUser] = useState({
+  /*const [currentUser] = useState({
     id: 123,
     has_image_folder: 0,
-  });
-
+  });*/
+  
   return (
     //ReactのContext APIを使って「ログインユーザー情報（currentUser）」をアプリ全体に共有するための仕組みらしい
-    <AuthContext.Provider value={currentUser}>
+    <AuthProvider>
     <BrowserRouter>
       <Routes>
         {/* トップページ */}
@@ -62,9 +64,6 @@ function App() {
         {/* イベント詳細 */}
         <Route path="/EventDetail" element={<EventDitail />} />
 
-        {/* お問い合わせ*/}
-        <Route path="/Inquiry" element={<Inquiry />} />
-
         {/*パスワード再設定ページ*/}
         <Route path="/reset-pass" element={<ResetPass/>}/>
 
@@ -88,7 +87,7 @@ function App() {
 
       </Routes>
     </BrowserRouter>
-    </AuthContext.Provider>
+     </AuthProvider>
   );
 }
 
