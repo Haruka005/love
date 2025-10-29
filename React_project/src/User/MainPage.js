@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import GetEvents from "./conponents/GetEvents";
 import UpComingEvents from "./conponents/UpComingEvets";
 import Header from "./conponents/Header";
+import Footer from "./conponents/Footer";
 
 
 // ---------------------- 表示データ（サンプル） ----------------------
@@ -60,7 +61,7 @@ export default function MainPage() {
   // ------------------ 描画部分（JSX） ------------------
   return (
     // ここから画面全体（コンテナ）
-    <div style={{ fontFamily: "sans-serif", color: "#000", backgroundColor: "#f5f5f5", paddingBottom: "40px" }}>
+    <div style={{ fontFamily: "sans-serif", color: "#000", backgroundColor: "#f5f5f5" }}>
 
       {/* ------------------ ヘッダー ------------------ */}
      <Header />
@@ -199,7 +200,7 @@ export default function MainPage() {
 
 
       {/* ------------------ フッター ------------------ */}
-      
+      <Footer />
     </div>
   );
 }
