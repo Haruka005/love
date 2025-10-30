@@ -1,14 +1,35 @@
-// ---------------------- 必要なライブラリの読み込み ----------------------
+//メインページ
 
-// React本体とフック(useState)を読み込む
-// useStateはコンポーネント内で値（状態）を保持・更新するために使います
-import React, { useState,useEffect } from "react";
-
+import React, { useState } from "react";
 // リンク切り替え用のコンポーネントを読み込む（ページ遷移を行う）
 import { Link } from "react-router-dom";
 
 
-// ---------------------- 表示データ（サンプル） ----------------------
+// ---------------------- 月ごとの表示仮 ----------------------
+
+// eventsByMonthはキーを "YYYY-MM" の文字列で管理
+// 例："2025-09" のようにして、年と月でイベントを引ける
+// 新しい年・月のイベントを追加するには、ここに同じ形式でキーを追加
+const eventsByMonth = {
+  // 2024年9月のイベント（サンプル）
+  "2024-09": [
+    { title: "2024年 秋祭り", date: "2024-09-20", description: "2024年の秋祭りです" },
+    { title: "2024年 温泉花火大会", date: "2024-09-25", description: "温泉街を彩る花火ショー" }
+  ],
+
+  // 2025年9月のイベント（サンプル）
+  "2025-09": [
+    { title: "秋の収穫祭", date: "2025-09-23", description: "地元野菜の販売と試食会" },
+    { title: "登別陶芸体験教室", date: "2025-09-27", description: "土に触れて器づくりを体験" },
+    { title: "登別地獄まつり", date: "2025-09-28", description: "鬼みこしや閻魔大王の練り歩きが見どころ" }
+  ],
+
+  // 2025年10月のイベント（サンプル）
+  "2025-10": [
+    { title: "紅葉ライトアップ", date: "2025-10-10", description: "温泉街の紅葉を幻想的に照らす" },
+    { title: "登別グルメフェス", date: "2025-10-22", description: "地元の味覚が集結する食の祭典" }
+  ]
+};
 
 // ジャンル別の飲食店データ（簡易サンプル）
 const shopDataByGenre = {
@@ -26,7 +47,7 @@ const shopDataByGenre = {
   ]
 };
 
-// 直近イベント（カード表示用の画像付きサンプル）
+// 直近イベント（仮）
 const events = [
   {
     date: "2025-09-23",
@@ -52,76 +73,39 @@ const events = [
 ];
 
 
-// ---------------------- コンポーネント本体 ----------------------
+// -------------------------------------------------
 
-// ここからが画面（コンポーネント）の定義です。
-// export default なので、このファイルを読み込むと MainPage コンポーネントが使えます。
+// ここからが画面（コンポーネント）の定義している
+// export default なので、このファイルを読み込むと MainPage コンポーネント使える
 export default function MainPage() {
-  // ------------------ 状態（state）の定義 ------------------
 
-  {/* 直近のイベント */}
-  useEffect(() => {
-    const fetchUpcomingEvents = async () => { //async･･･awaitから結果帰ってくるまで次の処理しないで待つ
-      try {
-
-
-      }catch{
-        
-      }
-    }
-  }
-  )
-
-  {/* イベント一覧 */}
-  const now = new Date();
-  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1); //月は0始まりなので+1
-  const [monthlyEvents, setMonthlyEvents] = useState([]); //[ここは取得したイベントいれる,ここは左の中身変えたいときに使う関数]空の配列に入れる
-  const [error, setError] = useState(null);
-
-  //ページを開いたときにAPI呼ぶ(useEffect)
-  useEffect(() => {
-    const fetchEvents = async () => { //async･･･awaitから結果帰ってくるまで次の処理しないで待つ
-      try {
-
-        //文字列の可能性があるselectedMonthを数値に変換
-        const monthNumber = parseInt(selectedMonth, 10);
-
-        const res = await fetch(
-          `http://localhost:8000/api/events/${selectedYear}/${selectedMonth}`
-        ); // await･･･結果取得できるまで次の処理しないで待つ
-
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-
-        const data = await res.json();  // JSONをJavaScriptの配列に変換
-        setMonthlyEvents(data);  // stateに保存
-        setError(null);   // 成功したらエラーリセット
-
-        console.log(`イベント取得成功: ${data.length}件`, data);
-
-      } catch (error) {
-        console.error("イベント取得失敗", error);
-        setMonthlyEvents([]); // 失敗したら空配列
-        setError("イベント取得に失敗しました"); // エラー表示用
-      }
-    };
-
-    fetchEvents();//画面が表示されたときに実行されたいのでここで実行処理書く
-  }, [selectedYear, selectedMonth]); // 年月が変わるたびに呼び出す
-
+  // ------------------ state------------------
 
   // isOpen: ハンバーガーメニュー（右上の三本線）の開閉状態を保持する boolean
-  // 初期は false（閉じている）
+  // 初期は false（閉じている）→クリックtrue
   const [isOpen, setIsOpen] = useState(false);
 
   // selectedGenre: 洋食／定食／デザート など、選択中の飲食ジャンルを保持
   // 初期は "洋食"
   const [selectedGenre, setSelectedGenre] = useState("洋食");
 
+  // selectedYear: 年の選択値（"2024" や "2025" の文字列で管理）
+  // 年を増やす場合はセレクトに option を追加
+  const [selectedYear, setSelectedYear] = useState("2025");
+
+  // selectedMonth: 月の選択値（"01"〜"12" の文字列で管理）
+  // 初期は "09"（9月）9月に作ったから
+  const [selectedMonth, setSelectedMonth] = useState("09");
+
+  // key: eventsByMonth オブジェクトのキー（"YYYY-MM"）を作成する
+  const key = `${selectedYear}-${selectedMonth}`;
+
+  // monthlyEvents: 選択中の年・月に対応するイベント配列を取得
+  // 該当データがなければ空配列を使う（エラー回避のため）
+  const monthlyEvents = eventsByMonth[key] || [];
+
   // cardStyle: イベントや店舗カードで使う共通のスタイル（オブジェクト）
-  // JSX の style にそのまま渡せます
+  // JSX の style にそのまま渡せる
   const cardStyle = {
     backgroundColor: "#fff",
     border: "1px solid #ccc",
@@ -133,19 +117,20 @@ export default function MainPage() {
   };
 
 
-  // ------------------ 描画部分（JSX） ------------------
+  // ------------------JSX↓------------------
   return (
     // ここから画面全体（コンテナ）
+    //sans-serif=ゴシック体
     <div style={{ fontFamily: "sans-serif", color: "#000", backgroundColor: "#f5f5f5", paddingBottom: "40px" }}>
 
       {/* ------------------ ヘッダー ------------------ */}
       {/* ヘッダー全体の外枠 */}
       <header style={{ backgroundColor: "#fff", padding: "10px 20px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
-        {/* ヘッダー内部を左右に配置するために flex を使用 */}
+        {/* ヘッダー内部を左右に分ける=flex */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           {/* サイトタイトル */}
           <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>Loveりべつ</h1>
-          {/* 将来的に右側にユーザー情報やボタンを追加できます（今は空） */}
+          {/* 将来的に右側にユーザー情報やボタンを追加（今は空） */}
         </div>
       </header>
 
@@ -154,7 +139,7 @@ export default function MainPage() {
       <nav style={{ position: "relative", height: "60px" }}>
         {/* メニューボタン（≡）: クリックで isOpen を反転させる */}
         <button
-          onClick={() => setIsOpen(!isOpen)} // クリックで true/false を切り替える
+          onClick={() => setIsOpen(!isOpen)} // クリックで=true/false を切り替える
           style={{
             position: "absolute",
             top: "10px",
@@ -170,7 +155,7 @@ export default function MainPage() {
           ≡
         </button>
 
-        {/* isOpen が true のときだけメニューを表示する（短絡評価） */}
+        {/* isOpen=booleanと同じ が true(上のハンバーガー押された) のときだけメニューを表示する */}
         {isOpen && (
           <ul style={{
             position: "absolute",
@@ -185,7 +170,7 @@ export default function MainPage() {
             width: "200px",
             zIndex: 1000
           }}>
-            {/* Link コンポーネントを使うとページ遷移時にページ全体をリロードしません */}
+            {/* Link コンポーネント（リアクトルーターのコンポーネント）を使うとページ遷移時にページ全体をリロードしない→クライアントサイドで遷移する */}
             <li><Link to="/">ホーム</Link></li>
             <li><Link to="/login">ログイン</Link></li>
             <li><Link to="/signup">サインアップ</Link></li>
@@ -201,22 +186,21 @@ export default function MainPage() {
       {/* ------------------ メインコンテンツ ------------------ */}
       <main style={{ padding: "20px" }}>
 
-        {/* ---------- メインビジュアル（仮） ---------- */}
         <section style={{ marginBottom: "30px", textAlign: "center" }}>
-          {/* 仮の大きな画像領域（本物の画像を入れる場合は <img> に差し替え） */}
+          {/* これでメインの画像のサイズいじれる */}
           <div style={{
             width: "100%",
             maxWidth: "1000px",
             margin: "0 auto 20px",
             height: "500px",
-            backgroundColor: "#ddd",
+            //backgroundColor: "#ddd",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             borderRadius: "8px"
           }}
           >
-            {/* 表示用テキスト（画像差し替え時に削除） */}
+            {/* TOP（画像差し替えるここ） */}
             <img
               src="/images/229.png"
               alt ="登別トップ画面"
@@ -255,13 +239,14 @@ export default function MainPage() {
         <section style={{ marginBottom: "30px", textAlign: "center" }}>
           <h3 style={{ fontSize: "20px", marginBottom: "10px" }}>直近のイベント</h3>
 
-          {/* カードを横並びにして、画面幅に応じて折り返す */}
+          {/* カードを横並びにして、画面幅に応じて折り返す　ロゴを左　メニューを右と分けられる */}
           <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", justifyContent: "center" }}>
             {/* events 配列を map で回してカードを作る mapを使うことで何件データが来ても繰り返し表示できる */}
             {events.map((event, i) => (
               // key は配列をレンダリングする際に React が要素を識別するために必要
               <div key={i} style={cardStyle}>
-                {/* 画像（サンプルURL） */}
+               
+                {/* 画像　srcイベント画像URL貼る */}
                 <img src={event.image} alt={event.title} style={{ width: "100%", borderRadius: "6px", marginBottom: "10px" }} />
 
                 {/* イベントタイトル */}

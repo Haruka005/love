@@ -1,3 +1,5 @@
+//新規会員ページ
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 //laravelと連携する為に追加した
@@ -39,7 +41,7 @@ export default function Signup(){
         setError(""); //エラーをリセット
     try {
     // LaravelのAPIにPOSTリクエストを送信
-    const response = await axios.post('http://127.0.0.1:8000/api/register', {
+    const response = await axios.post('http://localhost:8000/api/register', {
       name: name,
       email: Email,
       password: password

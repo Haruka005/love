@@ -1,4 +1,5 @@
 //通報画面
+
 import React, { useState } from "react";
 
 export default function ReportForm(){

@@ -1,3 +1,4 @@
+//  イベント履歴
 // React本体と、状態管理に使う useState を読み込む
 import React, { useState } from "react";
 
