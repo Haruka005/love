@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\test_events; //Eventモデル使う
+use App\Models\TestEvent; //Eventモデル使う
 use Carbon\Carbon; //日付処理簡単になるやつ使う
 
 class EventController extends Controller
@@ -18,7 +18,7 @@ class EventController extends Controller
         $endOfMonth = Carbon::create($year, $month, 1)->endOfMonth();
 
         // start_date または end_date がその月にかかるイベントを取得
-        $events = GetEvent::where(function($query) use ($startOfMonth, $endOfMonth) {
+        $events = TestEvent::where(function($query) use ($startOfMonth, $endOfMonth) {
                 $query->whereBetween('start_date', [$startOfMonth, $endOfMonth])
                       ->orWhereBetween('end_date', [$startOfMonth, $endOfMonth]);
             })
@@ -35,6 +35,7 @@ class EventController extends Controller
         return response()->json($events);
     }
 
+    //今月のイベントを取得する
     public function getUpComingEvent()
     {
         $now = Carbon::now();

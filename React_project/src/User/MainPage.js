@@ -3,33 +3,13 @@
 import React, { useState } from "react";
 // リンク切り替え用のコンポーネントを読み込む（ページ遷移を行う）
 import { Link } from "react-router-dom";
+import GetEvents from "./conponents/GetEvents";
+import UpComingEvents from "./conponents/UpComingEvets";
+import Header from "./conponents/Header";
+import Footer from "./conponents/Footer";
 
 
-// ---------------------- 月ごとの表示仮 ----------------------
-
-// eventsByMonthはキーを "YYYY-MM" の文字列で管理
-// 例："2025-09" のようにして、年と月でイベントを引ける
-// 新しい年・月のイベントを追加するには、ここに同じ形式でキーを追加
-const eventsByMonth = {
-  // 2024年9月のイベント（サンプル）
-  "2024-09": [
-    { title: "2024年 秋祭り", date: "2024-09-20", description: "2024年の秋祭りです" },
-    { title: "2024年 温泉花火大会", date: "2024-09-25", description: "温泉街を彩る花火ショー" }
-  ],
-
-  // 2025年9月のイベント（サンプル）
-  "2025-09": [
-    { title: "秋の収穫祭", date: "2025-09-23", description: "地元野菜の販売と試食会" },
-    { title: "登別陶芸体験教室", date: "2025-09-27", description: "土に触れて器づくりを体験" },
-    { title: "登別地獄まつり", date: "2025-09-28", description: "鬼みこしや閻魔大王の練り歩きが見どころ" }
-  ],
-
-  // 2025年10月のイベント（サンプル）
-  "2025-10": [
-    { title: "紅葉ライトアップ", date: "2025-10-10", description: "温泉街の紅葉を幻想的に照らす" },
-    { title: "登別グルメフェス", date: "2025-10-22", description: "地元の味覚が集結する食の祭典" }
-  ]
-};
+// ---------------------- 表示データ（サンプル） ----------------------
 
 // ジャンル別の飲食店データ（簡易サンプル）
 const shopDataByGenre = {
@@ -47,39 +27,12 @@ const shopDataByGenre = {
   ]
 };
 
-// 直近イベント（仮）
-const events = [
-  {
-    date: "2025-09-23",
-    title: "秋の収穫祭",
-    description: "地元野菜の販売と試食会",
-    time: "10:00",
-    image: "https://via.placeholder.com/300x200?text=秋の収穫祭"
-  },
-  {
-    date: "2025-09-27",
-    title: "登別陶芸体験教室",
-    description: "土に触れて器づくりを体験",
-    time: "13:00",
-    image: "https://via.placeholder.com/300x200?text=陶芸体験"
-  },
-  {
-    date: "2025-09-28",
-    title: "登別地獄まつり",
-    description: "鬼みこしや閻魔大王の練り歩きが見どころ",
-    time: "19:00",
-    image: "https://via.placeholder.com/300x200?text=地獄まつり"
-  }
-];
 
 
 // -------------------------------------------------
 
-// ここからが画面（コンポーネント）の定義している
-// export default なので、このファイルを読み込むと MainPage コンポーネント使える
+// ここからが画面（コンポーネント）の定義
 export default function MainPage() {
-
-  // ------------------ state------------------
 
   // isOpen: ハンバーガーメニュー（右上の三本線）の開閉状態を保持する boolean
   // 初期は false（閉じている）→クリックtrue
@@ -120,67 +73,10 @@ export default function MainPage() {
   // ------------------JSX↓------------------
   return (
     // ここから画面全体（コンテナ）
-    //sans-serif=ゴシック体
-    <div style={{ fontFamily: "sans-serif", color: "#000", backgroundColor: "#f5f5f5", paddingBottom: "40px" }}>
+    <div style={{ fontFamily: "sans-serif", color: "#000", backgroundColor: "#f5f5f5" }}>
 
       {/* ------------------ ヘッダー ------------------ */}
-      {/* ヘッダー全体の外枠 */}
-      <header style={{ backgroundColor: "#fff", padding: "10px 20px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}>
-        {/* ヘッダー内部を左右に分ける=flex */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          {/* サイトタイトル */}
-          <h1 style={{ fontSize: "24px", fontWeight: "bold" }}>Loveりべつ</h1>
-          {/* 将来的に右側にユーザー情報やボタンを追加（今は空） */}
-        </div>
-      </header>
-
-
-      {/* ------------------ ハンバーガーメニュー（スマホ用） ------------------ */}
-      <nav style={{ position: "relative", height: "60px" }}>
-        {/* メニューボタン（≡）: クリックで isOpen を反転させる */}
-        <button
-          onClick={() => setIsOpen(!isOpen)} // クリックで=true/false を切り替える
-          style={{
-            position: "absolute",
-            top: "10px",
-            right: "10px",
-            fontSize: "32px",
-            background: "none",
-            border: "none",
-            color: "#000",
-            cursor: "pointer"
-          }}
-          aria-label="メニューを開く"
-        >
-          ≡
-        </button>
-
-        {/* isOpen=booleanと同じ が true(上のハンバーガー押された) のときだけメニューを表示する */}
-        {isOpen && (
-          <ul style={{
-            position: "absolute",
-            top: "50px",
-            right: "10px",
-            backgroundColor: "#fff",
-            border: "1px solid #ccc",
-            borderRadius: "8px",
-            padding: "10px",
-            listStyle: "none",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-            width: "200px",
-            zIndex: 1000
-          }}>
-            {/* Link コンポーネント（リアクトルーターのコンポーネント）を使うとページ遷移時にページ全体をリロードしない→クライアントサイドで遷移する */}
-            <li><Link to="/">ホーム</Link></li>
-            <li><Link to="/login">ログイン</Link></li>
-            <li><Link to="/signup">サインアップ</Link></li>
-            <li><Link to="/MyPage">マイページ</Link></li>
-            <li><Link to="/ReportForm">問い合わせ・通報フォーム</Link></li>
-            <li><Link to="/RestaurantDetail">飲食店詳細</Link></li>
-            <li><Link to="/EventDetai">イベント詳細</Link></li>
-          </ul>
-        )}
-      </nav>
+     <Header />
 
 
       {/* ------------------ メインコンテンツ ------------------ */}
@@ -230,116 +126,16 @@ export default function MainPage() {
               backgroundColor: "#fff",
               color: "#000"
             }}
-            // 将来 onChange を使って検索機能を実装できます
           />
         </section>
 
 
         {/* ---------- 直近イベント（カード） ---------- */}
-        <section style={{ marginBottom: "30px", textAlign: "center" }}>
-          <h3 style={{ fontSize: "20px", marginBottom: "10px" }}>直近のイベント</h3>
+       <UpComingEvents />
 
-          {/* カードを横並びにして、画面幅に応じて折り返す　ロゴを左　メニューを右と分けられる */}
-          <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", justifyContent: "center" }}>
-            {/* events 配列を map で回してカードを作る mapを使うことで何件データが来ても繰り返し表示できる */}
-            {events.map((event, i) => (
-              // key は配列をレンダリングする際に React が要素を識別するために必要
-              <div key={i} style={cardStyle}>
-               
-                {/* 画像　srcイベント画像URL貼る */}
-                <img src={event.image} alt={event.title} style={{ width: "100%", borderRadius: "6px", marginBottom: "10px" }} />
+       {/* ---------- イベント一覧 ---------- */}
+       <GetEvents />
 
-                {/* イベントタイトル */}
-                <h4 style={{ fontWeight: "bold", fontSize: "18px" }}>{event.title}</h4>
-
-                {/* 日付・時間・説明 */}
-                <p>開始日: {event.date}</p>
-                <p>時間: {event.time}</p>
-                <p style={{ fontSize: "14px", color: "#555" }}>{event.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-
-        {/* ---------- 年・月別イベント（ここが複数年対応のポイント） ---------- */}
-        <section style={{ marginBottom: "30px", textAlign: "center" }}>
-          <h3 style={{ fontSize: "20px", marginBottom: "10px" }}>月別イベント</h3>
-
-          {/* 年の選択セレクトボックス */}
-          <div style={{ marginBottom: "10px" }}>
-            <label>
-              年を選択：
-              {/* selectedYear を使って年を切り替える（onChange で state を更新） */}
-              <select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-                style={{ marginLeft: "8px" }}
-              >
-                {/* 必要な年をここに追加する（動的に生成する方法もあります） */}
-                <option value="2024">2024</option>
-                <option value="2025">2025</option>
-              </select>
-            </label>
-          </div>
-
-          {/* 月選択ボタン群（1月〜12月） */}
-          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "8px", marginBottom: "20px" }}>
-            {/* [...Array(12)] を使って 12 個のボタンを作る（i は 0〜11）*/}
-            {[...Array(12)].map((_, i) => {
-              // 月を "01" から "12" のゼロ埋め文字列にする
-              const month = String(i + 1).padStart(2, "0");
-              return (
-                <button
-                  key={month}
-                  onClick={() => setSelectedMonth(month)} // 押したら selectedMonth を更新
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: "6px",
-                    border: selectedMonth === month ? "2px solid #000" : "1px solid #ccc",
-                    backgroundColor: selectedMonth === month ? "#eee" : "#fff",
-                    fontWeight: selectedMonth === month ? "bold" : "normal",
-                    cursor: "pointer"
-                  }}
-                >
-                  {/* 表示は 1月なら "1月" のように数値にしている */}
-                  {parseInt(month)}月
-                </button>
-              );
-            })}
-          </div>
-
-          {/* 選択中の年・月の見出し */}
-          <div>
-            <h4 style={{ fontSize: "18px", marginBottom: "10px" }}>
-              {selectedYear}年 {parseInt(selectedMonth)}月 のイベント
-            </h4>
-
-            {/* イベントが無ければメッセージ、あればカードで表示 */}
-            {monthlyEvents.length === 0 ? (
-              // データが空のときの案内
-              <p>この月のイベント情報はまだありません。</p>
-            ) : (
-              // イベントがあるときにカードで表示
-              <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", justifyContent: "center" }}>
-                {monthlyEvents.map((event, i) => (
-                  <div key={i} style={cardStyle}>
-                    {/*　イベント名 */}
-                    <h3 style={{ fontWeight: "bold", fontSize: "20px" }}>{event.name}</h3>
-                    {/*　見出し */}
-                    <h4 style={{ fontWeight: "bold", fontSize: "18px" }}>{event.catchphrase}</h4>
-                    {/*　開催日・終了日 */}
-                    <p>
-                      開始日: {event.start_date} <br />
-                      終了日: {event.end_date}
-                    </p>
-
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
 
 
         {/* ---------- ジャンル別おすすめ飲食店 ---------- */}
@@ -424,10 +220,7 @@ export default function MainPage() {
 
 
       {/* ------------------ フッター ------------------ */}
-      <footer style={{ textAlign: "center", padding: "10px", backgroundColor: "#ddd" }}>
-        {/* copyright を選択中の年に合わせて表示 */}
-        <p>&copy; {selectedYear} Love登別観光情報</p>
-      </footer>
+      <Footer />
     </div>
   );
 }
