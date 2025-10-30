@@ -46,8 +46,8 @@ class UserController extends Controller
             'email'=>$request->email,
             'password'=>Hash::make($request->password),
             'user_status' => 1,           // 利用者として登録
-            'is_delete' => 0,             // 未削除
-            'has_image_folder' => 0,      // 未作成
+           // 'is_delete' => 0,             // 未削除
+            //'has_image_folder' => 0,      // 未作成
 
         ]);
     
