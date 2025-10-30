@@ -2,7 +2,6 @@
 
 import { useState } from "react";   //Reactの中からuseStateっていう便利機能を取りだして使うよっていう宣言
 import { useNavigate } from 'react-router-dom';
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext"; 
 
 export default function Login(){    //外に持って行ってOKなLoginっていう名前の部品作るよっていう宣言

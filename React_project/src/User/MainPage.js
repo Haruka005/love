@@ -34,31 +34,11 @@ const shopDataByGenre = {
 // ここからが画面（コンポーネント）の定義
 export default function MainPage() {
 
-  // isOpen: ハンバーガーメニュー（右上の三本線）の開閉状態を保持する boolean
-  // 初期は false（閉じている）→クリックtrue
-  const [isOpen, setIsOpen] = useState(false);
-
   // selectedGenre: 洋食／定食／デザート など、選択中の飲食ジャンルを保持
   // 初期は "洋食"
   const [selectedGenre, setSelectedGenre] = useState("洋食");
 
-  // selectedYear: 年の選択値（"2024" や "2025" の文字列で管理）
-  // 年を増やす場合はセレクトに option を追加
-  const [selectedYear, setSelectedYear] = useState("2025");
-
-  // selectedMonth: 月の選択値（"01"〜"12" の文字列で管理）
-  // 初期は "09"（9月）9月に作ったから
-  const [selectedMonth, setSelectedMonth] = useState("09");
-
-  // key: eventsByMonth オブジェクトのキー（"YYYY-MM"）を作成する
-  const key = `${selectedYear}-${selectedMonth}`;
-
-  // monthlyEvents: 選択中の年・月に対応するイベント配列を取得
-  // 該当データがなければ空配列を使う（エラー回避のため）
-  const monthlyEvents = eventsByMonth[key] || [];
-
   // cardStyle: イベントや店舗カードで使う共通のスタイル（オブジェクト）
-  // JSX の style にそのまま渡せる
   const cardStyle = {
     backgroundColor: "#fff",
     border: "1px solid #ccc",
