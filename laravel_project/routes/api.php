@@ -13,12 +13,12 @@ Route::get('/events/{year}/{month}', [EventController::class, 'getByMonth']);
 //今月のイベント取得
 Route::get('/events/upcoming',[EventController::class, 'getUpComingEvent']);
 
+//飲食店取得
+Route::get('/restaurants/getRestaurant',[RestaurantController::class, 'getUpComingEvent']);
 
-Route::get('/message', function () {
-    return ['message' => 'こんにちは、React！'];
-});
-
+//
 Route::middleware('auth:sanctum')->post('/upload-event-image', [EventImageController::class, 'uploadEventImage']);
+
 //新規登録
 Route::post('/register', [UserController::class, 'register']);
 //ログイン
