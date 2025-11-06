@@ -10,6 +10,21 @@ use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\EventDetailController;
 
 // 認証不要ルート
+
+
+//イベントを月ごとに取得
+Route::get('/events/{year}/{month}', [EventController::class, 'getByMonth']); 
+
+//今月のイベント取得
+Route::get('/events/upcoming',[EventController::class, 'getUpComingEvent']);
+
+//飲食店取得
+Route::get('/restaurants',[RestaurantController::class, 'getRestaurant']);
+
+//
+Route::middleware('auth:sanctum')->post('/upload-event-image', [EventImageController::class, 'uploadEventImage']);
+
+//新規登録
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
 

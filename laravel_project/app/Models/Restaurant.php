@@ -28,4 +28,21 @@ class Restaurant extends Model
         'image_paths' => 'array',
     ];
 
+    //他のテーブルとの関係
+     public function genre()
+    {
+        return $this->belongsTo(Genre::class, 'genre_id'); // 外部キー明示
+    }
+
+    // エリアとの関係（1レストランは1エリア）
+    public function area()
+    {
+        return $this->belongsTo(Area::class, 'area_id');
+    }
+
+    // 予算との関係（1レストランは1予算）
+    public function budget()
+    {
+        return $this->belongsTo(Budget::class, 'budget_id');
+    }
 }
