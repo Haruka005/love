@@ -10,6 +10,7 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import GetRestaurants from "./components/GetRestaurants"; 
 import HeroSlider from "./components/HeroSlider";
+import SiteDescription from "./components/SiteDescription";
 
 
 
@@ -33,6 +34,9 @@ export default function MainPage() {
       
       {/* ------------------ヒーローエリア表示------------------ */}  
       <HeroSlider />
+
+    　{/* ------------------サイト説明------------------ */}  
+      <SiteDescription />
 
       {/* ---------- 直近イベント（カード） ---------- */}
       <UpComingEvents />
