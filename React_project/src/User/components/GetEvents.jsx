@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import EventCard from "./EventCard";
 
 function GetEvents() {
   const now = new Date();   //現在時刻取得しnowに保存
@@ -9,16 +10,6 @@ function GetEvents() {
   const [loading, setLoading] = useState(false); // データ取得中か管理する。初期はfalse
   const [error, setError] = useState(null);   //エラー状態を管理。初期値はnull
 
-  //イベントカードの表示スタイル
-  const cardStyle = {
-    backgroundColor: "#fff",
-    border: "1px solid #ccc",
-    borderRadius: "8px",
-    padding: "10px",
-    width: "300px",
-    textAlign: "center",
-    boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
-  };
 
   useEffect(() => {
     //API取得処理
@@ -57,8 +48,20 @@ function GetEvents() {
   }, [selectedYear, selectedMonth]);
 
   return (
-    <section style={{ marginBottom: "30px", textAlign: "center" }}>
-      <h3 style={{ fontSize: "20px", marginBottom: "10px" }}>月別イベント</h3>
+    <section 
+      style={{ 
+        marginTop: "0px",  
+        padding: "10px 0", 
+        marginBottom: "30px", 
+        textAlign: "center", 
+        backgroundImage: `url("/images/akaoni_background.png")`,
+        backgroundSize: "cover",         // ← 画像をセクション全体にフィット
+        backgroundPosition: "center",    // ← 画像の中心を表示
+        backgroundRepeat: "no-repeat",   // ← 繰り返さない
+        color: "#333",   
+      }}
+    >
+      <h2>月別イベント</h2>
 
       {/* 年選択 */}
       <div style={{ marginBottom: "10px" }}>
@@ -115,14 +118,15 @@ function GetEvents() {
         ) : (
           <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", justifyContent: "center" }}>
             {events.map((event) => (
-              <div key={event.id} style={cardStyle}>
-                <h3 style={{ fontWeight: "bold", fontSize: "20px" }}>{event.name}</h3>
-                <h4 style={{ fontWeight: "bold", fontSize: "18px" }}>{event.catchphrase}</h4>
-                <p>
-                  開始日: {event.start_date} <br />
-                  終了日: {event.end_date}
-                </p>
-              </div>
+              <EventCard
+                key={event.id}
+                name={event.name}
+                catchphrase={event.catchphrase}
+                image={event.image_url}     // ← 画像のURLフィールドがある場合
+                start_date={event.start_date}
+                end_date={event.end_date}
+                place={event.place}
+              />
             ))}
           </div>
         )}

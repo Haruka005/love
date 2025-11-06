@@ -6,17 +6,6 @@ function UpComingEvents(){
     const [events, setEvents] = useState([]);
     const [error, setError] = useState(null);
 
-    //カードデザイン設定
-    const cardStyle = {
-        backgroundColor: "#fff",
-        border: "1px solid #ccc",
-        borderRadius: "8px",
-        padding: "10px",
-        width: "300px",
-        textAlign: "center",
-        boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
-    };
-
     // useEffect = 最初に表示されたとき一度だけデータ取りに行く
     useEffect(() => {
         const fetchUpcomingEvents = async () => { // async･･･awaitから結果帰ってくるまで次の処理しないで待つ
@@ -37,14 +26,14 @@ function UpComingEvents(){
     }, []);
 
     return (
-    <section style={{ textAlign: "center" }}>
-      <h3>直近のイベント</h3>
+    <section className="container">
+      <h2>直近のイベント</h2>
       {events.length === 0 ? (
         <p>現在予定されているイベントはありません。</p>
       ) : (
         <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", justifyContent: "center" }}>
           {events.map((event, i) => (
-            <div key={i} style={cardStyle}>
+            <div key={i} className="card">
               <h3>{event.name}</h3>
               <h4>{event.catchphrase}</h4>
               <p>
