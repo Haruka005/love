@@ -89,12 +89,12 @@ class UserController extends Controller
                     'name'=>$user->name,
                     'email'=>$user->email,
                 ]
-                ],200);
+            ],200);
         }else{
             return response()->json([
                 'message'=>'メールアドレスまたはパスワードが違います'
             ],401);
-         }
+        }
     }
 
 }

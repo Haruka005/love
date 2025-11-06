@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 //import { AuthContext } from "./contexts/AuthContext";
 import React, { useState } from "react";
 import { AuthProvider } from "./User/AuthContext";
+import "./App.css";
 
 // 各ページコンポーネントをインポート
 import MainPage from "./User/MainPage";

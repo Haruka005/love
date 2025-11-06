@@ -5,6 +5,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EventImageController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RestaurantController;
 
 
 //イベントを月ごとに取得
@@ -13,12 +14,12 @@ Route::get('/events/{year}/{month}', [EventController::class, 'getByMonth']);
 //今月のイベント取得
 Route::get('/events/upcoming',[EventController::class, 'getUpComingEvent']);
 
+//飲食店取得
+Route::get('/restaurants',[RestaurantController::class, 'getRestaurant']);
 
-Route::get('/message', function () {
-    return ['message' => 'こんにちは、React！'];
-});
-
+//
 Route::middleware('auth:sanctum')->post('/upload-event-image', [EventImageController::class, 'uploadEventImage']);
+
 //新規登録
 Route::post('/register', [UserController::class, 'register']);
 //ログイン
