@@ -5,6 +5,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EventImageController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RestaurantController;
 
 
 //イベントを月ごとに取得
@@ -14,7 +15,7 @@ Route::get('/events/{year}/{month}', [EventController::class, 'getByMonth']);
 Route::get('/events/upcoming',[EventController::class, 'getUpComingEvent']);
 
 //飲食店取得
-Route::get('/restaurants/getRestaurant',[RestaurantController::class, 'getUpComingEvent']);
+Route::get('/restaurants',[RestaurantController::class, 'getRestaurant']);
 
 //
 Route::middleware('auth:sanctum')->post('/upload-event-image', [EventImageController::class, 'uploadEventImage']);
