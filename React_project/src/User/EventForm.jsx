@@ -1,7 +1,8 @@
 //イベント申請フォーム
+//今後拡張として、複数画像対応、画像削除、画像を再アップロードする
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../contexts/AuthContext";
+import { AuthContext } from "../User/AuthContext";
 
 
 function EventForm() {
@@ -15,44 +16,20 @@ function EventForm() {
     is_free_participation: "",
     url: "",
     organizer: "",
-    details: "",
+    description: "",
     notes: "",
   });
 
   const [imageFile, setImageFile] = useState(null);
   const navigate = useNavigate();
   //const [previewUrl, setPreviewUrl] = useState(null);
-  const currentUser = useContext(AuthContext);
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+const { currentUser, isLoggedIn, login, logout } = useContext(AuthContext);
 
+  const handleImageUpload = async (e) => {
+   const file = e.target.files[0];
+    if (!file) return;
     setImageFile(file);
     setPreviewUrl(URL.createObjectURL(file));
-
-    const userId = currentUser.id;
-    const hasImageFolder = currentUser.has_image_folder;
-
-    if (!hasImageFolder) {
-      await fetch("/api/createUserFolders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
-      });
-      currentUser.has_image_folder = 1;
-    }
-
-    const formDataToSend = new FormData();
-    formDataToSend.append("userId", userId);
-    formDataToSend.append("folder", "イベント");
-    formDataToSend.append("image", file);
-
-    await fetch("/api/uploadEventImage", {
-      method: "POST",
-      body: formDataToSend,
-    });
-
-    alert("イベント画像がアップロードされました");
   };
 
   const handleChange = (e) => {
@@ -62,6 +39,36 @@ function EventForm() {
       [name]: value,
     }));
   };
+
+  const handleEventSubmit = async () => {
+    if (!currentUser?.id) {
+      alert("ログインしてください");
+      navigate("/login");
+      return;
+    }
+
+  const formDataToSend = new FormData();
+  formDataToSend.append("user_id", currentUser.id);
+  formDataToSend.append("image", imageFile);
+  Object.entries(formData).forEach(([key, value]) => {
+    formDataToSend.append(key, value);
+  });
+
+  const response =await fetch("http://localhost:8000/api/store-event-data", {
+    method: "POST",
+    body: formDataToSend,
+    credentials: "include",
+  });
+
+  //↑でresponseに入れた答えを使用しif文(boolean型)
+  if (response.ok) {
+  alert("イベント申請が完了しました！");
+  navigate("/Mypage");
+  } else {
+  alert("申請に失敗しました。");
+  }
+
+};
 
   return (
     <div style={{
@@ -171,8 +178,8 @@ function EventForm() {
       <div style={{ marginBottom: "10px" }}>
         <label>詳細</label><br />
         <textarea
-          name="details"
-          value={formData.details}
+          name="description"
+          value={formData.description}
           onChange={handleChange}
           rows="3"
           style={{
@@ -201,7 +208,7 @@ function EventForm() {
       </div>
 
       <button
-        onClick={() => alert("申請内容を送信しました")}
+        onClick={handleEventSubmit}
         style={{
           width: "100%",
           padding: "12px",

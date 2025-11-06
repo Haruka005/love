@@ -17,6 +17,10 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+
+     // 明示的にテーブル名を指定（通常は不要だけど、明示したい場合）
+    protected $table = 'users';
+
     protected $fillable = [
         'name',
         'email',
@@ -45,6 +49,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            //↓追加する事でtrue/falseを文字列ではなく型として自動でララベルが認識してくれる
+             'has_image_folder' => 'boolean',
         ];
     }
 }

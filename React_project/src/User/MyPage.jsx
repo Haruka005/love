@@ -64,7 +64,6 @@ export default function MyPage() {
   };
 
   
-
   // return の中に、このコンポーネントが画面に表示する内容を書く
   //ログイン済みならマイページ表示
   return (
@@ -93,7 +92,7 @@ export default function MyPage() {
           <button style={buttonStyle} onClick={() => navigate("/HistoryList")}>閲覧履歴一覧</button>
           <button style={buttonStyle} onClick={() => navigate("/EventApplicationHistory")}>イベント申請確認</button>
           <button style={buttonStyle} onClick={() => navigate("/EventForm")}>イベント申請新規登録（仮）</button>
-          <button style={buttonStyle} onClick={() => navigate("/ShopForm")}>店登録（仮）</button>
+          <button style={buttonStyle} onClick={() => navigate("/RestaurantForm")}>店登録（仮）</button>
           
 
 

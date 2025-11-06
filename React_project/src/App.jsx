@@ -21,7 +21,7 @@ import FavoritesList from "./User/FavoritesList";
 import HistoryList from "./User/HistoryList"; 
 import EventApplicationHistory from "./User/EventApplicationHistory";
 import EventForm from "./User/EventForm";
-import ShopForm from "./User/ShopForm";
+import RestaurantForm from './User/RestaurantForm';
 
 
 
@@ -83,7 +83,7 @@ function App() {
         <Route path="/EventForm" element={<EventForm />} />
 
         {/*イベント新規登録 */}
-        <Route path="/ShopForm" element={<ShopForm />} />
+        <Route path="/RestaurantForm" element={<RestaurantForm />} />
 
       </Routes>
     </BrowserRouter>

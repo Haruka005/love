@@ -2,43 +2,83 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Log;
+use App\Models\Event;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storange;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class EventImageController extends Controller
 {
-    /**イベント画像をアップロードする処理 */
-    /*リアクトから送られてきた画像を、ユーザー専用フォルダに保存します*/
-
-    public function uploadEventImage(Request $request)
+    // イベント情報をデータフォルダ作成し保存する処理（画像はeventへ、情報はusers）
+    public function storeEventData(Request $request)
     {
-        //ログイン中のユーザー情報を取得
-        $user = Auth::user();
+        Log::info('storeEventData に到達しました', ['user_id' => $request->input('user_id')]);
 
-        //ユーザーがまだ画像フォルダを持っていない場合は作成する
-        if(!$user -> has_image_folder){
-            //ファルダパスを作成
-            $folderPath = 'public/user_images' . $user->id;
+        // ユーザー情報を取得する
+        $userId = $request->input('user_id');
+        $user = User::find($userId);
 
-            //LaravelのStorage機能を使ってファルダを作成
-            Storage::makeDirectory($folderPath);
-
-            //ユーザーの画像ファルダ作成フラグをtrueに変更＝作成済みの時
-            $user -> has_image_folder = true;
-
-            //フラグの変更をデータベースに保存
-            $user ->save();
+        // ユーザーがいなかったらエラー返す
+        if (!$user) {
+            return response()->json(['error' => 'ユーザーが見つかりません'], 404);
         }
 
-        //画像ファイルをユーザー専用ファルダの「event」サブフォルダに保存
-        $path = $request->file('image')->store('public/user_images/{$user->id}/events');
+        // 画像フォルダがまだなかったら作るよ（初回申請時など）
+        $folderPath = "user_images/{$user->id}";
+        if (!$user->has_image_folder) {
+            $created = Storage::disk('public')->makeDirectory($folderPath);
+            Log::info('ユーザー画像フォルダ作成（storeEventData）', ['path' => $folderPath, 'created' => $created]);
 
-        //保存した画像のURLを返す（リアクト側で表示できるように）
-        return response() ->json([
-            'path'=>Storage::url($path) 
-            //例　/storage/users_images/3/events/xxx.jpg
-        ]);
+            if ($created) {
+                $user->has_image_folder = true;
+                $user->save();
+                Log::info('has_image_folder フラグを true に更新しました');
+            }
+        }
+
+        // 画像が送られてきた場合だけ保存する
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $eventFolderPath = "user_images/{$user->id}/events";
+
+            // イベント用フォルダがなかったら作る
+            if (!Storage::disk('public')->exists($eventFolderPath)) {
+                Storage::disk('public')->makeDirectory($eventFolderPath);
+                Log::info('イベントフォルダ作成', ['path' => $eventFolderPath]);
+            }
+
+            // 画像を保存する
+            $imagePath = $request->file('image')->store($eventFolderPath, 'public');
+        }
+
+        // イベント情報をDBに保存
+        $event = new Event();
+        $event->user_id = $user->id;
+        $event->name = $request->input('name');
+        $event->catchphrase = $request->input('catchphrase');
+        $event->description = $request->input('description');
+        $event->start_date = $request->input('start_date');
+        $event->end_date = $request->input('end_date');
+        $event->location = $request->input('location');
+        $event->url = $request->input('url');
+        $event->notes = $request->input('notes');
+        $event->organizer = $request->input('organizer');
+        $event->is_free_participation = $request->input('is_free_participation') === '自由参加' ? 1 : 0;
+        $event->is_open_enrollment = 1; // 公開申請にしておく
+        $event->approval_status_id = 0; // 初期状態は未承認
+        $event->rejection_reason = null;
+       
+
+
+
+        // 画像があればパスも保存するよ
+        if ($imagePath) {
+            $event->image_path = Storage::url($imagePath); // /storage/... の形式になるよ
+        }
+
+        $event->save(); // DBに保存！
+
+        return response()->json(['message' => 'イベント情報を保存しました']);
     }
-}
-
+};
