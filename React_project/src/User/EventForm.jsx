@@ -54,6 +54,20 @@ const { currentUser, isLoggedIn, login, logout } = useContext(AuthContext);
     formDataToSend.append(key, value);
   });
 
+  //nullで送信されるのを防ぐため
+  const requiredFields = [
+      { key: "name", label: "タイトル" },
+      { key: "catchphrase", label: "見出し" },
+      { key: "start_date", label: "開始日" },
+      { key: "end_date", label: "終了日" },
+  ];
+    for(const field of requiredFields){
+      if(!formData[field.key]){
+        alert('${field.label}を入力してください');
+        return;
+      }
+    }
+
   const response =await fetch("http://localhost:8000/api/store-event-data", {
     method: "POST",
     body: formDataToSend,
@@ -67,7 +81,6 @@ const { currentUser, isLoggedIn, login, logout } = useContext(AuthContext);
   } else {
   alert("申請に失敗しました。");
   }
-
 };
 
   return (

@@ -13,6 +13,7 @@ class Event extends Model
 
     // もしテーブル名がモデル名と違う場合は明示
     protected $table = 'm_events';
+    
 
     // 書き換え可能なカラムを指定（任意）
     protected $fillable = [
