@@ -70,7 +70,7 @@ function EventManagement() {
 function RestaurantManagement() {
   return (
     <div>
-      <h2>🍔 飲食店管理</h2>
+      <h2>飲食店管理</h2>
       <p>お店情報の登録・編集・削除が行えます。</p>
       <button>＋ 店舗を追加</button>
     </div>

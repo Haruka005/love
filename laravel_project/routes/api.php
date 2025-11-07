@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EventImageController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RestaurantController;
+use App\Http\Controllers\AdminController;
 
 
 //イベントを月ごとに取得
@@ -24,6 +25,9 @@ Route::middleware('auth:sanctum')->post('/upload-event-image', [EventImageContro
 Route::post('/register', [UserController::class, 'register']);
 //ログイン
 Route::post('/login', [UserController::class, 'login']);
+
+//管理者ユーザー取得
+Route::get('/users', [AdminController::class, 'user_all']);
 
 
 

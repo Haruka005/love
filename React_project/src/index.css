@@ -26,7 +26,7 @@ body {
    見出しやタイトル
 ------------------------*/
 h1{
-  font-family: "Mochiy Pop One",sans-serif;
+  font-family: "Zen Maru Gothic",sans-serif;
   color: #F93D5D; 
   font-weight: 700;
   font-size: 2.5rem;
@@ -61,6 +61,8 @@ button {
 
 button:hover {
   background-color: #f93d5d;
+  color: #ffffff;
+  font-weight: bold;
   transform: translateY(-2px);
 }
 
@@ -144,5 +146,6 @@ button:hover {
     background-color: #fff;
     color: #f93d5d;
     font-size: 1em;
+    font-weight: bold;
     cursor: pointer;
 }

@@ -1,9 +1,18 @@
+import { useState, useEffect } from "react";
+
+
 function UserManagement() {
-  const dummyUsers = [
-    { id: 1, name: "山田太郎", email: "taro@example.com" },
-    { id: 2, name: "佐藤花子", email: "hanako@example.com" },
-  ];
-  return (
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:8000/api/users",{
+    })
+        .then((res) => res.json())
+        .then((data) => setUsers(data))
+        .catch((err) => console.error("ユーザー取得エラー", err));
+    },[]);
+
+    return (
     <div>
       <h2>ユーザー管理</h2>
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -13,7 +22,7 @@ function UserManagement() {
           </tr>
         </thead>
         <tbody>
-          {dummyUsers.map((u) => (
+          {users.map((u) => (
             <tr key={u.id}>
               <td>{u.id}</td><td>{u.name}</td><td>{u.email}</td>
               <td>
@@ -28,4 +37,5 @@ function UserManagement() {
     </div>
   );
 }
+
 export default UserManagement;
