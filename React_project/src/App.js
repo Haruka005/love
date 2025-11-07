@@ -24,6 +24,8 @@ import EventApplicationHistory from "./User/EventApplicationHistory";
 import EventForm from "./User/EventForm";
 import ShopForm from "./User/ShopForm";
 
+import AdminTop from "./admin/AdminTop";
+
 
 
 function App() {
@@ -85,6 +87,9 @@ function App() {
 
         {/*イベント新規登録 */}
         <Route path="/ShopForm" element={<ShopForm />} />
+
+        {/*管理者TOP*/}
+        <Route path="/AdminTop" element={<AdminTop />} />
 
       </Routes>
     </BrowserRouter>

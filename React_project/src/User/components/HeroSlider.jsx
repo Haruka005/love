@@ -33,11 +33,12 @@ function HeroSlider(){
             ></div>
         ))}
 
-        {/* テキスト */}
+        {/* テキスト 
         <div className="hero-text">
             <h1>Welcome to Loveりべつ</h1>
             <p>登別の魅力を再発見！</p>
         </div>
+        */}
     </div>
   );
 }

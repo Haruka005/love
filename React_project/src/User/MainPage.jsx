@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 
 // リンク切り替え用のコンポーネントを読み込む（ページ遷移を行う）
-import { Link } from "react-router-dom";
 import GetEvents from "./components/GetEvents";
 import UpComingEvents from "./components/UpComingEvets";
 import Header from "./components/Header";
@@ -35,7 +34,7 @@ export default function MainPage() {
       {/* ------------------ヒーローエリア表示------------------ */}  
       <HeroSlider />
 
-    　{/* ------------------サイト説明------------------ */}  
+      {/* ------------------サイト説明------------------ */}  
       <SiteDescription />
 
       {/* ---------- 直近イベント（カード） ---------- */}

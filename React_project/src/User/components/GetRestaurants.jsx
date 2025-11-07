@@ -49,6 +49,7 @@ function GetRestaurants(){
                 {["すべて", "和食", "洋食", "中華・アジア", "スイーツ・デザート", "ファストフード・軽食", "その他"].map((genre) => (
                     <button
                         key={genre}
+                        className={`tab-button ${selectedGenre === genre ? "active" : ""}`}
                         onClick={() => setSelectedGenre(genre)}
                     >
                         {genre}

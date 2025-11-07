@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import EventCard from "./EventCard";
 
+
 function GetEvents() {
   const now = new Date();   //現在時刻取得しnowに保存
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());  //初期値現在の年
@@ -9,6 +10,12 @@ function GetEvents() {
   const [events, setEvents] = useState([]); //取得したイベントを格納する配列。初期値は空
   const [loading, setLoading] = useState(false); // データ取得中か管理する。初期はfalse
   const [error, setError] = useState(null);   //エラー状態を管理。初期値はnull
+
+  const yearOptions = [
+  { value: 2025, label: "2025" },
+  { value: 2026, label: "2026" },
+  ];
+
 
 
   useEffect(() => {
@@ -65,18 +72,18 @@ function GetEvents() {
 
       {/* 年選択 */}
       <div style={{ marginBottom: "10px" }}>
-        <label>
-          年を選択：
+        <label className="selectbox" >
           <select
             value={selectedYear}
-            onChange={(e) => setSelectedYear(parseInt(e.target.value, 10))}
-            style={{ marginLeft: "8px" }}
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
           >
-            {[2024, 2025, 2026].map((year) => (
-              <option key={year} value={year}>{year}</option>
+            {yearOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
             ))}
           </select>
-        </label>
+        </label> 
       </div>
 
       {/* 月選択ボタン */}
@@ -84,17 +91,10 @@ function GetEvents() {
         {[...Array(12)].map((_, i) => {
           const month = i + 1;
           return (
-            <button
+           <button
               key={month}
+              className={`tab-button ${selectedMonth === month ? "active" : ""}`}
               onClick={() => setSelectedMonth(month)}
-              style={{
-                padding: "6px 12px",
-                borderRadius: "6px",
-                border: selectedMonth === month ? "2px solid #000" : "1px solid #ccc",
-                backgroundColor: selectedMonth === month ? "#eee" : "#fff",
-                fontWeight: selectedMonth === month ? "bold" : "normal",
-                cursor: "pointer"
-              }}
             >
               {month}月
             </button>
