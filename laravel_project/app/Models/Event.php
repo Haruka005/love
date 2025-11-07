@@ -7,12 +7,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class TestEvent extends Model
+class Event extends Model
 {
     use HasFactory;
 
     // もしテーブル名がモデル名と違う場合は明示
-    protected $table = 'test_events';
+    protected $table = 'm_events';
+    
 
     // 書き換え可能なカラムを指定（任意）
     protected $fillable = [
