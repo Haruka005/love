@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Log;
 use App\Models\Event;
 use App\Models\User;
+use App\Models\EventImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -53,7 +54,7 @@ class EventImageController extends Controller
         }
 
         // イベント情報をDBに保存
-        $event = new Event();
+        $event = new EventImage();
         $event->user_id = $user->id;
         $event->name = $request->input('name');
         $event->catchphrase = $request->input('catchphrase');
