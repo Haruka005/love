@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import EventCard from "./EventCard";
+import Pagenation from "./Pagenation";
 
 
 function GetEvents() {
@@ -15,6 +16,15 @@ function GetEvents() {
   { value: 2025, label: "2025" },
   { value: 2026, label: "2026" },
   ];
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
+
+  // ページネーション処理
+  const indexOfLastEvent = currentPage * itemsPerPage;
+  const indexOfFirstEvent = indexOfLastEvent - itemsPerPage;
+  const currentEvents = events.slice(indexOfFirstEvent, indexOfLastEvent);
+  const totalPages = Math.ceil(events.length / itemsPerPage);
 
 
 
@@ -87,7 +97,7 @@ function GetEvents() {
       </div>
 
       {/* 月選択ボタン */}
-      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "8px", marginBottom: "20px" }}>
+      <div className="button-group">
         {[...Array(12)].map((_, i) => {
           const month = i + 1;
           return (
@@ -102,10 +112,6 @@ function GetEvents() {
         })}
       </div>
 
-      {/* 読み込み中メッセージ */}
-      {loading && <p>読み込み中...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
       {/* 選択中年月 */}
       <div>
         <h4 style={{ fontSize: "18px", marginBottom: "10px" }}>
@@ -116,7 +122,7 @@ function GetEvents() {
         {events.length === 0 && !loading ? (
           <p>イベント情報はありません</p>
         ) : (
-          <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", justifyContent: "center" }}>
+          <div className="card-list">
             {events.map((event) => (
               <EventCard
                 key={event.id}
@@ -129,8 +135,22 @@ function GetEvents() {
               />
             ))}
           </div>
+            
+
         )}
       </div>
+
+
+      {/* データの状態ごとに出し分け */}
+      {loading && <p>読み込み中です…</p>}
+      {error && <p>エラー: {error}</p>}
+
+      <Pagenation
+      totalPages={totalPages}
+      currentPage={currentPage}
+      onPageChange={(page) => setCurrentPage(page)}
+      />
+
     </section>
   );
 }

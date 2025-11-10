@@ -43,6 +43,7 @@ export default function Login(){    //外に持って行ってOKなLoginって�
   };
   
     return(     //ここからどんな見た目にするか書く
+      <div className="form-container">
         <form onSubmit = {handleSubmit}>    {/*formは入力フォームを作るタグでonSubmitはこのフォームが送信されたときという意味={handleSubmit}でこのフォームを送信したときにhandleSubmitを実行して！という意味 */}
             <h2>ログイン</h2> 
             <input 
@@ -63,5 +64,6 @@ export default function Login(){    //外に持って行ってOKなLoginって�
             {error && <p style={{ color: "red" }}>{error}</p>}
             <button type="submit">ログイン</button> {/*フォームの送信ボタン、押したらhandleSubmitが動く*/}
         </form>
+      </div>
     );
 }
