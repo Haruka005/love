@@ -19,9 +19,6 @@ Route::get('/events/{year}/{month}', [EventController::class, 'getByMonth']);
 //今月のイベント取得
 Route::get('/events/upcoming',[EventController::class, 'getUpComingEvent']);
 
-//イベント詳細取得
-Route::get('/events/{id}', [EventController::class, 'show']);
-
 //飲食店取得
 Route::get('/restaurants',[RestaurantController::class, 'getRestaurant']);
 
