@@ -1,43 +1,59 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+//メインページ
 
+import React, { useState } from "react";
+
+// リンク切り替え用のコンポーネントを読み込む（ページ遷移を行う）
 import GetEvents from "./components/GetEvents";
 import UpComingEvents from "./components/UpComingEvets";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import GetRestaurants from "./components/GetRestaurants";
+import GetRestaurants from "./components/GetRestaurants"; 
 import HeroSlider from "./components/HeroSlider";
 import SiteDescription from "./components/SiteDescription";
 
+
+
+// -------------------------------------------------
+
+// ここからが画面（コンポーネント）の定義
 export default function MainPage() {
+
+  // selectedGenre: 洋食／定食／デザート など、選択中の飲食ジャンルを保持
+  // 初期は "洋食"
   const [selectedGenre, setSelectedGenre] = useState("洋食");
 
-  return (
-    <div className="main-background">
-      {/* ヘッダー */}
-      <Header />
 
-      {/* ヒーローエリア */}
+  // ------------------JSX↓------------------
+  return (
+    // ここから画面全体（コンテナ）
+    <div className="main-background">
+
+      {/* ------------------ ヘッダー ------------------ */}
+       <Header />
+      
+      {/* ------------------ヒーローエリア表示------------------ */}  
       <HeroSlider />
 
-     {/* ------------------サイト説明------------------ */}  
+      {/* ------------------サイト説明------------------ */}  
       <SiteDescription />
 
-      {/* 直近イベント */}
+      {/* ---------- 直近イベント（カード） ---------- */}
       <UpComingEvents />
 
-      {/* イベント一覧 */}
-      <GetEvents />
 
-      {/* ジャンル別おすすめ飲食店 */}
-      <GetRestaurants />
+      {/* ---------- イベント一覧 ---------- */}
+        <GetEvents />
 
-      {/* 会員機能（仮） */}
+      {/* ---------- ジャンル別おすすめ飲食店 ---------- */}
+        <GetRestaurants />
+
+
+      {/* ---------- 会員機能（仮の領域） ---------- */}
       <section style={{ marginBottom: "40px", textAlign: "center" }}>
         <h2>会員機能</h2>
         <div style={{
           display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
+          gridTemplateColumns: "repeat(2, 1fr)", // 2列に並べる
           gap: "20px",
           maxWidth: "600px",
           margin: "0 auto"
@@ -60,7 +76,10 @@ export default function MainPage() {
         </div>
       </section>
 
-      {/* フッター */}
+      
+
+
+      {/* ------------------ フッター ------------------ */}
       <Footer />
     </div>
   );
