@@ -65,7 +65,7 @@ function App() {
         <Route path="/RestaurantDetail" element={<RestaurantDetail />} />
 
         {/* イベント詳細 */}
-        <Route path="/EventDetail" element={<EventDitail />} />
+        <Route path="/events/:id" element={<EventDitail />} />
 
         {/*パスワード再設定ページ*/}
         <Route path="/reset-pass" element={<ResetPass/>}/>
