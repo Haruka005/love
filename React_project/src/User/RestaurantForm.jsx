@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./AuthContext";
 import MapView from "./MapView";
@@ -22,9 +22,36 @@ function RestaurantForm() {
     area_id: "",
   });
 
+  const [areaOptions, setAreaOptions] = useState([]);
+  const [budgetOptions, setBudgetOptions] = useState([]);
+  const [genreOptions, setGenreOptions] = useState([]);
+
+  useEffect(() => {
+    const fetchMasters = async () => {
+      const [areas, budgets, genres] = await Promise.all([
+        fetch("http://127.0.0.1:8000/api/m_areas").then((res) => res.json()),
+        fetch("http://127.0.0.1:8000/api/m_budgets").then((res) => res.json()),
+        fetch("http://127.0.0.1:8000/api/m_genres").then((res) => res.json()),
+      ]);
+      setAreaOptions(areas);
+      setBudgetOptions(budgets);
+      setGenreOptions(genres);
+    };
+    fetchMasters();
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleGenreToggle = (id) => {
+    setFormData((prev) => ({
+      ...prev,
+      genre_id: prev.genre_id.includes(id)
+        ? prev.genre_id.filter((g) => g !== id)
+        : [...prev.genre_id, id],
+    }));
   };
 
   const handleAddressChange = async (e) => {
@@ -35,6 +62,7 @@ function RestaurantForm() {
       try {
         const res = await fetch(`http://127.0.0.1:8000/api/geocode?q=${encodeURIComponent(address)}`);
         const data = await res.json();
+         console.log("ジオコード結果:", data); // ← ここで確認！
         if (data.length > 0) {
           const { lat, lon } = data[0];
           setFormData((prev) => ({
@@ -81,9 +109,7 @@ function RestaurantForm() {
       }
     });
 
-    if (formData.genre_id.length > 0) {
-      formData.genre_id.forEach((g) => formDataToSend.append("genre_id[]", g));
-    }
+    formData.genre_id.forEach((g) => formDataToSend.append("genre_id[]", g));
 
     Object.entries(formData).forEach(([key, value]) => {
       if (!["topimages", "images", "genre_id"].includes(key)) {
@@ -137,7 +163,11 @@ function RestaurantForm() {
         <MapView address={formData.address} />
       </div>
 
-      {[{ label: "店名", name: "name" }, { label: "見出し", name: "headline" }, { label: "URL", name: "url" }].map((field) => (
+      {[
+        { label: "店名", name: "name" },
+        { label: "見出し", name: "headline" },
+        { label: "URL", name: "url" },
+      ].map((field) => (
         <div key={field.name}>
           <label>{field.label}</label>
           <input type="text" name={field.name} value={formData[field.name]} onChange={handleChange} />
@@ -153,8 +183,9 @@ function RestaurantForm() {
         <label>地域</label>
         <select name="area_id" value={formData.area_id} onChange={handleChange}>
           <option value="">選択してください</option>
-          <option value="登別">登別</option>
-          <option value="室蘭">室蘭</option>
+          {areaOptions.map((area) => (
+            <option key={area.id} value={area.id}>{area.name}</option>
+          ))}
         </select>
       </div>
 
@@ -162,33 +193,24 @@ function RestaurantForm() {
         <label>予算</label>
         <select name="budget_id" value={formData.budget_id} onChange={handleChange}>
           <option value="">選択してください</option>
-          <option value="1000">~1000円</option>
-          <option value="3000">~3000円</option>
-          <option value="5000">~5000円</option>
-          <option value="5001">5000円以上</option>
+          {budgetOptions.map((budget) => (
+            <option key={budget.id} value={budget.id}>{budget.name}</option>
+          ))}
         </select>
       </div>
 
       <div>
         <label>ジャンル（複数選択可）</label>
-        <div>
-          {["洋食", "定食", "デザート"].map((genre) => (
-            <label key={genre}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+          {genreOptions.map((genre) => (
+            <label key={genre.id} style={{ display: "flex", alignItems: "center" }}>
               <input
                 type="checkbox"
-                value={genre}
-                checked={formData.genre_id.includes(genre)}
-                onChange={(e) => {
-                  const { checked, value } = e.target;
-                  setFormData((prev) => ({
-                    ...prev,
-                    genre_id: checked
-                      ? [...prev.genre_id, value]
-                      : prev.genre_id.filter((g) => g !== value),
-                  }));
-                }}
+                value={genre.id}
+                checked={formData.genre_id.includes(String(genre.id))}
+                onChange={() => handleGenreToggle(String(genre.id))}
               />
-              <span>{genre}</span>
+              {genre.name}
             </label>
           ))}
         </div>
