@@ -126,6 +126,7 @@ function GetEvents() {
             {events.map((event) => (
               <EventCard
                 key={event.id}
+                id={event.id}
                 name={event.name}
                 catchphrase={event.catchphrase}
                 image={event.image_url}     // ← 画像のURLフィールドがある場合

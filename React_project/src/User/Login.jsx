@@ -11,7 +11,7 @@ export default function Login(){    //外に持って行ってOKなLoginって�
     const [error, setError] = useState('');
     const{login}=useAuth();
 
-    const handleSubmit = async(e) => {   //handle＝操作、submit＝送信つまり送信された時にやること(e)はイベント情報が入っている（いつどのキーがクリックされた？）=>とはこれ(送信操作)がされたら次の処理を実行して！ということ
+    const handleSubmit = async(e) => {   //handle＝操作、submit＝送信された時にやること(e)はイベント情報が入っている（いつどのキーがクリックされた？）=>とはこれ(送信操作)がされたら次の処理を実行して！ということ
         e.preventDefault(); //フォーム送信時は自動でリロードされてしまい、入力内容が消えてしまう。そのためページのリロードを防ぐ関数を用いる
         setError('');
 
@@ -27,6 +27,10 @@ export default function Login(){    //外に持って行ってOKなLoginって�
       const data = await response.json();
 
       if (response.ok) {
+        //トークンをlocalstorage（ブラウザの保存箱）に保存
+        //.setItemは保存命令引数は名前と保存する値（サーバから返ってきたdataの中のtoken）
+        localStorage.setItem('token', data.token);
+
         login({
           id: data.user.id,
           name: data.user.name,

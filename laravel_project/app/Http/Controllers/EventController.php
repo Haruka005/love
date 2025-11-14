@@ -47,4 +47,14 @@ class EventController extends Controller
         return $this->getByMonth($year, $month);
 
     }
+
+    //1件ずつ詳細を見る
+    public function show($id)
+    {
+    $event = Event::find($id);
+    if (!$event) {
+        return response()->json(['message' => 'イベントが見つかりません'], 404);
+    }
+    return response()->json($event);
+    }
 }

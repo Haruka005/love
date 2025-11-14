@@ -19,8 +19,14 @@ Route::get('/events/{year}/{month}', [EventController::class, 'getByMonth']);
 //今月のイベント取得
 Route::get('/events/upcoming',[EventController::class, 'getUpComingEvent']);
 
+//イベント詳細取得
+Route::get('/events/{id}',[EventController::class,'show']);
+
 //飲食店取得
 Route::get('/restaurants',[RestaurantController::class, 'getRestaurant']);
+
+//飲食店詳細取得
+Route::get('/restaurants/{id}',[RestaurantController::class, 'show']);
 
 //
 Route::middleware('auth:sanctum')->post('/upload-event-image', [EventImageController::class, 'uploadEventImage']);

@@ -75,6 +75,7 @@ function GetRestaurants(){
                 filtered.map((shop) => (
                     <RestaurantCard
                         key={shop.id}
+                        id={shop.id}
                         name={shop.name}
                         area={shop.area.name}
                         genre={shop.genre.name}
