@@ -6,15 +6,21 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'App\\Exceptions\\Handler' => $baseDir . '/app/Exceptions/Handler.php',
+    'App\\Http\\Controllers\\AdminController' => $baseDir . '/app/Http/Controllers/AdminController.php',
     'App\\Http\\Controllers\\AuthController' => $baseDir . '/app/Http/Controllers/AuthController.php',
     'App\\Http\\Controllers\\Controller' => $baseDir . '/app/Http/Controllers/Controller.php',
     'App\\Http\\Controllers\\EventController' => $baseDir . '/app/Http/Controllers/EventController.php',
     'App\\Http\\Controllers\\EventImageController' => $baseDir . '/app/Http/Controllers/EventImageController.php',
+    'App\\Http\\Controllers\\RestaurantController' => $baseDir . '/app/Http/Controllers/RestaurantController.php',
     'App\\Http\\Controllers\\UserController' => $baseDir . '/app/Http/Controllers/UserController.php',
     'App\\Http\\Middleware\\CorsMiddleware' => $baseDir . '/app/Http/Middleware/CorsMiddleware.php',
+    'App\\Models\\Area' => $baseDir . '/app/Models/Area.php',
+    'App\\Models\\Budget' => $baseDir . '/app/Models/Budget.php',
     'App\\Models\\Event' => $baseDir . '/app/Models/Event.php',
+    'App\\Models\\EventImage' => $baseDir . '/app/Models/EventImage.php',
+    'App\\Models\\Genre' => $baseDir . '/app/Models/Genre.php',
     'App\\Models\\Restaurant' => $baseDir . '/app/Models/Restaurant.php',
-    'App\\Models\\TestEvent' => $baseDir . '/app/Models/TestEvent.php',
     'App\\Models\\User' => $baseDir . '/app/Models/User.php',
     'App\\Providers\\AppServiceProvider' => $baseDir . '/app/Providers/AppServiceProvider.php',
     'App\\Providers\\RouteServiceProvider' => $baseDir . '/app/Providers/RouteServiceProvider.php',

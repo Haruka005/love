@@ -21,7 +21,7 @@ import HistoryList from "./User/HistoryList";
 import EventApplicationHistory from "./User/EventApplicationHistory";
 import EventForm from "./User/EventForm";
 import ShopForm from "./User/ShopForm";
-import EventDetail from "./User/EventDetail"; 
+//import EventDetail from "./User/EventDetail"; 
 import RestaurantDetail from "./User/RestaurantDetail"; 
 
 import AdminTop from "./admin/AdminTop";
