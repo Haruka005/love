@@ -26,6 +26,9 @@ import RestaurantDetail from "./User/RestaurantDetail";
 
 import AdminTop from "./admin/AdminTop";
 
+import RestaurantForm from './User/RestaurantForm';
+
+
 
 
 function App() {
@@ -86,7 +89,7 @@ function App() {
         <Route path="/EventForm" element={<EventForm />} />
 
         {/*イベント新規登録 */}
-        <Route path="/ShopForm" element={<ShopForm />} />
+        <Route path="/RestaurantForm" element={<RestaurantForm />} />
 
         {/*管理者TOP*/}
         <Route path="/AdminTop" element={<AdminTop />} />
