@@ -33,24 +33,35 @@ class RestaurantController extends Controller
             }
         }
 
+        //店舗のインスタンスを作成する
+        $restaurant = new Restaurant();
+        $restaurant -> user_id=$user->id;
+
         // TOP画像保存
-        $topImagePath = $request->hasFile('topimages')
-            ? $request->file('topimages')->store("user_images/{$user->id}/restaurants/top", 'public')
-            : null;
+        if($request->hasFile('topimages')){
+            $topImagePath = $request->file(`topimages`)->store("user_images/{user->id}/restaurants/top",`public`);
+            $restaurant->topimage_path=Storage::url($topImagePath);
+        }else{
+            return response()->json([`error`=>`TOP画像は必須です`],422);
+        }
 
         // 詳細画像保存
-        $detailImagePaths = [];
         if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $detailImagePaths[] = $image->store("user_images/{$user->id}/restaurants/detail", 'public');
+            foreach ($request->file('images') as $index=>$image) {
+                if($index<3){
+                    $path = $image->store("user_images/{$user->id}/restaurants/detail", 'public');
+                    $restaurant->{`image`.($index+1).`_path`}=Storage::url($path);
+                }
             }
         }
+
+                
 
         // 店舗情報保存（Reactから送られたIDをそのまま使う）
         $restaurant = new Restaurant();
         $restaurant->user_id = $user->id;
         $restaurant->name = $request->input('name');
-        $restaurant->catchphrase = $request->input('headline');
+        $restaurant->catchphrase = $request->input('catchphrase');
         $restaurant->url = $request->input('url');
         $restaurant->address = $request->input('address');
         $restaurant->latitude = $request->input('latitude');
@@ -73,6 +84,7 @@ class RestaurantController extends Controller
         return response()->json(['message' => 'レストラン情報を保存しました']);
     }
 
+    //ジャンル、地域、予算の選択肢を取得するためのAPI
     public function getGenres() {
     return response()->json(\App\Models\Genre::all());
     }
@@ -86,6 +98,7 @@ class RestaurantController extends Controller
     }
 
 
+    //リアクト表示の時にIDだけでは、名前が判らない時に名前表示するために使用している
     //  店舗一覧取得（ジャンル名付き）
     public function getRestaurant()
     {

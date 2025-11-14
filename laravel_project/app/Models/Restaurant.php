@@ -27,6 +27,11 @@ class Restaurant extends Model
         'longitude',
         'address',
         'tel',
+        'topimage_path',
+        'image1_path',
+        'image2_path',
+        'image3_path',
+
     ];
 
     //他のテーブルとの関係

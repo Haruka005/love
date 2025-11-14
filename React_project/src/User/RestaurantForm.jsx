@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./AuthContext";
-import MapView from "./MapView";
+
 
 function RestaurantForm() {
   const navigate = useNavigate();
@@ -43,15 +43,6 @@ function RestaurantForm() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleGenreToggle = (id) => {
-    setFormData((prev) => ({
-      ...prev,
-      genre_id: prev.genre_id.includes(id)
-        ? prev.genre_id.filter((g) => g !== id)
-        : [...prev.genre_id, id],
-    }));
   };
 
   const handleAddressChange = async (e) => {
@@ -131,6 +122,16 @@ function RestaurantForm() {
     }
   };
 
+   const handleGenreToggle=(id)=>{
+      setFormData((prev)=>({
+        ...prev,
+        genre_id:prev.genre_id.includes(id)
+        ? prev.genre_id.filter((g)=> g != id)
+        :[...prev.genre_id,id],
+      }));
+    };
+
+
   return (
     <div style={{ padding: "20px", maxWidth: "500px", margin: "0 auto" }}>
       <button onClick={() => navigate("/MyPage")} style={{ position: "absolute", top: "10px", left: "10px" }}>✕</button>
@@ -158,15 +159,11 @@ function RestaurantForm() {
         ))}
       </div>
 
-      <div>
-        <label>アクセス</label>
-        <MapView address={formData.address} />
-      </div>
-
       {[
         { label: "店名", name: "name" },
-        { label: "見出し", name: "headline" },
+        { label: "見出し", name: "catchphrase" },
         { label: "URL", name: "url" },
+         { label: "電話番号", name: "tel" },
       ].map((field) => (
         <div key={field.name}>
           <label>{field.label}</label>
@@ -207,8 +204,8 @@ function RestaurantForm() {
               <input
                 type="checkbox"
                 value={genre.id}
-                checked={formData.genre_id.includes(String(genre.id))}
-                onChange={() => handleGenreToggle(String(genre.id))}
+                checked={formData.genre_id.includes(genre.id)}
+                onChange={() => handleGenreToggle(genre.id)}
               />
               {genre.name}
             </label>
