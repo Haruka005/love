@@ -1,44 +1,77 @@
-import React from "react";
+// 飲食店詳細画面
+import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export default function RestaurantDetail() {
+  const { id } = useParams(); // URLからid取得
+  const [restaurant, setRestaurant] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRestaurant = async () => {
+      try {
+        const res = await fetch(`http://localhost:8000/api/restaurants/${id}`);
+        if (!res.ok) throw new Error("飲食店取得失敗");
+        const data = await res.json();
+        setRestaurant(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRestaurant();
+  }, [id]);
+
+  if (loading) return <p>読み込み中...</p>;
+  if (!restaurant) return <p>飲食店が見つかりません。</p>;
+
   return (
-    <div>
-      <h2>店名（タイトル）</h2>
+    <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
+      <h2>{restaurant.name}</h2>
 
-      {/* メイン画像 */}
-      <div>[画像アップロード]</div>
+      {restaurant.image_url && (
+        <img
+          src={restaurant.image_url}
+          alt={restaurant.name}
+          style={{ width: "100%", maxWidth: "500px", borderRadius: "8px" }}
+        />
+      )}
 
-      {/* 見出し */}
-      <h4>見出し</h4>
-      <p>（例）朝採れ野菜を使ったおすすめメニュー</p>
+      <p style={{ fontSize: "18px", marginTop: "10px" }}>{restaurant.catchphrase}</p>
 
-      {/* アクセス */}
-      <h3>アクセス</h3>
-      <div>[地図またはGoogleマップ埋め込み]</div>
+      <div style={{ marginTop: "20px" }}>
+        <h3>店舗情報</h3>
+        <p>ジャンル：{restaurant.genre.name}</p>
+        <p>エリア：{restaurant.area.name}</p>
+        <p>予算：{restaurant.budget.name}</p>
+        <p>住所：{restaurant.address}</p>
+        <p>営業時間：{restaurant.opening_hours}</p>
+        <p>定休日：{restaurant.holiday}</p>
+      </div>
 
-      {/* 外観・内観画像 */}
-      <h3>外観・内観等</h3>
-      <div>[画像アップロード]（外観）</div>
-      <div>[画像アップロード]（内観）</div>
-      <div>[画像アップロード]（スタッフ）</div>
+      <div style={{ marginTop: "20px" }}>
+        <h3>お店の紹介</h3>
+        <p>{restaurant.description}</p>
+      </div>
 
-      <p>（例）店主とお店を紹介した画像もあります！</p>
+      <div style={{ marginTop: "20px" }}>
+        <h3>注意事項</h3>
+        <ul>
+          <li>混雑時は入店までお時間をいただく場合があります。</li>
+          <li>アレルギーをお持ちの方は事前にお知らせください。</li>
+          <li>掲載情報は変更される場合があります。</li>
+        </ul>
+      </div>
 
-      {/* 詳細 */}
-      <h3>詳細</h3>
-      <p>ホームページURL</p>
-      <p>予約</p>
-      <p>住所</p>
+      <div style={{ marginTop: "30px", textAlign: "center" }}>
+        <button
+          onClick={() => window.history.back()}
 
-      {/* コメント */}
-      <h3>コメント</h3>
-      <textarea rows="5" cols="30" placeholder="コメントを入力"></textarea>
-
-      {/* ボタンなど */}
-      <div>
-        <button>投稿</button>
-        <button>★</button>
-        <button>✎</button>
+        >
+          戻る
+        </button>
       </div>
     </div>
   );
