@@ -1,7 +1,8 @@
-import React from "react";
+import { useNavigate } from "react-router-dom";
 import BaseCard from "./BaseCard";
 
 export default function RestaurantCard({
+  id,
   name,
   area,
   genre,
@@ -9,17 +10,31 @@ export default function RestaurantCard({
   address,
   image,
 }) {
+  const navigate = useNavigate();
+
   return (
-    <BaseCard image={image}>
-      <h3 className="text-xl font-bold text-pink-700 mb-2">{name}</h3>
-
-      <div className="text-gray-600 space-y-1">
-        <p>📍 エリア：{area}</p>
-        <p>🍴 ジャンル：{genre}</p>
-        <p>💰 予算：{budget}</p>
+    <BaseCard>
+      <div
+        onClick={() => navigate(`/restaurants/${id}`)}
+        style={{ cursor: "pointer" }}
+      >
+        {image && (
+          <img
+            src={image}
+            alt={name}
+            style={{
+              width: "100%",
+              height: "180px",
+              objectFit: "cover",
+              borderRadius: "8px 8px 0 0",
+              marginBottom: "10px",
+            }}
+          />
+        )}
+        <h3>{name}</h3>
+        <p>ジャンル：{genre}</p>
+        <p>住所：{address}</p>
       </div>
-
-      <p className="text-gray-700 text-sm mt-3"> 🏠 場所：{address}</p>
     </BaseCard>
   );
 }

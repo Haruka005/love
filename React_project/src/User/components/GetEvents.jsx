@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import EventCard from "./EventCard";
+import Pagenation from "./Pagenation";
+
 
 function GetEvents() {
   const now = new Date();   //現在時刻取得しnowに保存
@@ -9,6 +11,21 @@ function GetEvents() {
   const [events, setEvents] = useState([]); //取得したイベントを格納する配列。初期値は空
   const [loading, setLoading] = useState(false); // データ取得中か管理する。初期はfalse
   const [error, setError] = useState(null);   //エラー状態を管理。初期値はnull
+
+  const yearOptions = [
+  { value: 2025, label: "2025" },
+  { value: 2026, label: "2026" },
+  ];
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
+
+  // ページネーション処理
+  const indexOfLastEvent = currentPage * itemsPerPage;
+  const indexOfFirstEvent = indexOfLastEvent - itemsPerPage;
+  const currentEvents = events.slice(indexOfFirstEvent, indexOfLastEvent);
+  const totalPages = Math.ceil(events.length / itemsPerPage);
+
 
 
   useEffect(() => {
@@ -65,46 +82,35 @@ function GetEvents() {
 
       {/* 年選択 */}
       <div style={{ marginBottom: "10px" }}>
-        <label>
-          年を選択：
+        <label className="selectbox" >
           <select
             value={selectedYear}
-            onChange={(e) => setSelectedYear(parseInt(e.target.value, 10))}
-            style={{ marginLeft: "8px" }}
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
           >
-            {[2024, 2025, 2026].map((year) => (
-              <option key={year} value={year}>{year}</option>
+            {yearOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
             ))}
           </select>
-        </label>
+        </label> 
       </div>
 
       {/* 月選択ボタン */}
-      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "8px", marginBottom: "20px" }}>
+      <div className="button-group">
         {[...Array(12)].map((_, i) => {
           const month = i + 1;
           return (
-            <button
+           <button
               key={month}
+              className={`tab-button ${selectedMonth === month ? "active" : ""}`}
               onClick={() => setSelectedMonth(month)}
-              style={{
-                padding: "6px 12px",
-                borderRadius: "6px",
-                border: selectedMonth === month ? "2px solid #000" : "1px solid #ccc",
-                backgroundColor: selectedMonth === month ? "#eee" : "#fff",
-                fontWeight: selectedMonth === month ? "bold" : "normal",
-                cursor: "pointer"
-              }}
             >
               {month}月
             </button>
           );
         })}
       </div>
-
-      {/* 読み込み中メッセージ */}
-      {loading && <p>読み込み中...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
 
       {/* 選択中年月 */}
       <div>
@@ -116,10 +122,11 @@ function GetEvents() {
         {events.length === 0 && !loading ? (
           <p>イベント情報はありません</p>
         ) : (
-          <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", justifyContent: "center" }}>
+          <div className="card-list">
             {events.map((event) => (
               <EventCard
                 key={event.id}
+                id={event.id}
                 name={event.name}
                 catchphrase={event.catchphrase}
                 image={event.image_url}     // ← 画像のURLフィールドがある場合
@@ -129,8 +136,22 @@ function GetEvents() {
               />
             ))}
           </div>
+            
+
         )}
       </div>
+
+
+      {/* データの状態ごとに出し分け */}
+      {loading && <p>読み込み中です…</p>}
+      {error && <p>エラー: {error}</p>}
+
+      <Pagenation
+      totalPages={totalPages}
+      currentPage={currentPage}
+      onPageChange={(page) => setCurrentPage(page)}
+      />
+
     </section>
   );
 }

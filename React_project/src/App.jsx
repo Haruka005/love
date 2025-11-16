@@ -14,15 +14,20 @@ import LoginComplete from "./User/LoginComplete";
 import AccountCreated from "./User/AccountCreated";
 import ReportForm from "./User/ReportForm";
 import MyPage from "./User/MyPage";
-import RestaurantDetail from "./User/RestaurantDetail"
-import EventDitail from "./User/EventDetail"
 import ResetPass from "./User/reset-pass";
 import VisitList from "./User/VisitList";
 import FavoritesList from "./User/FavoritesList"; 
 import HistoryList from "./User/HistoryList"; 
 import EventApplicationHistory from "./User/EventApplicationHistory";
 import EventForm from "./User/EventForm";
+//import ShopForm from "./User/ShopForm";
+import EventDetail from "./User/EventDetail"; 
+import RestaurantDetail from "./User/RestaurantDetail"; 
+
+import AdminTop from "./admin/AdminTop";
+
 import RestaurantForm from './User/RestaurantForm';
+
 
 
 
@@ -60,10 +65,10 @@ function App() {
         <Route path="/MyPage" element={<MyPage />} />
 
         {/* 飲食店詳細 */}
-        <Route path="/RestaurantDetail" element={<RestaurantDetail />} />
+        <Route path="/restaurants/:id" element={<RestaurantDetail />} />
 
         {/* イベント詳細 */}
-        <Route path="/EventDetail" element={<EventDitail />} />
+        <Route path="/events/:id" element={<EventDetail />} />
 
         {/*パスワード再設定ページ*/}
         <Route path="/reset-pass" element={<ResetPass/>}/>
@@ -85,6 +90,9 @@ function App() {
 
         {/*イベント新規登録 */}
         <Route path="/RestaurantForm" element={<RestaurantForm />} />
+
+        {/*管理者TOP*/}
+        <Route path="/AdminTop" element={<AdminTop />} />
 
       </Routes>
     </BrowserRouter>
