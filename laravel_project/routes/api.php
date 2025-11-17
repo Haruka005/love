@@ -1,4 +1,6 @@
 <?php
+
+//use消さない！（ルートで使うクラスを探すためのもの）
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -8,6 +10,8 @@ use App\Http\Controllers\EventImageController;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EventDetailController;
+use App\Http\Controllers\UserController;
+//use App\Models\Token;
 
 // 認証不要ルート
 
@@ -66,8 +70,7 @@ Route::post('/store-restaurant-data', [RestaurantController::class, 'storeRestau
 Route::get('/m_areas', [RestaurantController::class, 'getAreas']);
 Route::get('/m_budgets', [RestaurantController::class, 'getBudgets']);
 Route::get('/m_genres', [RestaurantController::class, 'getGenres']);
-Route::get('/get-restaurant', [RestaurantController::class, 'getRestaurant']);
-
+Route::get('/restaurants', [RestaurantController::class, 'getRestaurant']);
 
 
 // 認証必須ルート

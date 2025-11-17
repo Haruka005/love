@@ -58,7 +58,6 @@ class RestaurantController extends Controller
                 
 
         // 店舗情報保存（Reactから送られたIDをそのまま使う）
-        $restaurant = new Restaurant();
         $restaurant->user_id = $user->id;
         $restaurant->name = $request->input('name');
         $restaurant->catchphrase = $request->input('catchphrase');
@@ -102,14 +101,38 @@ class RestaurantController extends Controller
     //  店舗一覧取得（ジャンル名付き）
     public function getRestaurant()
     {
-        $restaurants = Restaurant::all();
+    $restaurants = Restaurant::with(['genre', 'area', 'budget'])->get();
 
-        foreach ($restaurants as $restaurant) {
-            $genreIds = json_decode($restaurant->genre_id, true);
+    foreach ($restaurants as $restaurant) {
+        $genreIds = json_decode($restaurant->genre_id ?? '[]', true);
+        if (is_array($genreIds) && !empty($genreIds)) {
             $genreNames = DB::table('m_genres')->whereIn('id', $genreIds)->pluck('name')->toArray();
-            $restaurant->genre_names = $genreNames;
+        } else {
+            $genreNames = [];
         }
-
-        return response()->json($restaurants);
+        $restaurant->genre_names = $genreNames;
     }
+
+    return response()->json($restaurants);
+    }
+
+    // 店舗詳細取得（ID指定）
+public function show($id)
+{
+    $restaurant = Restaurant::with(['genre', 'area', 'budget'])->find($id);
+
+    if (!$restaurant) {
+        return response()->json(['message' => '店舗が見つかりません'], 404);
+    }
+
+    // 複数ジャンル対応
+    $genreIds = json_decode($restaurant->genre_id ?? '[]', true);
+    $genreNames = is_array($genreIds) && !empty($genreIds)
+        ? DB::table('m_genres')->whereIn('id', $genreIds)->pluck('name')->toArray()
+        : [];
+
+    $restaurant->genre_names = $genreNames;
+
+    return response()->json($restaurant);
+}
 }
