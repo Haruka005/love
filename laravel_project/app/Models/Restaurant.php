@@ -16,9 +16,10 @@ class Restaurant extends Model
 
     // 書き換え可能なカラムを指定（任意）
     protected $fillable = [
+        'user_id',
         'name',
         'catchphrase',
-        'description',
+        'comment',
         'url',
         'area_id',
         'genre_id',
@@ -34,12 +35,11 @@ class Restaurant extends Model
 
     ];
 
-    //他のテーブルとの関係
-     public function genre()
-    {
-        return $this->belongsTo(Genre::class, 'genre_id'); // 外部キー明示
-    }
-
+     //  ジャンルは複数選択の為
+    protected $casts = [
+    'genre_id' => 'array',
+    ];
+    
     // エリアとの関係（1レストランは1エリア）
     public function area()
     {

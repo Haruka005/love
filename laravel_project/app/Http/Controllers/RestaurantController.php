@@ -38,11 +38,11 @@ class RestaurantController extends Controller
         $restaurant -> user_id=$user->id;
 
         // TOP画像保存
-        if($request->hasFile('topimages')){
-            $topImagePath = $request->file(`topimages`)->store("user_images/{user->id}/restaurants/top",`public`);
-            $restaurant->topimage_path=Storage::url($topImagePath);
-        }else{
-            return response()->json([`error`=>`TOP画像は必須です`],422);
+       if ($request->hasFile('topimages')) {
+            $topImagePath = $request->file('topimages')[0]->store("user_images/{$user->id}/restaurants/top", 'public');
+            $restaurant->topimage_path = Storage::url($topImagePath);
+        } else {
+            return response()->json(['error' => 'TOP画像は必須です'], 422);
         }
 
         // 詳細画像保存
@@ -63,19 +63,37 @@ class RestaurantController extends Controller
         $restaurant->catchphrase = $request->input('catchphrase');
         $restaurant->url = $request->input('url');
         $restaurant->address = $request->input('address');
-        $restaurant->latitude = $request->input('latitude');
-        $restaurant->longitude = $request->input('longitude');
+        $defaultLat = 42.4123;
+        $defaultLon = 141.2063;
+        $restaurant->latitude = $request->input('latitude') ?: $defaultLat;
+        $restaurant->longitude = $request->input('longitude') ?: $defaultLon;
         $restaurant->comment = $request->input('comment');
         $restaurant->budget_id = $request->input('budget_id');
         $restaurant->area_id = $request->input('area_id');
         $restaurant->genre_id = json_encode($request->input('genre_id')); // ← ID配列をそのまま保存
+        $restaurant->tel = $request->input('tel');
+
 
         if ($topImagePath) {
             $restaurant->topimage_path = Storage::url($topImagePath);
         }
 
+    $detailImagePaths = [];
+
+    if ($request->hasFile('images')) {
+        foreach ($request->file('images') as $index => $image) {
+            if ($index < 3 && $image) {
+                $path = $image->store("user_images/{$user->id}/restaurants/detail", 'public');
+                $url = Storage::url($path);
+                $restaurant->{'image'.($index + 1).'_path'} = $url;
+                $detailImagePaths[] = $url;
+            }
+        }
+    }
+
         if (!empty($detailImagePaths)) {
-            $restaurant->image_paths = json_encode(array_map(fn($p) => Storage::url($p), $detailImagePaths));
+            $restaurant->image_paths = json_encode($detailImagePaths);
+        $restaurant->image_paths = json_encode(array_map(fn($p) => Storage::url($p), $detailImagePaths));
         }
 
         $restaurant->save();
@@ -101,7 +119,7 @@ class RestaurantController extends Controller
     //  店舗一覧取得（ジャンル名付き）
     public function getRestaurant()
     {
-    $restaurants = Restaurant::with(['genre', 'area', 'budget'])->get();
+    $restaurants = Restaurant::with(['area', 'budget'])->get();
 
     foreach ($restaurants as $restaurant) {
         $genreIds = json_decode($restaurant->genre_id ?? '[]', true);

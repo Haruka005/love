@@ -80,48 +80,57 @@ function RestaurantForm() {
     setFormData((prev) => ({ ...prev, images: newImages }));
   };
 
-  const handleRestaurantSubmit = async () => {
-    if (!currentUser?.id) {
-      alert("ログインしてください");
-      navigate("/login");
-      return;
+ const handleRestaurantSubmit = async () => {
+  if (!currentUser?.id) {
+    alert("ログインしてください");
+    navigate("/login");
+    return;
+  }
+
+  // 緯度・経度が空なら、学校の座標を補完
+  const defaultLat = "42.4123"; // 日本工学院北海道専門学校の緯度
+  const defaultLon = "141.2063"; // 日本工学院北海道専門学校の経度
+  const latitude = formData.latitude || defaultLat;
+  const longitude = formData.longitude || defaultLon;
+
+  const formDataToSend = new FormData();
+  formDataToSend.append("user_id", currentUser.id);
+
+  if (formData.topimages[0]) {
+    formDataToSend.append("topimages[]", formData.topimages[0]);
+  }
+
+  formData.images.forEach((img) => {
+    if (img) {
+      formDataToSend.append("images[]", img);
     }
+  });
 
-    const formDataToSend = new FormData();
-    formDataToSend.append("user_id", currentUser.id);
+  formData.genre_id.forEach((g) => formDataToSend.append("genre_id[]", g));
 
-    if (formData.topimages[0]) {
-      formDataToSend.append("topimages[]", formData.topimages[0]);
+  Object.entries(formData).forEach(([key, value]) => {
+    if (!["topimages", "images", "genre_id", "latitude", "longitude"].includes(key)) {
+      formDataToSend.append(key, value);
     }
+  });
 
-    formData.images.forEach((img) => {
-      if (img) {
-        formDataToSend.append("images[]", img);
-      }
-    });
+  // ← ここで補完済みの座標を送信
+  formDataToSend.append("latitude", latitude);
+  formDataToSend.append("longitude", longitude);
 
-    formData.genre_id.forEach((g) => formDataToSend.append("genre_id[]", g));
+  const response = await fetch("http://127.0.0.1:8000/api/store-restaurant-data", {
+    method: "POST",
+    body: formDataToSend,
+    credentials: "include",
+  });
 
-    Object.entries(formData).forEach(([key, value]) => {
-      if (!["topimages", "images", "genre_id"].includes(key)) {
-        formDataToSend.append(key, value);
-      }
-    });
-
-    const response = await fetch("http://127.0.0.1:8000/api/store-restaurant-data", {
-      method: "POST",
-      body: formDataToSend,
-      credentials: "include",
-    });
-
-    if (response.ok) {
-      alert("店舗情報を送信しました！");
-      navigate("/MyPage");
-    } else {
-      alert("申請に失敗しました。");
-    }
-  };
-
+  if (response.ok) {
+    alert("店舗情報を送信しました！");
+    navigate("/MyPage");
+  } else {
+    alert("申請に失敗しました。");
+  }
+};
    const handleGenreToggle=(id)=>{
       setFormData((prev)=>({
         ...prev,

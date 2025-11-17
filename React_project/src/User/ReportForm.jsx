@@ -58,7 +58,7 @@ export default function ReportForm(){
             <label>
                 理由(詳細に記入してください):
                 <textarea
-                    name = "reson" //この入力欄の名前
+                    name = "reason" //この入力欄の名前
                     value = {formData.reason}  //入力欄の値をform.emailとして扱うよ
                     onChange={handleChange}  //入力するたびにhandleChangeを呼ぶよ
                     required //必須項目とする

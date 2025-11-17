@@ -47,7 +47,12 @@ Route::get('/geocode', function (Request $request) {
         return response()->json(['error' => '住所が不正です'], 400);
     }
 
-    $response = Http::withOptions(['verify' => false])->get('https://nominatim.openstreetmap.org/search', [
+  $response = Http::withOptions([
+    'verify' => false,
+    'headers' => [
+        'User-Agent' => 'NoboribetsuMapApp/1.0 (love@example.com)'
+    ]
+    ])->get('https://nominatim.openstreetmap.org/search', [
         'format' => 'json',
         'q' => $address,
         'limit' => 1,
@@ -77,7 +82,7 @@ Route::get('/restaurants', [RestaurantController::class, 'getRestaurant']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', fn(Request $request) => response()->json($request->user()));
     Route::post('/upload-event-image', [EventImageController::class, 'uploadEventImage']);
-    Route::post('/store-restaurant-data', [RestaurantController::class, 'storeRestaurantData']);
+   // Route::post('/store-restaurant-data', [RestaurantController::class, 'storeRestaurantData']);
 });
 
 // バージョン付きルート（例：v1）
