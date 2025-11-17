@@ -86,13 +86,14 @@ export default function MyPage() {
       <div>
         <h3>メニュー</h3>
         <div style={gridStyle}>
-          <button style={buttonStyle} onClick={() => navigate("/VisitList")}>来店一覧</button>
-          <button style={buttonStyle} onClick={() => navigate("/FavoritesList")}>お気に入り一覧</button>
-          <button style={buttonStyle} onClick={() => navigate("/reset-pass")}>アカウント編集</button>
-          <button style={buttonStyle} onClick={() => navigate("/HistoryList")}>閲覧履歴一覧</button>
-          <button style={buttonStyle} onClick={() => navigate("/EventApplicationHistory")}>イベント申請確認</button>
-          <button style={buttonStyle} onClick={() => navigate("/EventForm")}>イベント申請新規登録（仮）</button>
-          <button style={buttonStyle} onClick={() => navigate("/RestaurantForm")}>店登録（仮）</button>
+          <button  onClick={() => navigate("/VisitList")}>来店一覧</button>
+          <button  onClick={() => navigate("/FavoritesList")}>お気に入り一覧</button>
+          <button  onClick={() => navigate("/reset-pass")}>アカウント編集</button>
+          <button  onClick={() => navigate("/HistoryList")}>閲覧履歴一覧</button>
+          <button  onClick={() => navigate("/EventApplicationHistory")}>イベント申請確認</button>
+          <button  onClick={() => navigate("/EventForm")}>イベント申請新規登録</button>
+          <button  onClick={() => navigate("/RestaurantForm")}>店登録（仮）</button>
+          <button  onClick={() => navigate("/")}>ログアウト</button>
           
 
 

@@ -35,12 +35,6 @@ class Restaurant extends Model
         return $this->belongsTo(Genre::class, 'genre_id'); // 外部キー明示
     }
 
-    //他のテーブルとの関係
-     public function genre()
-    {
-        return $this->belongsTo(Genre::class, 'genre_id'); // 外部キー明示
-    }
-
     // エリアとの関係（1レストランは1エリア）
     public function area()
     {

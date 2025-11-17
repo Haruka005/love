@@ -8,6 +8,7 @@ use App\Http\Controllers\EventImageController;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EventDetailController;
+use App\Http\Controllers\UserController;
 
 // 認証不要ルート
 
@@ -52,8 +53,8 @@ Route::get('/events/{year}/{month}', [EventController::class, 'getByMonth']);
 Route::get('/events/upcoming', [EventController::class, 'getUpComingEvent']);
 Route::post('/store-event-data', [EventImageController::class, 'storeEventData']);
 
-// 認証必須ルート
-Route::middleware('auth:sanctum')->group(function () {
+// 認証必須ルートが必要なルートはここに書く
+Route::middleware('check.token')->group(function () {
     Route::get('/me', fn(Request $request) => response()->json($request->user()));
     Route::post('/upload-event-image', [EventImageController::class, 'uploadEventImage']);
     Route::post('/store-restaurant-data', [RestaurantController::class, 'storeRestaurantData']);

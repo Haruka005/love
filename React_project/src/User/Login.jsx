@@ -6,7 +6,7 @@ import { useAuth } from "./AuthContext";
 
 export default function Login(){    //外に持って行ってOKなLoginっていう名前の部品作るよっていう宣言
     const [email,setEmail] = useState('');  //emailっていう変数用意して最初は空にしとく、メールの内容をリアルタイムで保存できる
-    const [password,setpassword] = useState('');
+    const [password,setPassword] = useState('');
     const navigate = useNavigate();
     const [error, setError] = useState('');
     const{login}=useAuth();
@@ -16,7 +16,7 @@ export default function Login(){    //外に持って行ってOKなLoginって�
         setError('');
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/login', {
+      const response = await fetch('http://localhost:8000/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -61,7 +61,7 @@ export default function Login(){    //外に持って行ってOKなLoginって�
                 type="password"
                 placeholder="パスワード"
                 value={password}
-                onChange={(e) => setpassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 required
             />
             

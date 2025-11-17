@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\Token;
 
 
 //laravelの基本コントローラーを継承
@@ -76,8 +77,29 @@ class UserController extends Controller
                 'errors'=>$validator->errors()
             ],422);        
         }
-    
+        
+        //ユーザー取得
+        $user = User::where('email', $request->email)->first();
 
+        if(!$user){
+            return response()->json(['message'=>'メールアドレスまたはパスワードが違います'],401);
+        }
+
+        //ロックチェック
+        if($user->is_locked){
+            $lockDuration = 5; // 5分ロック
+            //ロック開始時間＋5分が未来かどうか
+            if($user->locked_at && $user->locked_at->addMinutes($lockDuration)->isFuture()){
+                //yesだったらまだロック中
+                return response()->json(['message'=>'アカウントがロック中です'],403);
+            }else{
+                //noなら自動解除
+                $user->is_locked = false; //ロック解除
+                $user->login_attempts = 0; //失敗回数リセット
+                $user->locked_at = null; //ロック開始日リセット
+                $user->save(); //データベースに反映
+            }
+        }
 
         //認証チェック
         if(Auth::attempt($request->only('email','password'))) {
@@ -96,6 +118,7 @@ class UserController extends Controller
             
             return response()->json([
                 'message'=>'ログイン成功',
+                'token'   => $token,
                 'user'=>[
                     'id'=>$user->id,
                     'name'=>$user->name,
@@ -103,9 +126,23 @@ class UserController extends Controller
                 ]
             ],200);
         }else{
-            return response()->json([
-                'message'=>'メールアドレスまたはパスワードが違います'
-            ],401);
+           // ログイン失敗 → 失敗回数カウント
+            $user->login_attempts += 1;
+
+            //失敗回数が5回以上か
+            if($user->login_attempts >= 5){
+                $user->is_locked = true; //アカウントをロック状態に
+                $user->locked_at = now(); //ロックした日付を記録
+            }
+
+            $user->save(); //データベースに反映
+
+            //ロック中→ロックのメッセージ　それ以外→違うよメッセージ
+            $msg = $user->is_locked 
+                ? 'アカウントロックしました' 
+                : 'メールアドレスまたはパスワードが違います';
+
+            return response()->json(['message'=>$msg],401);
         }
     }
 
