@@ -2,7 +2,6 @@ import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./AuthContext";
 
-
 function RestaurantForm() {
   const navigate = useNavigate();
   const { currentUser } = useContext(AuthContext);
@@ -11,15 +10,16 @@ function RestaurantForm() {
     topimages: [null],
     images: [null, null, null],
     name: "",
-    headline: "",
+    catchphrase: "",
     url: "",
     comment: "",
     budget_id: "",
     address: "",
     latitude: "",
     longitude: "",
-    genre_id: [],
+    genre_id: "",
     area_id: "",
+    tel: "",
   });
 
   const [areaOptions, setAreaOptions] = useState([]);
@@ -53,7 +53,6 @@ function RestaurantForm() {
       try {
         const res = await fetch(`http://127.0.0.1:8000/api/geocode?q=${encodeURIComponent(address)}`);
         const data = await res.json();
-         console.log("ジオコード結果:", data); // ← ここで確認！
         if (data.length > 0) {
           const { lat, lon } = data[0];
           setFormData((prev) => ({
@@ -61,9 +60,20 @@ function RestaurantForm() {
             latitude: lat,
             longitude: lon,
           }));
+        } else {
+          setFormData((prev) => ({
+            ...prev,
+            latitude: "42.4123",
+            longitude: "141.2063",
+          }));
         }
       } catch (error) {
         console.error("位置情報取得失敗:", error);
+        setFormData((prev) => ({
+          ...prev,
+          latitude: "42.4123",
+          longitude: "141.2063",
+        }));
       }
     }
   };
@@ -80,66 +90,55 @@ function RestaurantForm() {
     setFormData((prev) => ({ ...prev, images: newImages }));
   };
 
- const handleRestaurantSubmit = async () => {
-  if (!currentUser?.id) {
-    alert("ログインしてください");
-    navigate("/login");
-    return;
-  }
-
-  // 緯度・経度が空なら、学校の座標を補完
-  const defaultLat = "42.4123"; // 日本工学院北海道専門学校の緯度
-  const defaultLon = "141.2063"; // 日本工学院北海道専門学校の経度
-  const latitude = formData.latitude || defaultLat;
-  const longitude = formData.longitude || defaultLon;
-
-  const formDataToSend = new FormData();
-  formDataToSend.append("user_id", currentUser.id);
-
-  if (formData.topimages[0]) {
-    formDataToSend.append("topimages[]", formData.topimages[0]);
-  }
-
-  formData.images.forEach((img) => {
-    if (img) {
-      formDataToSend.append("images[]", img);
+  const handleRestaurantSubmit = async () => {
+    if (!currentUser?.id) {
+      alert("ログインしてください");
+      navigate("/login");
+      return;
     }
-  });
 
-  formData.genre_id.forEach((g) => formDataToSend.append("genre_id[]", g));
+    const latitude = formData.latitude || "42.4123";
+    const longitude = formData.longitude || "141.2063";
 
-  Object.entries(formData).forEach(([key, value]) => {
-    if (!["topimages", "images", "genre_id", "latitude", "longitude"].includes(key)) {
-      formDataToSend.append(key, value);
+    const formDataToSend = new FormData();
+    formDataToSend.append("user_id", currentUser.id);
+
+    if (formData.topimages[0]) {
+      formDataToSend.append("topimages[]", formData.topimages[0]);
     }
-  });
 
-  // ← ここで補完済みの座標を送信
-  formDataToSend.append("latitude", latitude);
-  formDataToSend.append("longitude", longitude);
+    formData.images.forEach((img) => {
+      if (img) {
+        formDataToSend.append("images[]", img);
+      }
+    });
 
-  const response = await fetch("http://127.0.0.1:8000/api/store-restaurant-data", {
-    method: "POST",
-    body: formDataToSend,
-    credentials: "include",
-  });
+    formDataToSend.append("genre_id", formData.genre_id);
+    formDataToSend.append("area_id", formData.area_id);
+    formDataToSend.append("budget_id", formData.budget_id);
 
-  if (response.ok) {
-    alert("店舗情報を送信しました！");
-    navigate("/MyPage");
-  } else {
-    alert("申請に失敗しました。");
-  }
-};
-   const handleGenreToggle=(id)=>{
-      setFormData((prev)=>({
-        ...prev,
-        genre_id:prev.genre_id.includes(id)
-        ? prev.genre_id.filter((g)=> g != id)
-        :[...prev.genre_id,id],
-      }));
-    };
+    Object.entries(formData).forEach(([key, value]) => {
+      if (!["topimages", "images", "genre_id", "area_id", "budget_id", "latitude", "longitude"].includes(key)) {
+        formDataToSend.append(key, value);
+      }
+    });
 
+    formDataToSend.append("latitude", latitude);
+    formDataToSend.append("longitude", longitude);
+
+    const response = await fetch("http://127.0.0.1:8000/api/store-restaurant-data", {
+      method: "POST",
+      body: formDataToSend,
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      alert("店舗情報を送信しました！");
+      navigate("/MyPage");
+    } else {
+      alert("申請に失敗しました。");
+    }
+  };
 
   return (
     <div style={{ padding: "20px", maxWidth: "500px", margin: "0 auto" }}>
@@ -168,12 +167,7 @@ function RestaurantForm() {
         ))}
       </div>
 
-      {[
-        { label: "店名", name: "name" },
-        { label: "見出し", name: "catchphrase" },
-        { label: "URL", name: "url" },
-         { label: "電話番号", name: "tel" },
-      ].map((field) => (
+      {[{ label: "店名", name: "name" }, { label: "見出し", name: "catchphrase" }, { label: "URL", name: "url" }, { label: "電話番号", name: "tel" }].map((field) => (
         <div key={field.name}>
           <label>{field.label}</label>
           <input type="text" name={field.name} value={formData[field.name]} onChange={handleChange} />
@@ -186,35 +180,52 @@ function RestaurantForm() {
       </div>
 
       <div>
-        <label>地域</label>
-        <select name="area_id" value={formData.area_id} onChange={handleChange}>
-          <option value="">選択してください</option>
+        <label>地域（1つ選択）</label>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
           {areaOptions.map((area) => (
-            <option key={area.id} value={area.id}>{area.name}</option>
+            <label key={area.id} style={{ display: "flex", alignItems: "center" }}>
+              <input
+                type="radio"
+                name="area_id"
+                value={area.id}
+                checked={formData.area_id === String(area.id)}
+                onChange={handleChange}
+              />
+              {area.name}
+            </label>
           ))}
-        </select>
+        </div>
       </div>
 
       <div>
-        <label>予算</label>
-        <select name="budget_id" value={formData.budget_id} onChange={handleChange}>
-          <option value="">選択してください</option>
+        <label>予算（1つ選択）</label>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
           {budgetOptions.map((budget) => (
-            <option key={budget.id} value={budget.id}>{budget.name}</option>
+            <label key={budget.id} style={{ display: "flex", alignItems: "center" }}>
+              <input
+                type="radio"
+                name="budget_id"
+                value={budget.id}
+                checked={formData.budget_id === String(budget.id)}
+                onChange={handleChange}
+              />
+              {budget.name}
+            </label>
           ))}
-        </select>
+        </div>
       </div>
 
       <div>
-        <label>ジャンル（複数選択可）</label>
+        <label>ジャンル（1つ選択）</label>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
           {genreOptions.map((genre) => (
             <label key={genre.id} style={{ display: "flex", alignItems: "center" }}>
               <input
-                type="checkbox"
+                type="radio"
+                name="genre_id"
                 value={genre.id}
-                checked={formData.genre_id.includes(genre.id)}
-                onChange={() => handleGenreToggle(genre.id)}
+                checked={formData.genre_id === String(genre.id)}
+                onChange={handleChange}
               />
               {genre.name}
             </label>
