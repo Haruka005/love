@@ -1,4 +1,4 @@
-// src/User/AuthContext.jsx
+//ログイン状態、情報を管理できるコンポーネント
 import { createContext, useContext, useState, useEffect } from "react";
 
 export const AuthContext = createContext(null);

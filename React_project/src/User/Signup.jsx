@@ -39,36 +39,36 @@ export default function Signup(){
             return;   
         }
         setError(""); //エラーをリセット
-    try {
-    // LaravelのAPIにPOSTリクエストを送信
-    const response = await axios.post('http://localhost:8000/api/register', {
-      name: name,
-      email: Email,
-      password: password
-    });
+        try {
+            // LaravelのAPIにPOSTリクエストを送信
+            const response = await axios.post('http://localhost:8000/api/register', {
+            name: name,
+            email: Email,
+            password: password
+            });
 
-    //登録成功したら遷移
-    navigate('/AccountCreated', {
-    state: {
-    name: name,
-    email: Email
-  }
-});
+            //登録成功したら遷移
+            navigate('/AccountCreated', {
+                state: {
+                    name: name,
+                    email: Email
+                }
+            });
 
-     //確認用（ここでAPIに送るらしい）
-     console.log('登録情報：',{name,Email,password});
+            //確認用（ここでAPIに送るらしい）
+            console.log('登録情報：',{name,Email,password});
 
-  } catch (error) {
-    // バリデーションエラーなどが返ってきた場合
-    if (error.response && error.response.status === 422) {
-      const errors = error.response.data.errors;
-      const firstError = Object.values(errors)[0][0]; // 最初のエラーだけ表示
-      setError(firstError);
-    } else {
-      setError('通信エラーが発生しました');
-    }
-  }
-};
+        } catch (error) {
+            // バリデーションエラーなどが返ってきた場合
+            if (error.response && error.response.status === 422) {
+                const errors = error.response.data.errors;
+                const firstError = Object.values(errors)[0][0]; // 最初のエラーだけ表示
+                setError(firstError);
+            } else {
+                setError('通信エラーが発生しました');
+            }
+        }
+    };
 
     //ここからは画面に表示する内容
     return(
