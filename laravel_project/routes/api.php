@@ -1,4 +1,6 @@
 <?php
+
+//use消さない！（ルートで使うクラスを探すためのもの）
 use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -9,9 +11,9 @@ use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EventDetailController;
 use App\Http\Controllers\UserController;
+//use App\Models\Token;
 
 // 認証不要ルート
-
 
 //イベントを月ごとに取得
 Route::get('/events/{year}/{month}', [EventController::class, 'getByMonth']); 
@@ -28,36 +30,44 @@ Route::get('/restaurants',[RestaurantController::class, 'getRestaurant']);
 //飲食店詳細取得
 Route::get('/restaurants/{id}',[RestaurantController::class, 'show']);
 
-//
-Route::middleware('auth:sanctum')->post('/upload-event-image', [EventImageController::class, 'uploadEventImage']);
-
-//新規登録
+// 新規登録
 Route::post('/register', [UserController::class, 'register']);
 
-//ログイン
+// ログイン
 Route::post('/login', [UserController::class, 'login']);
 
+// 店登録のマップに使ってる
 Route::get('/geocode', function (Request $request) {
     $address = $request->query('q');
     if (!$address || strlen($address) < 3) {
         return response()->json(['error' => '住所が不正です'], 400);
     }
-    $response = Http::withOptions(['verify' => false])->get('https://nominatim.openstreetmap.org/search', [
+
+    $response = Http::withOptions([
+        'verify' => false,
+        'headers' => [
+            'User-Agent' => 'NoboribetsuMapApp/1.0 (love@example.com)'
+        ]
+    ])->get('https://nominatim.openstreetmap.org/search', [
         'format' => 'json',
         'q' => $address,
+        'limit' => 1,
     ]);
-    return $response->json();
-});
 
-Route::get('/events/{year}/{month}', [EventController::class, 'getByMonth']);
-Route::get('/events/upcoming', [EventController::class, 'getUpComingEvent']);
-Route::post('/store-event-data', [EventImageController::class, 'storeEventData']);
+    $data = $response->json();
+
+    if (empty($data)) {
+        return response()->json([], 200); // ← 空でも明示的に返す
+    }
+
+    return response()->json($data);
+});
 
 // 認証必須ルートが必要なルートはここに書く
 Route::middleware('check.token')->group(function () {
     Route::get('/me', fn(Request $request) => response()->json($request->user()));
     Route::post('/upload-event-image', [EventImageController::class, 'uploadEventImage']);
-    Route::post('/store-restaurant-data', [RestaurantController::class, 'storeRestaurantData']);
+    // Route::post('/store-restaurant-data', [RestaurantController::class, 'storeRestaurantData']);
 });
 
 // バージョン付きルート（例：v1）

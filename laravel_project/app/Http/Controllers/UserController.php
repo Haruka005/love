@@ -106,8 +106,9 @@ class UserController extends Controller
             $user = Auth::user();
 
             //トークン作成(ランダム64文字)
-            $token = bin2hex(random_bytes(32));
+          //  $token = bin2hex(random_bytes(32));
 
+            /*
              // トークン保存
              Token::create([
                 'user_id'     => $user->id,
@@ -115,6 +116,7 @@ class UserController extends Controller
                 'expires_at'  => now()->addHour(1), // 有効期限1時間
                 'last_used_at'=> now(),
             ]);
+            */
             
             return response()->json([
                 'message'=>'ログイン成功',

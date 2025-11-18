@@ -1,7 +1,6 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./AuthContext";
-import MapView from "./MapView";
 
 function RestaurantForm() {
   const navigate = useNavigate();
@@ -11,16 +10,35 @@ function RestaurantForm() {
     topimages: [null],
     images: [null, null, null],
     name: "",
-    headline: "",
+    catchphrase: "",
     url: "",
     comment: "",
     budget_id: "",
     address: "",
     latitude: "",
     longitude: "",
-    genre_id: [],
+    genre_id: "",
     area_id: "",
+    tel: "",
   });
+
+  const [areaOptions, setAreaOptions] = useState([]);
+  const [budgetOptions, setBudgetOptions] = useState([]);
+  const [genreOptions, setGenreOptions] = useState([]);
+
+  useEffect(() => {
+    const fetchMasters = async () => {
+      const [areas, budgets, genres] = await Promise.all([
+        fetch("http://127.0.0.1:8000/api/m_areas").then((res) => res.json()),
+        fetch("http://127.0.0.1:8000/api/m_budgets").then((res) => res.json()),
+        fetch("http://127.0.0.1:8000/api/m_genres").then((res) => res.json()),
+      ]);
+      setAreaOptions(areas);
+      setBudgetOptions(budgets);
+      setGenreOptions(genres);
+    };
+    fetchMasters();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -42,9 +60,20 @@ function RestaurantForm() {
             latitude: lat,
             longitude: lon,
           }));
+        } else {
+          setFormData((prev) => ({
+            ...prev,
+            latitude: "42.4123",
+            longitude: "141.2063",
+          }));
         }
       } catch (error) {
         console.error("位置情報取得失敗:", error);
+        setFormData((prev) => ({
+          ...prev,
+          latitude: "42.4123",
+          longitude: "141.2063",
+        }));
       }
     }
   };
@@ -68,6 +97,9 @@ function RestaurantForm() {
       return;
     }
 
+    const latitude = formData.latitude || "42.4123";
+    const longitude = formData.longitude || "141.2063";
+
     const formDataToSend = new FormData();
     formDataToSend.append("user_id", currentUser.id);
 
@@ -81,15 +113,18 @@ function RestaurantForm() {
       }
     });
 
-    if (formData.genre_id.length > 0) {
-      formData.genre_id.forEach((g) => formDataToSend.append("genre_id[]", g));
-    }
+    formDataToSend.append("genre_id", formData.genre_id);
+    formDataToSend.append("area_id", formData.area_id);
+    formDataToSend.append("budget_id", formData.budget_id);
 
     Object.entries(formData).forEach(([key, value]) => {
-      if (!["topimages", "images", "genre_id"].includes(key)) {
+      if (!["topimages", "images", "genre_id", "area_id", "budget_id", "latitude", "longitude"].includes(key)) {
         formDataToSend.append(key, value);
       }
     });
+
+    formDataToSend.append("latitude", latitude);
+    formDataToSend.append("longitude", longitude);
 
     const response = await fetch("http://127.0.0.1:8000/api/store-restaurant-data", {
       method: "POST",
@@ -132,12 +167,7 @@ function RestaurantForm() {
         ))}
       </div>
 
-      <div>
-        <label>アクセス</label>
-        <MapView address={formData.address} />
-      </div>
-
-      {[{ label: "店名", name: "name" }, { label: "見出し", name: "headline" }, { label: "URL", name: "url" }].map((field) => (
+      {[{ label: "店名", name: "name" }, { label: "見出し", name: "catchphrase" }, { label: "URL", name: "url" }, { label: "電話番号", name: "tel" }].map((field) => (
         <div key={field.name}>
           <label>{field.label}</label>
           <input type="text" name={field.name} value={formData[field.name]} onChange={handleChange} />
@@ -150,45 +180,54 @@ function RestaurantForm() {
       </div>
 
       <div>
-        <label>地域</label>
-        <select name="area_id" value={formData.area_id} onChange={handleChange}>
-          <option value="">選択してください</option>
-          <option value="登別">登別</option>
-          <option value="室蘭">室蘭</option>
-        </select>
-      </div>
-
-      <div>
-        <label>予算</label>
-        <select name="budget_id" value={formData.budget_id} onChange={handleChange}>
-          <option value="">選択してください</option>
-          <option value="1000">~1000円</option>
-          <option value="3000">~3000円</option>
-          <option value="5000">~5000円</option>
-          <option value="5001">5000円以上</option>
-        </select>
-      </div>
-
-      <div>
-        <label>ジャンル（複数選択可）</label>
-        <div>
-          {["洋食", "定食", "デザート"].map((genre) => (
-            <label key={genre}>
+        <label>地域（1つ選択）</label>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+          {areaOptions.map((area) => (
+            <label key={area.id} style={{ display: "flex", alignItems: "center" }}>
               <input
-                type="checkbox"
-                value={genre}
-                checked={formData.genre_id.includes(genre)}
-                onChange={(e) => {
-                  const { checked, value } = e.target;
-                  setFormData((prev) => ({
-                    ...prev,
-                    genre_id: checked
-                      ? [...prev.genre_id, value]
-                      : prev.genre_id.filter((g) => g !== value),
-                  }));
-                }}
+                type="radio"
+                name="area_id"
+                value={area.id}
+                checked={formData.area_id === String(area.id)}
+                onChange={handleChange}
               />
-              <span>{genre}</span>
+              {area.name}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label>予算（1つ選択）</label>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+          {budgetOptions.map((budget) => (
+            <label key={budget.id} style={{ display: "flex", alignItems: "center" }}>
+              <input
+                type="radio"
+                name="budget_id"
+                value={budget.id}
+                checked={formData.budget_id === String(budget.id)}
+                onChange={handleChange}
+              />
+              {budget.name}
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label>ジャンル（1つ選択）</label>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+          {genreOptions.map((genre) => (
+            <label key={genre.id} style={{ display: "flex", alignItems: "center" }}>
+              <input
+                type="radio"
+                name="genre_id"
+                value={genre.id}
+                checked={formData.genre_id === String(genre.id)}
+                onChange={handleChange}
+              />
+              {genre.name}
             </label>
           ))}
         </div>

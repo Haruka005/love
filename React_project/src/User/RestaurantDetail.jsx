@@ -43,13 +43,15 @@ export default function RestaurantDetail() {
 
       <div style={{ marginTop: "20px" }}>
         <h3>店舗情報</h3>
-        <p>ジャンル：{restaurant.genre.name}</p>
-        <p>エリア：{restaurant.area.name}</p>
-        <p>予算：{restaurant.budget.name}</p>
-        <p>住所：{restaurant.address}</p>
-        <p>営業時間：{restaurant.opening_hours}</p>
-        <p>定休日：{restaurant.holiday}</p>
+        <p>ジャンル：{Array.isArray(restaurant.genre_names) ? restaurant.genre_names.join("・") : "ジャンル不明"}</p>
+        <p>エリア：{restaurant.area?.name ?? "エリア不明"}</p>
+        <p>予算：{restaurant.budget?.name ?? "予算不明"}</p>
+        <p>住所：{restaurant.address ?? "住所不明"}</p>
+        <p>営業時間：{restaurant.opening_hours ?? "未設定"}</p>
+        <p>定休日：{restaurant.holiday ?? "未設定"}</p>
       </div>
+
+
 
       <div style={{ marginTop: "20px" }}>
         <h3>お店の紹介</h3>
