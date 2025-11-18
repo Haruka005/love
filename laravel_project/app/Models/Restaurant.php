@@ -1,20 +1,19 @@
 <?php
 
-//モデルは1テーブルにつき1個（基本的には）
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Genre;
+use App\Models\Area;
+use App\Models\Budget;
 
 class Restaurant extends Model
 {
     use HasFactory;
 
-    // もしテーブル名がモデル名と違う場合は明示
     protected $table = 'm_restaurants';
 
-    // 書き換え可能なカラムを指定（任意）
     protected $fillable = [
         'user_id',
         'name',
@@ -32,21 +31,20 @@ class Restaurant extends Model
         'image1_path',
         'image2_path',
         'image3_path',
-
     ];
 
-     //  ジャンルは複数選択の為
-    protected $casts = [
-    'genre_id' => 'array',
-    ];
     
-    // エリアとの関係（1レストランは1エリア）
+
+    public function genre()
+    {
+        return $this->belongsTo(Genre::class, 'genre_id');
+    }
+
     public function area()
     {
         return $this->belongsTo(Area::class, 'area_id');
     }
 
-    // 予算との関係（1レストランは1予算）
     public function budget()
     {
         return $this->belongsTo(Budget::class, 'budget_id');
