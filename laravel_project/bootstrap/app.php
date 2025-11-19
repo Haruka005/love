@@ -13,9 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function ($middleware): void {
-        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
-        //自作ミドルウェア
-        $middleware->prepend(\App\Http\Middleware\CheckToken::class);
+        $middleware->prepend(\App\Http\Middleware\CorsMiddleware::class); // 先にCORS
+        $middleware->append(\App\Http\Middleware\CheckToken::class);     // 後に認証
+
     })
     ->withExceptions(function ($exceptions): void {
         //
