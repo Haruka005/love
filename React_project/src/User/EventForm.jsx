@@ -2,7 +2,7 @@
 //今後拡張として、複数画像対応、画像削除、画像を再アップロードする
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../User/AuthContext";
+import { AuthContext } from "./components/AuthContext";
 
 
 function EventForm() {

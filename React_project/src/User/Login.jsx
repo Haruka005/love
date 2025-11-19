@@ -2,7 +2,7 @@
 
 import { useState } from "react";   //Reactの中からuseStateっていう便利機能を取りだして使うよっていう宣言
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from "./AuthContext"; 
+import { useAuth } from "../contexts/AuthContext"; 
 
 export default function Login(){    //外に持って行ってOKなLoginっていう名前の部品作るよっていう宣言
     const [email,setEmail] = useState('');  //emailっていう変数用意して最初は空にしとく、メールの内容をリアルタイムで保存できる

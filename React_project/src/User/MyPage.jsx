@@ -2,25 +2,44 @@
 
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useState } from "react";
 //ログイン状態を確認する
-import { useAuth } from "./AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 
 // このファイルで定義するコンポーネント（部品）の名前は MyPage
 export default function MyPage() {
   const navigate = useNavigate();
   //ここでログイン状態を取得する
-  const {isLoggedIn} =useAuth();
+  const { isLoggedIn, currentUser, logout } = useAuth();
+  const [showConfirm, setShowConfirm] = useState(false); // 確認ボックス表示フラグ
+  const [loginOut, setLoginOut] = useState(false);   // ログアウト中フラグ
 
   useEffect(()=> {
-    if(!isLoggedIn){
+    if(!isLoggedIn && !loginOut){
       navigate("/login");
     }
-  },[isLoggedIn,navigate]);
+  },[isLoggedIn,loginOut,navigate]);
 
-//未ログイン時に表示されない様にする
-  if(!isLoggedIn){
+  //未ログイン時に表示されない様にする
+  if(!isLoggedIn && !loginOut){
     return null;
   }
+
+  //ログアウトボタンを押すと確認ボックス表示
+  const handleLogoutClick = () =>{
+    setShowConfirm(true);
+  }
+
+  //はいを押したとき
+  const handleConfirmYes = () => {
+    logout(); //実際にログアウト
+    setLoginOut(true); //ログアウト中と表示
+    setShowConfirm(false); //確認ボックスを消す
+    setTimeout(() => navigate("/"),5000); //5秒後にTOPページへ遷移
+  };
+
+  //いいえを押したとき
+  const handleConfirmNo = () => setShowConfirm(false); //ボックスを閉じる
 
   // グリッドレイアウト用のスタイル
   const gridStyle = {
@@ -29,16 +48,6 @@ export default function MyPage() {
     gap: "10px", // ボタン間の余白
     marginTop: "20px",
     marginBottom: "20px",
-  };
-
-  // ボタンの共通スタイル
-  const buttonStyle = {
-    padding: "10px",
-    fontSize: "14px",
-    borderRadius: "6px",
-    border: "none",
-    backgroundColor: "#eee",
-    cursor: "pointer",
   };
 
   // 閉じるボタンのスタイル（丸くてグレー）
@@ -52,17 +61,6 @@ export default function MyPage() {
     fontSize: "20px",
     cursor: "pointer",
   };
-
-  // ユーザーアイコンのスタイル（円形＋枠）
-  const avatarStyle = {
-    width: "100px",
-    height: "100px",
-    borderRadius: "50%",
-    border: "3px solid #ccc",
-    padding: "5px",
-    backgroundColor: "#fff",
-  };
-
   
   // return の中に、このコンポーネントが画面に表示する内容を書く
   //ログイン済みならマイページ表示
@@ -72,14 +70,7 @@ export default function MyPage() {
 
       {/* ユーザーアイコンと名前 */}
       <div>
-        <img
-          src="/images/yuru-oni.png"
-          alt="ユーザーアイコン"
-          style={avatarStyle}
-        />
-        {/*→currentUser.nameを使用すればログインユーザーに応じて
-          動的にできる*/}
-        <p><strong>ユーザー名: のぼりべつ赤鬼代表</strong></p>
+        <p><strong>お帰りなさい！   {currentUser?.name}  さん！</strong></p>
       </div>
 
       {/* ボタン一覧 */}
@@ -93,11 +84,31 @@ export default function MyPage() {
           <button  onClick={() => navigate("/EventApplicationHistory")}>イベント申請確認</button>
           <button  onClick={() => navigate("/EventForm")}>イベント申請新規登録</button>
           <button  onClick={() => navigate("/RestaurantForm")}>店登録（仮）</button>
-          <button  onClick={() => navigate("/")}>ログアウト</button>
-          
-
+          {!loginOut && <button  onClick={handleLogoutClick}>ログアウト</button>}
 
         </div>
+
+        {/* 確認ボックス */}
+      {showConfirm && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <p>本当にログアウトしますか？</p>
+            <button onClick={handleConfirmYes} style={{ marginRight: "10px" }}>はい</button>
+            <button onClick={handleConfirmNo}>いいえ</button>
+          </div>
+        </div>
+      )}
+
+      {/* ログアウト中表示 */}
+      {loginOut && (
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <p>ログアウト中です...<br />
+            5秒後にTOPページに戻ります</p>
+          </div>
+        </div>
+      )}
+
       </div>
 
        {/* メインページに戻る ✕ ボタン */}
@@ -106,7 +117,7 @@ export default function MyPage() {
           style={closeButtonStyle}
           onClick={() => navigate("/")} // ← ここでメインページに戻る
         >
-          ✕
+        ✕
         </button>
       </div>
     </div>
