@@ -102,8 +102,7 @@ class UserController extends Controller
         }
 
         //認証チェック
-        if(Auth::attempt($request->only('email','password'))) {
-            $user = Auth::user();
+        if(Hash::check($request->password, $user->password)) {
 
             //トークン作成(ランダム64文字)
           $token = bin2hex(random_bytes(32));
