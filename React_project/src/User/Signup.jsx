@@ -68,7 +68,7 @@ export default function Signup(){
                 setError('通信エラーが発生しました');
             }
         }
-    };
+};
 
     //ここからは画面に表示する内容
     return(
