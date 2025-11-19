@@ -41,10 +41,10 @@ export default function Signup(){
         setError(""); //エラーをリセット
         try {
             // LaravelのAPIにPOSTリクエストを送信
-            const response = await axios.post('http://localhost:8000/api/register', {
-            name: name,
-            email: Email,
-            password: password
+            await axios.post('http://localhost:8000/api/register', {
+                name: name,
+                email: Email,
+                password: password
             });
 
             //登録成功したら遷移

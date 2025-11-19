@@ -12,10 +12,12 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
+    ->withMiddleware(function ($middleware): void {
+        $middleware->append(\Illuminate\Http\Middleware\HandleCors::class);
         //自作ミドルウェア
-         $middleware->prepend(CheckToken::class);
+        $middleware->prepend(\App\Http\Middleware\CheckToken::class);
     })
-    ->withExceptions(function (Exceptions $exceptions): void {
+    ->withExceptions(function ($exceptions): void {
         //
     })->create();
+

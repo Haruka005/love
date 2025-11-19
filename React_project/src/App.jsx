@@ -1,9 +1,7 @@
 // src/App.js
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-//import { AuthContext } from "./contexts/AuthContext";
-import React, { useState } from "react";
-import { AuthProvider } from "./User/components/AuthContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import "./App.css";
 
 // 各ページコンポーネントをインポート
