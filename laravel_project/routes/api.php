@@ -30,6 +30,9 @@ Route::post('/login', [UserController::class, 'login']);
 // 店舗登録（認証不要で受け付ける）
 Route::post('/store-restaurant-data', [RestaurantController::class, 'storeRestaurantData']);
 
+//イベント登録（認証不要で受けつける）
+Route::post('/store-event-data', [EventImageController::class, 'storeEventData']);
+
 // マスターデータ取得（ラジオボタン用）
 Route::get('/m_areas', [RestaurantController::class, 'getAreas']);
 Route::get('/m_budgets', [RestaurantController::class, 'getBudgets']);
