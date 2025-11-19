@@ -9,11 +9,7 @@ class CheckToken
 {
     public function handle(Request $request, Closure $next)
     {
-        //OPTIONS(送っていい？って聞くリクエスト)を通過させる
-        if ($request->getMethod() === 'OPTIONS') {
-            return response()->json([], 200);
-        }
-
+        
         //Authorizationヘッダーを取得（HTTPリクエストのヘッダー内の送信者の情報）
         $header = $request->header('Authorization');
 
