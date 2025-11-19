@@ -11,32 +11,31 @@ use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EventDetailController;
 use App\Http\Controllers\UserController;
-//use App\Models\Token;
 
 // 認証不要ルート
 
-//イベントを月ごとに取得
-Route::get('/events/{year}/{month}', [EventController::class, 'getByMonth']); 
+// イベント取得
+Route::get('/events/{year}/{month}', [EventController::class, 'getByMonth']);
+Route::get('/events/upcoming', [EventController::class, 'getUpComingEvent']);
+Route::get('/events/{id}', [EventController::class, 'show']);
 
-//今月のイベント取得
-Route::get('/events/upcoming',[EventController::class, 'getUpComingEvent']);
+// 飲食店取得
+Route::get('/restaurants', [RestaurantController::class, 'getRestaurant']);
+Route::get('/restaurants/{id}', [RestaurantController::class, 'show']);
 
-//イベント詳細取得
-Route::get('/events/{id}',[EventController::class,'show']);
-
-//飲食店取得
-Route::get('/restaurants',[RestaurantController::class, 'getRestaurant']);
-
-//飲食店詳細取得
-Route::get('/restaurants/{id}',[RestaurantController::class, 'show']);
-
-// 新規登録
+// ユーザー登録・ログイン
 Route::post('/register', [UserController::class, 'register']);
-
-// ログイン
 Route::post('/login', [UserController::class, 'login']);
 
-// 店登録のマップに使ってる
+// 店舗登録（認証不要で受け付ける）
+Route::post('/store-restaurant-data', [RestaurantController::class, 'storeRestaurantData']);
+
+// マスターデータ取得（ラジオボタン用）
+Route::get('/m_areas', [RestaurantController::class, 'getAreas']);
+Route::get('/m_budgets', [RestaurantController::class, 'getBudgets']);
+Route::get('/m_genres', [RestaurantController::class, 'getGenres']);
+
+// ジオコーディングAPI
 Route::get('/geocode', function (Request $request) {
     $address = $request->query('q');
     if (!$address || strlen($address) < 3) {
@@ -57,17 +56,16 @@ Route::get('/geocode', function (Request $request) {
     $data = $response->json();
 
     if (empty($data)) {
-        return response()->json([], 200); // ← 空でも明示的に返す
+        return response()->json([], 200);
     }
 
     return response()->json($data);
 });
 
-// 認証必須ルートが必要なルートはここに書く
+// 認証必須ルート
 Route::middleware('check.token')->group(function () {
     Route::get('/me', fn(Request $request) => response()->json($request->user()));
     Route::post('/upload-event-image', [EventImageController::class, 'uploadEventImage']);
-    // Route::post('/store-restaurant-data', [RestaurantController::class, 'storeRestaurantData']);
 });
 
 // バージョン付きルート（例：v1）
