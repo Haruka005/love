@@ -21,8 +21,8 @@ class UserController extends Controller
         //配列でルールを設定:name,email,passwordに対して条件を付ける
         $validator = Validator::make($request->all(),[
             'name' => 'required|string|max:255',
-            //これで一意制約できた
             'email' => 'required|email|unique:users,email',
+             //入力必須、メアド形式、userテーブルのemailに同じ値が存在したらエラー
             'password' => ['required',
                           'string',
                           'min:12',

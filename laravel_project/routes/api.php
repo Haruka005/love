@@ -72,3 +72,8 @@ Route::middleware('check.token')->group(function () {
 Route::prefix('v1')->group(function () {
     Route::post('/store-event-detail', [EventDetailController::class, 'store']);
 });
+
+//テストルート
+Route::middleware('check.token')->get('/test-token', function () {
+    return ['message' => 'Token OK'];
+});
