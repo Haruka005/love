@@ -52,7 +52,7 @@ class AuthController extends Controller
         \App\Models\Token::create([
             'user_id'     => $user->id,
             'token'       => $token,
-            'expires_at'  => now()->addHour(1),
+            'token_expires_at' => now()->addHour(1), 
             'last_used_at'=> now(),
         ]);
 

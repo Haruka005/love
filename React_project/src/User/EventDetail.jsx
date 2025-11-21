@@ -2,7 +2,7 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 
-export default function RestaurantDetail() {
+export default function EventDetail() {
   const { id } = useParams(); // URLからid取得
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
