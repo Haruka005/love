@@ -80,7 +80,7 @@ class UserController extends Controller
         Token::create([
             'user_id' => $user->id,
             'token' => $token,
-            'token_expires_at' => now()->addMinutes(30), // ← 有効期限30分
+            'token_expires_at' => now()->addHour(1), // ← 有効期限30分
             'last_used_at' => now(),
         ]);
 

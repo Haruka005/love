@@ -35,7 +35,8 @@ export default function Login(){    //外に持って行ってOKなLoginって�
           id: data.user.id,
           name: data.user.name,
           email: data.user.email,
-        });
+        },data.token
+      );
         navigate('/MyPage');
       } else {
         setError(data.message || 'ログインに失敗しました');
