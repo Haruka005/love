@@ -10,6 +10,8 @@ use App\Models\User;
 use App\Models\Token;
 
 
+/*会員登録機能*/
+
 //laravelの基本コントローラーを継承
 class UserController extends Controller
 {
@@ -63,7 +65,8 @@ class UserController extends Controller
         ],201);//HTTPステータスコード:201(成功)
     }
 
-    //ログイン
+/*ログイン*/
+
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(),[

@@ -25,21 +25,20 @@ import RestaurantDetail from "./User/RestaurantDetail";
 import AdminTop from "./admin/AdminTop";
 
 import RestaurantForm from './User/RestaurantForm';
+import Header from "./User/components/Header";
+import Footer from "./User/components/Footer";
 
 
 
 
 function App() {
-  // 仮のログインユーザー情報（本番ではログイン処理と連携）
-  /*const [currentUser] = useState({
-    id: 123,
-    has_image_folder: 0,
-  });*/
-  
+  const user={name:"なお"};
+
   return (
     //ReactのContext APIを使って「ログインユーザー情報（currentUser）」をアプリ全体に共有するための仕組みらしい
     <AuthProvider>
     <BrowserRouter>
+
       <Routes>
         {/* トップページ */}
         <Route path="/" element={<MainPage />} />
@@ -93,7 +92,10 @@ function App() {
         <Route path="/AdminTop" element={<AdminTop />} />
 
       </Routes>
-    </BrowserRouter>
+
+       {/* フッターを常に表示 */}
+        <Footer />
+     </BrowserRouter>
      </AuthProvider>
   );
 }
