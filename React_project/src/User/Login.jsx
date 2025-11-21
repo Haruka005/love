@@ -17,6 +17,7 @@ export default function Login(){    //外に持って行ってOKなLoginって�
 
     try {
       const response = await fetch('http://localhost:8000/api/login', {
+       
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -24,18 +25,24 @@ export default function Login(){    //外に持って行ってOKなLoginって�
         body: JSON.stringify({ email, password }),
       });
 
+      console.log("response:", response); 
       const data = await response.json();
+      console.log("data:", data);
+
 
       if (response.ok) {
         //トークンをlocalstorage（ブラウザの保存箱）に保存
         //.setItemは保存命令引数は名前と保存する値（サーバから返ってきたdataの中のtoken）
         localStorage.setItem('token', data.token);
 
-        login({
+        login(
+          {
           id: data.user.id,
           name: data.user.name,
           email: data.user.email,
-        });
+        },
+        data.token
+      );
         navigate('/MyPage');
       } else {
         setError(data.message || 'ログインに失敗しました');

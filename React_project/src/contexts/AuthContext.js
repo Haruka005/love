@@ -31,8 +31,12 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
   };
 
+  // ログイン状態と現在のユーザー情報を提供（MyPageなどで使う）
+  const isLoggedIn = !!user;        // userが存在すればtrue
+  const currentUser = user;         // userをそのまま渡す
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>
+    <AuthContext.Provider value={{ user, token, login, logout, isLoggedIn, currentUser }}>
       {children}
     </AuthContext.Provider>
   );
