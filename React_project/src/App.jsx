@@ -91,10 +91,7 @@ function App() {
         {/*管理者TOP*/}
         <Route path="/AdminTop" element={<AdminTop />} />
 
-      </Routes>
-
-       {/* フッターを常に表示 */}
-        <Footer />
+      </Routes>    
      </BrowserRouter>
      </AuthProvider>
   );
