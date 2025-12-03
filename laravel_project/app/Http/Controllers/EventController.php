@@ -62,16 +62,25 @@ class EventController extends Controller
         return response()->json($events); // ← ここで配列だけを返す
     }
 
-    //イベント詳細を取得
-    public function show()
+
+    public function show($id)
     {
-        $events = Event::all();
+        try {
+            // IDに基づいてイベントを取得。見つからなければ例外を投げる (404 Not Found)
+            $event = Event::findOrFail($id);
+            
+            // 成功したイベントデータをJSONで返す
+            return response()->json($event);
 
-        if ($events->isEmpty()) {
-            return response()->json(['message' => 'イベントがありません'], 404);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // イベントがデータベースに見つからなかった場合の処理
+            return response()->json(['error' => '指定されたイベントが見つかりません。'], 404);
+            
+        } catch (\Exception $e) {
+            // その他の予期せぬエラー (念のため500エラーを返すロジック)
+            // サーバーのログで詳細なエラー原因を確認することを推奨します
+            // Log::error("イベント詳細取得エラー: " . $e->getMessage()); 
+            return response()->json(['error' => 'サーバー内部エラーが発生しました。'], 500);
         }
-
-        return response()->json($events);
     }
-
 }

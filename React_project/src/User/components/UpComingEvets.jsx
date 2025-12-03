@@ -13,11 +13,11 @@ function UpComingEvents(){
                 // バックエンドにリクエスト送る
                 const response = await fetch("http://127.0.0.1:8000/api/events/upcoming");
                
-                 console.log("受け取ったデータ:", data); // ← ここに追加！
-
-               
                 // 帰ってきたイベント一覧（JSON形式）をJavaScript形式に変換してdataに入れる
                 const data = await response.json();
+
+                console.log("受け取ったデータ:", data); // ← ここに追加！
+
                 // 上で宣言したeventsにsetする
                 setEvents(data);
                 console.log("イベント取得成功:", data);
