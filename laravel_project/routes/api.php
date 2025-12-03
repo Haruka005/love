@@ -14,6 +14,9 @@ use App\Http\Controllers\UserController;
 
 // 認証不要ルート
 
+//ログイン
+Route::post('/login', [UserController::class, 'login']);
+
 // イベント取得
 Route::get('/events/{year}/{month}', [EventController::class, 'getByMonth']);
 Route::get('/events/upcoming', [EventController::class, 'getUpComingEvent']);
@@ -68,11 +71,7 @@ Route::get('/geocode', function (Request $request) {
 
 // 認証必須ルート
 Route::middleware('check.token')->group(function () {
-    Route::get('/me', function(Request $request) {
-        //確認用ログ
-        \Log::info('/meアクセス', ['user' => $request->user()]);
-        return response()->json($request->user());
-    });
+    Route::get('/me', [UserController::class, 'me']); 
 
     //ログアウト
     Route::post('/logout', function (Request $request) {
