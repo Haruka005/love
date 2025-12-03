@@ -14,6 +14,8 @@ export default function MyPage() {
   const [showConfirm, setShowConfirm] = useState(false); // 確認ボックス表示フラグ
   const [loginOut, setLoginOut] = useState(false);   // ログアウト中フラグ
 
+  const token = localStorage.getItem("token");
+
   useEffect(()=> {
     if(!isLoggedIn && !loginOut){
       navigate("/login");
@@ -31,11 +33,29 @@ export default function MyPage() {
   }
 
   //はいを押したとき
-  const handleConfirmYes = () => {
-    logout(); //実際にログアウト
+  const handleConfirmYes = async () => {
     setLoginOut(true); //ログアウト中と表示
     setShowConfirm(false); //確認ボックスを消す
+
+    try { 
+      //サーバー側にログアウトを依頼
+      await fetch("http://localhost:8000/api/logout",{
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      localStorage.removeItem("token");
+      logout();//フロント側のユーザー情報削除
+      console.log("ログアウト成功");
+    }catch(err){
+      console.error("ログアウト通信エラー",err);
+    }
+
     setTimeout(() => navigate("/"),5000); //5秒後にTOPページへ遷移
+
   };
 
   //いいえを押したとき
