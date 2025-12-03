@@ -103,6 +103,8 @@ Route::middleware('check.token')->get('/test-token', function () {
 });
 
 
+//ログイン・新規登録
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
 Route::middleware('check.token')->get('/me', [UserController::class, 'me']);
+
