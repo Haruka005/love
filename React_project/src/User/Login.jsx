@@ -5,31 +5,39 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../contexts/AuthContext"; 
 
 export default function Login(){    //外に持って行ってOKなLoginっていう名前の部品作るよっていう宣言
-    const [email,setEmail] = useState('');  //emailっていう変数用意して最初は空にしとく、メールの内容をリアルタイムで保存できる
-    const [password,setPassword] = useState('');
-    const navigate = useNavigate();
-    const [error, setError] = useState('');
-    const{login}=useAuth();
+  const [email,setEmail] = useState('');  //emailっていう変数用意して最初は空にしとく、メールの内容をリアルタイムで保存できる
+  const [password,setPassword] = useState('');
+  const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const{login}=useAuth();
 
-    const handleSubmit = async(e) => {   //handle＝操作、submit＝送信された時にやること(e)はイベント情報が入っている（いつどのキーがクリックされた？）=>とはこれ(送信操作)がされたら次の処理を実行して！ということ
-        e.preventDefault(); //フォーム送信時は自動でリロードされてしまい、入力内容が消えてしまう。そのためページのリロードを防ぐ関数を用いる
-        setError('');
+  console.log("送信するトークン:", localStorage.getItem('token'));
+  console.log("送信するヘッダー:", {
+    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    'Content-Type': 'application/json',
+  });
 
-    try {
-      const response = await fetch('http://localhost:8000/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+  const handleSubmit = async(e) => {   //handle＝操作、submit＝送信された時にやること(e)はイベント情報が入っている（いつどのキーがクリックされた？）=>とはこれ(送信操作)がされたら次の処理を実行して！ということ
+      e.preventDefault(); //フォーム送信時は自動でリロードされてしまい、入力内容が消えてしまう。そのためページのリロードを防ぐ関数を用いる
+      setError('');
 
-      const data = await response.json();
+  try {
+    const response = await fetch('http://localhost:8000/api/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json',},
+      body: JSON.stringify({ email, password }),
+    });
 
-      if (response.ok) {
-        //トークンをlocalstorage（ブラウザの保存箱）に保存
-        //.setItemは保存命令引数は名前と保存する値（サーバから返ってきたdataの中のtoken）
-        localStorage.setItem('token', data.token);
+    const data = await response.json();
+    //ログ
+    console.log("response:", response); 
+    console.log("data:", data);
+
+
+    if (response.ok) {
+      //トークンをlocalstorage（ブラウザの保存箱）に保存
+      //.setItemは保存命令引数は名前と保存する値（サーバから返ってきたdataの中のtoken）
+      localStorage.setItem('token', data.token);
 
         login({
           id: data.user.id,

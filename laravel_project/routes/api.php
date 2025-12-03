@@ -68,7 +68,27 @@ Route::get('/geocode', function (Request $request) {
 
 // 認証必須ルート
 Route::middleware('check.token')->group(function () {
-    Route::get('/me', fn(Request $request) => response()->json($request->user()));
+    Route::get('/me', function(Request $request) {
+        //確認用ログ
+        \Log::info('/meアクセス', ['user' => $request->user()]);
+        return response()->json($request->user());
+    });
+
+    //ログアウト
+    Route::post('/logout', function (Request $request) {
+         \Log::info('ログアウト処理開始', ['user' => $request->user()]);
+
+        // 認証トークン削除
+        if ($request->user()) {
+            $request->user()->tokens()->delete();
+        }
+
+        \Log::info('トークン削除完了');
+
+        return response()->json(['message' => 'Logged out'], 200)
+            ->cookie('token', '', -1);//クッキー削除
+    });
+
     Route::post('/upload-event-image', [EventImageController::class, 'uploadEventImage']);
 });
 
@@ -81,8 +101,11 @@ Route::prefix('v1')->group(function () {
 Route::middleware('check.token')->get('/test-token', function () {
     return ['message' => 'Token OK'];
 });
+<<<<<<< HEAD
 
 //ログイン・新規登録
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
 Route::middleware('check.token')->get('/me', [UserController::class, 'me']);
+=======
+>>>>>>> f08e77c7fca10754a5b7c9427d5aa031da995196

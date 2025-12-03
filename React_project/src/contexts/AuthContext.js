@@ -11,25 +11,7 @@ export const AuthProvider = ({ children }) => {
     const savedToken = localStorage.getItem("token");
     if (savedToken) {
       setToken(savedToken);
-
-      // トークンからユーザー情報を取得
-      fetch("http://localhost:8000/api/me", {
-        headers: {
-          Authorization: `Bearer ${savedToken}`,
-        },
-      })
-        .then(res => {
-          if (!res.ok) throw new Error("Token expired or invalid");
-          return res.json();
-        })
-        .then(data => {
-          setUser(data.user);
-        })
-        .catch(() => {
-          setUser(null);
-          setToken(null);
-          localStorage.removeItem("token");
-        });
+      // ここで必要ならユーザー情報をサーバーから取得して setUser する
     }
   }, []);
 
@@ -44,9 +26,6 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     localStorage.removeItem("token");
   };
-
-  const isLoggedIn = !!user;
-  const currentUser = user;
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout, isLoggedIn, currentUser }}>

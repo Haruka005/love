@@ -4,12 +4,16 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use App\Models\Token;
+use Illuminate\Support\Facades\Log;
+
 
 class CheckToken
 {
     public function handle(Request $request, Closure $next)
     {
-        
+        //確認用
+        Log::info('ミドルウェア開始');
+
         //Authorizationヘッダーを取得（HTTPリクエストのヘッダー内の送信者の情報）
         $header = $request->header('Authorization');
 
@@ -24,6 +28,10 @@ class CheckToken
         //DBを確認、ない場合は不正なトークン
         $record = Token::where('token', $token)->first();
 
+        //確認用ログ
+        \Log::info('Tokenから取得したユーザー', ['user' => $record?->user]);
+
+
         //不正なトークンの場合→エラー
         if (!$record) {
             return response()->json(['error' => 'Invalid token'], 401);
@@ -33,6 +41,18 @@ class CheckToken
         if ($record->expired_flg) {
             return response()->json(['error' => 'Token expired'], 401);
         }
+
+        //ユーザーをリクエストにセット
+        $request->setUserResolver(function () use ($record) {
+            return $record->user; // Tokenに紐づくUserモデル
+        });
+        
+        //確認用ログ
+        Log::info('セッション情報確認', [
+            'session_id' => session()->getId(),       // セッションID
+            'all' => session()->all(),                // セッション内すべてのデータ
+            'user_id' => $request->user()?->id ?? null,  // 認証ユーザーID
+        ]);
 
         //すべてクリアの場合次の処理
         return $next($request);
