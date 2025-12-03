@@ -18,8 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // CorsMiddleware をグローバルに適用（最上位に）
         $middleware->prepend(CorsMiddleware::class);
 
-        // 必要なら CheckToken を名前付きで使う（RouteServiceProviderでalias済みなら不要）
-        // $middleware->alias('check.token', CheckToken::class);
+        $middleware->alias(['check.token' => CheckToken::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -38,9 +38,15 @@ class CheckToken
         }
 
         //有効期限切れの場合
-        if ($record->expired_flg) {
+        if ($record->token_expires_at->isPast()) {
+            Log::warning('【CheckToken】トークン期限切れ', ['token' => $token, 'expires_at' => $record->token_expires_at]);
+            // 期限切れの場合、データベースからも削除します
+            $record->delete(); 
             return response()->json(['error' => 'Token expired'], 401);
         }
+
+        //最終使用日時を更新
+        $record->update(['last_used_at' => now()]);
 
         //ユーザーをリクエストにセット
         $request->setUserResolver(function () use ($record) {

@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }) => {
     setUser(userData);
     setToken(jwtToken);
     //ログイン時にトークンとユーザー名を保存
-    localStorage.removeItem("token");
+    localStorage.setItem("token",jwtToken);
     localStorage.setItem("userName", userData.name);
   };
 
