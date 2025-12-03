@@ -7,7 +7,7 @@ function Header() {
   const [isOpen, setIsOpen] = useState(false);
 
   // Contextからログイン情報を取得
-  const { currentUser, isLoggedIn } = useAuth();
+  const { user, isLoggedIn } = useAuth();
 
   return (
     <header
@@ -38,7 +38,7 @@ function Header() {
         {/* ログイン状態の表示 */}
         <div style={{ fontSize: "14px", color: "#333", marginRight: "20px" }}>
           {isLoggedIn ? (
-            <span>👹 {currentUser.name} さん | ログイン中</span>
+            <span>👹 {user?.name} さん | ログイン中</span>
           ) : (
             <span>未ログイン</span>
           )}

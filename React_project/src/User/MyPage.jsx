@@ -10,7 +10,7 @@ import { useAuth } from "../contexts/AuthContext";
 export default function MyPage() {
   const navigate = useNavigate();
   //ここでログイン状態を取得する
-  const { isLoggedIn, currentUser, logout } = useAuth();
+  const { isLoggedIn, user, logout } = useAuth();
   const [showConfirm, setShowConfirm] = useState(false); // 確認ボックス表示フラグ
   const [loginOut, setLoginOut] = useState(false);   // ログアウト中フラグ
 
@@ -54,7 +54,7 @@ export default function MyPage() {
       console.error("ログアウト通信エラー",err);
     }
 
-    setTimeout(() => navigate("/"),5000); //5秒後にTOPページへ遷移
+    setTimeout(() => navigate("/"),500); //0.5秒後にTOPページへ遷移
 
   };
 
@@ -90,7 +90,7 @@ export default function MyPage() {
 
       {/* ユーザーアイコンと名前 */}
       <div>
-        <p><strong>お帰りなさい！   {currentUser?.name}  さん！</strong></p>
+        <p><strong>お帰りなさい！   {user?.name}  さん！</strong></p>
       </div>
 
       {/* ボタン一覧 */}
@@ -124,7 +124,7 @@ export default function MyPage() {
         <div className="modal-overlay">
           <div className="modal-box">
             <p>ログアウト中です...<br />
-            5秒後にTOPページに戻ります</p>
+            TOPページに戻ります</p>
           </div>
         </div>
       )}

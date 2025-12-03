@@ -138,4 +138,43 @@ class UserController extends Controller
         }
     }
 
+    public function me(Request $request)
+    {
+        //AuthorizationヘッダーからBearerトークンを取得
+        $authHeader = $request->header('Authorization');
+        
+        //ヘッダーが存在しない場合は401
+        if (!$authHeader || !str_starts_with($authHeader, 'Bearer ')) {
+             Log::warning('認証ヘッダーがありません。');
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        //Bearerの後のトークン部分を抽出
+        $tokenValue = substr($authHeader, 7);
+        
+        //トークンをデータベースで検索しチェック
+        $tokenRecord = Token::where('token', $tokenValue)
+                            ->where('token_expires_at', '>', now()) // 有効期限内か
+                            ->first();
+
+        //トークンが見つからない,期限切れの場合
+        if (!$tokenRecord) {
+             Log::warning('無効または期限切れのトークンです。', ['token' => $tokenValue]);
+            return response()->json(['message' => 'Unauthenticated. Invalid token.'], 401);
+        }
+
+        //ユーザー情報を取得
+        $user = $tokenRecord->user;
+
+        //トークンの最終使用日時を更新
+        $tokenRecord->update(['last_used_at' => now()]);
+        
+        //ユーザー情報をレスポンスとして返す
+        return response()->json([
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+        ], 200);
+    }
+
 }
