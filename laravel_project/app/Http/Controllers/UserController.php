@@ -108,7 +108,9 @@ class UserController extends Controller
         if(Hash::check($request->password, $user->password)) {
 
             //トークン作成(ランダム64文字)
-          $token = bin2hex(random_bytes(32));
+           $token = bin2hex(random_bytes(32));
+            //確認用ログ
+           \Log::info('ログイン成功、トークン発行', ['user_id' => $user->id, 'token' => $token]);
 
             
              // トークン保存
@@ -118,6 +120,9 @@ class UserController extends Controller
                 'token_expires_at' => now()->addHour(1),  // 有効期限1時間
                 'last_used_at'=> now(),
             ]);
+
+            //確認用ログ
+            \Log::info('トークン保存完了', ['token' => $token]);
             
             
             return response()->json([

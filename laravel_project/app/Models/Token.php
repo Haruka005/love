@@ -19,4 +19,8 @@ class Token extends Model
         'expired_flg',
     ];
 
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class);
+    }
 }

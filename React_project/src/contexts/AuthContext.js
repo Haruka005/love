@@ -14,6 +14,17 @@ export const AuthProvider = ({ children }) => {
     if (savedToken) {
       setToken(savedToken);
       // ここで必要ならユーザー情報をサーバーから取得して setUser する
+
+      //サーバーからユーザー情報取得
+      fetch("http://localhost:8000/api/me", {
+        headers: { "Authorization": `Bearer ${savedToken}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.user) setUser(data.user);
+          else localStorage.removeItem("token"); // 無効なトークンなら削除
+        })
+        .catch(() => localStorage.removeItem("token"));
     }
   }, []);
 
