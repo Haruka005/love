@@ -83,4 +83,35 @@ class EventController extends Controller
             return response()->json(['error' => 'サーバー内部エラーが発生しました。'], 500);
         }
     }
+
+    //ログインしたユーザーのイベント登録履歴表示
+    public function index(Request $request)
+    {
+    try {
+        // ログインユーザーのIDを取得
+        $userId = $request->user()->id;
+
+        // ユーザーが申請したイベント一覧を取得
+        $events = Event::where('user_id', $userId)
+            ->orderBy('start_date', 'asc')
+            ->get([
+                'id',
+                'name',
+                'catchphrase',
+                'start_date',
+                'end_date',
+                'description',
+                'location',
+                'url',
+                'organizer',
+                'notes',
+                'image_url'
+            ]);
+
+        return response()->json($events);
+
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'イベント一覧の取得に失敗しました'], 500);
+    }
+}
 }
