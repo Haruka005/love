@@ -19,6 +19,14 @@ class Token extends Model
         'expired_flg',
     ];
 
+    //日付カラムをcarbonオブジェクトにキャスト
+    //carbon→日付を文字列ではなく時刻として扱ってくれる
+    protected $casts = [
+        // Laravelに、これらのカラムをCarbonオブジェクト（日付型）として扱わせる
+        'token_expires_at' => 'datetime',
+        'last_used_at' => 'datetime',
+    ];
+
     public function user()
     {
         return $this->belongsTo(\App\Models\User::class);

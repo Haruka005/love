@@ -41,4 +41,12 @@ class User extends Authenticatable
         'is_locked' => 'boolean',
         'locked_at' => 'datetime'   
     ];
+
+    //Tokenリレーション定義
+    //ログアウト時にこのメソッドを呼び出しトークンを削除
+    public function tokens()
+    {
+        return $this->hasMany(Token::class);
+    }
 }
+

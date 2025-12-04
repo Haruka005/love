@@ -10,21 +10,26 @@ import { useAuth } from "../contexts/AuthContext";
 export default function MyPage() {
   const navigate = useNavigate();
   //ここでログイン状態を取得する
-  const { isLoggedIn, user, logout } = useAuth();
+  const { isLoggedIn, user, logout,loading } = useAuth();
   const [showConfirm, setShowConfirm] = useState(false); // 確認ボックス表示フラグ
   const [loginOut, setLoginOut] = useState(false);   // ログアウト中フラグ
 
   const token = localStorage.getItem("token");
 
   useEffect(()=> {
-    if(!isLoggedIn && !loginOut){
+    if(!isLoggedIn && !loginOut && !loading){
       navigate("/login");
     }
-  },[isLoggedIn,loginOut,navigate]);
+  },[isLoggedIn,loginOut,loading,navigate]);
 
-  //未ログイン時に表示されない様にする
-  if(!isLoggedIn && !loginOut){
-    return null;
+  //ローディング中
+  if(loading){
+      // 認証チェックが終わるまで何も表示しない
+      return (
+        <div style={{ padding: '40px', textAlign: 'center' }}>
+          <p>読み込み中...</p>
+        </div>
+      );
   }
 
   //ログアウトボタンを押すと確認ボックス表示
