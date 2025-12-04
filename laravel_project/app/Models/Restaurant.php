@@ -31,7 +31,9 @@ class Restaurant extends Model
         'image1_path',
         'image2_path',
         'image3_path',
-    ];
+        'business_hours', 
+        'holiday',   
+];
 
     
 
