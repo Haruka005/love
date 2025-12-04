@@ -32,7 +32,6 @@ import Footer from "./User/components/Footer";
 
 
 function App() {
-  const user={name:"なお"};
 
   return (
     //ReactのContext APIを使って「ログインユーザー情報（currentUser）」をアプリ全体に共有するための仕組みらしい

@@ -108,7 +108,7 @@ h2 {
 /* 登録ボタン */
 .form-container button[type="submit"] {
   width: 100%;
-  padding: 12px 0;
+  padding: 12px ;
   font-size: 16px;
   border-radius: 8px;
   border: none;
@@ -127,7 +127,7 @@ h2 {
 
 
 /* -----------------------
-   ボタン（共通）
+   ボタン
 ------------------------*/
 button {
   background-color: #ffffff;

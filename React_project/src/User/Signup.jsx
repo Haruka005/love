@@ -32,7 +32,7 @@ export default function Signup(){
             setError("半角数字（0～9）を入れてくださいい");
             return;}
         if(!/[!@&?]/.test(password)){
-            setError("記号（！＠＆？）を入れてください");
+            setError("記号（@#!%*+=_-?）を入れてください");
             return;}
         if(password !== confi_pass){
             setError('パスワードが一致しません');
@@ -96,7 +96,7 @@ export default function Signup(){
                 <div className="password-field">
                     <input
                         type = {showPass ? "text" : "password"}     //showPassword関数がtrueならtext,falseならpasswordで表示する
-                        placeholder="パスワード(大小英字、半角数字、記号（!@&?）を１つ以上含む)"
+                        placeholder="パスワード"
                         value = {password}
                         onChange={(e) => setpassword(e.target.value)}
                         required
@@ -107,7 +107,7 @@ export default function Signup(){
                         type = "button"
                         onClick={() => setShowPass(!showPass)}
                     >
-                        {showPass ? "非表示" : "表示"}
+                        {showPass ? "😀" : "😑"}
                     </button>
                 </div>
 
@@ -125,14 +125,21 @@ export default function Signup(){
                         type = "button"
                         onClick={() => setShowconfi_Pass(!showconfi_Pass)}
                     >
-                        {showconfi_Pass ? "非表示" : "表示"}
+                        {showconfi_Pass ? "😀" : "😑"}
                     </button>
                 </div>
-                    {error && <p style={{ color: "red" }}>{error}</p>}
-                    <button 
-                        className="form-button" 
-                        type = "submit"
-                    >登録</button>
+
+                {error && <p style={{ color: "red" }}>{error}</p>}
+                <button 
+                    className="form-button" 
+                    type = "submit"
+                >登録</button>
+
+                <div style={{ marginTop: '15px' }}>
+                    <p style={{ margin: '0', fontSize: '0.7rem', color: 'red' }}>
+                        ※パスワードは12桁以上、大小英字、半角数字、<br />記号（@#!%*+=_-?）を全て含むものに設定してください。
+                    </p>
+                </div>
             </form>
         </div>
     );
