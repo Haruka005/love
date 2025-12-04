@@ -1,7 +1,4 @@
 // src/User/EventForm.jsx
-// イベント申請フォーム
-// 今後拡張として、複数画像対応、画像削除、画像を再アップロードする
-
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
@@ -24,12 +21,11 @@ function EventForm() {
   const [imageFile, setImageFile] = useState(null);
   const navigate = useNavigate();
 
-  // Context を安全に取得
   const context = useContext(AuthContext);
   if (!context) {
     return <p>ログイン情報が取得できません。ログインしてください。</p>;
   }
-  const { currentUser, isLoggedIn, login, logout } = context;
+  const { currentUser } = context;
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -60,7 +56,6 @@ function EventForm() {
       formDataToSend.append(key, value);
     });
 
-    // 必須項目チェック
     const requiredFields = [
       { key: "name", label: "タイトル" },
       { key: "catchphrase", label: "見出し" },
@@ -69,7 +64,7 @@ function EventForm() {
     ];
     for (const field of requiredFields) {
       if (!formData[field.key]) {
-        alert(`${field.label}を入力してください`); // ← 修正済み
+        alert(`${field.label}を入力してください`);
         return;
       }
     }
@@ -89,15 +84,7 @@ function EventForm() {
   };
 
   return (
-    <div
-      style={{
-        position: "relative",
-        padding: "20px",
-        fontFamily: "sans-serif",
-        maxWidth: "500px",
-        margin: "0 auto",
-      }}
-    >
+    <div style={{ position: "relative", padding: "20px", maxWidth: "500px", margin: "0 auto" }}>
       {/* 閉じるボタン */}
       <button
         onClick={() => navigate("/MyPage")}
@@ -106,60 +93,85 @@ function EventForm() {
           top: "10px",
           left: "10px",
           backgroundColor: "#eee",
-          color: "#333",
           border: "none",
           borderRadius: "50%",
           width: "40px",
           height: "40px",
           fontSize: "20px",
           cursor: "pointer",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-          zIndex: 1000,
         }}
       >
         ✕
       </button>
 
-      <h2 style={{ textAlign: "center", marginTop: "0" }}>イベント申請</h2>
+      <h2 style={{ textAlign: "center" }}>イベント申請</h2>
 
       {/* プレビュー枠 */}
-      <div
-        style={{
-          width: "100%",
-          height: "150px",
-          backgroundColor: "#ddd",
-          borderRadius: "6px",
-          marginBottom: "10px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#666",
-        }}
-      >
+      <div style={{ width: "100%", height: "150px", backgroundColor: "#ddd", marginBottom: "10px" }}>
         {previewUrl ? (
-          <img
-            src={previewUrl}
-            alt="プレビュー"
-            style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "cover" }}
-          />
+          <img src={previewUrl} alt="プレビュー" style={{ maxWidth: "100%", maxHeight: "100%" }} />
         ) : (
           <span>見出し画像（仮）</span>
         )}
       </div>
 
       {/* 画像アップロード */}
-      <input
-        type="file"
-        onChange={handleImageUpload}
-        style={{ display: "block", margin: "0 auto 20px" }}
-      />
+      <input type="file" onChange={handleImageUpload} style={{ display: "block", marginBottom: "20px" }} />
 
-      {/* 入力欄 */}
+      {/* タイトル */}
+      <div style={{ marginBottom: "10px" }}>
+        <label>タイトル</label>
+        <br />
+        <input
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
+        />
+      </div>
+
+      {/* 見出し */}
+      <div style={{ marginBottom: "10px" }}>
+        <label>見出し</label>
+        <br />
+        <input
+          type="text"
+          name="catchphrase"
+          value={formData.catchphrase}
+          onChange={handleChange}
+          style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
+        />
+      </div>
+
+      {/* 開始日 */}
+      <div style={{ marginBottom: "10px" }}>
+        <label>開始日</label>
+        <br />
+        <input
+          type="datetime-local"
+          name="start_date"
+          value={formData.start_date}
+          onChange={handleChange}
+          style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
+        />
+      </div>
+
+      {/* 終了日 */}
+      <div style={{ marginBottom: "10px" }}>
+        <label>終了日</label>
+        <br />
+        <input
+          type="datetime-local"
+          name="end_date"
+          value={formData.end_date}
+          onChange={handleChange}
+          style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
+        />
+      </div>
+
+      {/* その他のフィールド */}
       {[
-        { label: "タイトル", name: "name" },
-        { label: "見出し", name: "catchphrase" },
-        { label: "開始日", name: "start_date" },
-        { label: "終了日", name: "end_date" },
         { label: "場所", name: "location" },
         { label: "URL", name: "url" },
         { label: "主催者", name: "organizer" },
@@ -172,12 +184,7 @@ function EventForm() {
             name={field.name}
             value={formData[field.name]}
             onChange={handleChange}
-            style={{
-              width: "100%",
-              padding: "8px",
-              borderRadius: "4px",
-              border: "1px solid #ccc",
-            }}
+            style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
           />
         </div>
       ))}
@@ -190,12 +197,7 @@ function EventForm() {
           name="is_free_participation"
           value={formData.is_free_participation}
           onChange={handleChange}
-          style={{
-            width: "100%",
-            padding: "8px",
-            borderRadius: "4px",
-            border: "1px solid #ccc",
-          }}
+          style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
         >
           <option value="">選択してください</option>
           <option value="要予約">要予約</option>
@@ -212,12 +214,7 @@ function EventForm() {
           value={formData.description}
           onChange={handleChange}
           rows="3"
-          style={{
-            width: "100%",
-            padding: "8px",
-            borderRadius: "4px",
-            border: "1px solid #ccc",
-          }}
+          style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
         />
       </div>
 
@@ -230,28 +227,14 @@ function EventForm() {
           value={formData.notes}
           onChange={handleChange}
           rows="3"
-          style={{
-            width: "100%",
-            padding: "8px",
-            borderRadius: "4px",
-            border: "1px solid #ccc",
-          }}
+          style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
         />
       </div>
 
       {/* 申請ボタン */}
       <button
         onClick={handleEventSubmit}
-        style={{
-          width: "100%",
-          padding: "12px",
-          backgroundColor: "#a1a5a1ff",
-          color: "white",
-          border: "none",
-          borderRadius: "6px",
-          fontSize: "16px",
-          cursor: "pointer",
-        }}
+        style={{ width: "100%", padding: "12px", backgroundColor: "#a1a5a1ff", color: "white", border: "none" }}
       >
         申請する
       </button>

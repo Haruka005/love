@@ -1,4 +1,4 @@
-//イベント詳細画面
+// イベント詳細画面
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 
@@ -27,10 +27,6 @@ export default function EventDetail() {
   if (loading) return <p>読み込み中...</p>;
   if (!event) return <p>イベントが見つかりません。</p>;
 
-
-
-
-
   return (
     <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
       <h2>{event.name}</h2>
@@ -45,42 +41,38 @@ export default function EventDetail() {
 
       <p>{event.catchphrase}</p>
 
-      <div>
-        <h3>イベント内容</h3>
-        <p>開催期間：{event.start_date}~{event.end_date}</p>
-        <p>会場：</p>
-        <p>{event.description}</p>
+      <div style={{ marginTop: "20px" }}>
+        <h3>イベント情報</h3>
+        <p>開始日：{event.start_date}</p>
+        <p>終了日：{event.end_date}</p>
+        <p>場所：{event.location ?? "未設定"}</p>
+        <p>URL：{event.url ?? "未設定"}</p>
+        <p>主催者：{event.organizer ?? "未設定"}</p>
+        <p>予約：
+          {event.is_free_participation === 0
+            ? "要予約"
+            : event.is_free_participation === 1
+            ? "自由参加"
+            : "未設定"}
+        </p>
       </div>
 
-      <div>
+      <div style={{ marginTop: "20px" }}>
         <h3>詳細</h3>
-        <div>
-          <ul>
-            <li>・小さなお子様は保護者同伴でご参加ください。</li>
-            <li>・天候不良の場合は連絡いたします。</li>
-            <li>・天候によっては中止となる場合があります。</li>
-          </ul>
-        </div>
+        <p>{event.description ?? "詳細はありません"}</p>
       </div>
 
-      <div>
+      <div style={{ marginTop: "20px" }}>
         <h3>注意事項</h3>
-        <div>
-          <ul>
-            <li>小さなお子様は保護者同伴でご参加ください。</li>
-            <li>天候不良の場合は連絡いたします。</li>
-            <li>天候によっては中止となる場合があります。</li>
-          </ul>
-        </div>
+        <p>{event.notes ?? "注意事項はありません"}</p>
       </div>
 
       <div style={{ marginTop: "30px", textAlign: "center" }}>
-        <button
-          onClick={() => window.history.back()}
-        >
+        <button onClick={() => window.history.back()}>
           戻る
         </button>
       </div>
     </div>
   );
 }
+
