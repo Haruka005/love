@@ -36,16 +36,11 @@ function GetRestaurants(){
       });
     },[]);
 
-    //ジャンルでフィルタリング（複数ジャンル対応）
-    const filtered = selectedGenre === "すべて"
-    ? restaurants
-    : restaurants.filter((shop) =>
-        Array.isArray(shop.genre_names) && shop.genre_names.includes(selectedGenre)
+const filtered = selectedGenre === "すべて"
+  ? restaurants
+  : restaurants.filter((shop) =>
+      shop.genre?.name === selectedGenre
     );
-
-        //.filter→配列の中から条件に合うものだけ取り出す関数
-    //shopは任意の名前　配列内の1件ずつを指す
-
 
 
     // 表示
@@ -78,7 +73,7 @@ function GetRestaurants(){
                         id={shop.id}
                         name={shop.name ?? "名称未設定"}
                         area={shop.area?.name ?? "エリア不明"}
-                        genre={Array.isArray(shop.genre_names) ? shop.genre_names.join("・") : "ジャンル不明"}
+                        genre={shop.genre?.name ?? "ジャンル不明"} 
                         budget={shop.budget?.name ?? "予算不明"}
                         address={shop.address ?? "住所不明"}
                         image={shop.image_url ?? ""}
