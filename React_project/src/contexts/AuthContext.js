@@ -4,13 +4,13 @@ import { createContext, useContext, useState, useEffect } from "react";
 export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(null);
+  const [user, setUser] = useState(null);   // ← User → user に修正
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // ログイン処理
   const login = (userData, jwtToken) => {
-    setCurrentUser(userData);
+    setUser(userData);
     setToken(jwtToken);
     localStorage.setItem("token", jwtToken);
     localStorage.setItem("userName", userData.name);
@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
 
   // ログアウト処理
   const logout = () => {
-    setCurrentUser(null);
+    setUser(null);
     setToken(null);
     localStorage.removeItem("token");
     localStorage.removeItem("userName");
@@ -36,7 +36,7 @@ export function AuthProvider({ children }) {
 
     setToken(savedToken);
     if (savedUserName) {
-      setCurrentUser({ name: savedUserName });
+      setUser({ name: savedUserName });
     }
 
     const fetchUser = async () => {
@@ -48,15 +48,15 @@ export function AuthProvider({ children }) {
         if (res.ok) {
           const data = await res.json();
           localStorage.setItem("userName", data.name);
-          setCurrentUser(data);
+          setUser(data);
         } else {
           localStorage.removeItem("token");
           setToken(null);
-          setCurrentUser(null);
+          setUser(null);
         }
       } catch (error) {
         console.error("ユーザー情報取得エラー:", error);
-        setCurrentUser(null);
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -65,11 +65,11 @@ export function AuthProvider({ children }) {
     fetchUser();
   }, []);
 
-  const isLoggedIn = !!currentUser;
+  const isLoggedIn = !!user;   // ← User → user に修正
 
   return (
     <AuthContext.Provider
-      value={{ currentUser, token, isLoggedIn, login, logout, loading }}
+      value={{ user, token, isLoggedIn, login, logout, loading }} // ← User → user に修正
     >
       {children}
     </AuthContext.Provider>
