@@ -102,3 +102,6 @@ Route::prefix('v1')->group(function () {
 Route::middleware('check.token')->get('/test-token', function () {
     return ['message' => 'Token OK'];
 });
+
+// 新規登録
+Route::post('/register', [AuthController::class, 'register']);
