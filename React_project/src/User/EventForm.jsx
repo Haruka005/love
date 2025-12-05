@@ -141,9 +141,6 @@ function EventForm() {
         ) : (
           <span style={{ color: "#666" }}>見出し画像がここに表示されます</span>
         )}
-      </div>
-
-      {/* 画像アップロードボタン */}
       {!previewUrl ? (
         <label
           style={{
@@ -190,6 +187,7 @@ function EventForm() {
           </label>
         </div>
       )}
+      </div>
 
       {/* フォームフィールド */}
       <div style={{ marginBottom: "10px" }}>
@@ -303,8 +301,8 @@ function EventForm() {
       >
         申請する
       </button>
-    </div>
+   </div> 
   );
-}
+} 
 
 export default EventForm;
