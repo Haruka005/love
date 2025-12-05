@@ -356,7 +356,7 @@ function RestaurantForm() {
       ))}
 
       <div style={{ marginBottom: "10px" }}>
-        <label>住所（地図に反映されます）</label>
+        <label>住所</label>
         <br />
         <input
           type="text"
@@ -456,7 +456,7 @@ function RestaurantForm() {
       </div>
 
       <div style={{ marginBottom: "20px" }}>
-        <label>コメント欄</label>
+        <label>詳細</label>
         <br />
         <textarea
           name="comment"
