@@ -17,6 +17,9 @@ use App\Http\Controllers\UserController;
 //ログイン
 Route::post('/login', [UserController::class, 'login']);
 
+//ユーザー一覧取得
+Route::get('/users', [AdminController::class, 'user_all']); 
+
 // イベント取得
 Route::get('/events/{year}/{month}', [EventController::class, 'getByMonth']);
 Route::get('/events/upcoming', [EventController::class, 'getUpComingEvent']);
