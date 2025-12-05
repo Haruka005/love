@@ -176,7 +176,7 @@ function EventForm() {
             style={{
               display: "inline-block",
               padding: "8px 16px",
-              backgroundColor: "#2196F3",
+              backgroundColor: "#aaa",
               color: "white",
               borderRadius: "5px",
               cursor: "pointer",
