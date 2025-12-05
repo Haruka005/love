@@ -28,6 +28,7 @@ class EventController extends Controller
             'catchphrase',
             'start_date',
             'end_date',
+            'location'
         ]);
 
         return response()->json($events);
@@ -54,6 +55,7 @@ class EventController extends Controller
             'catchphrase',
             'start_date',
             'end_date',
+            'location'
         ]);
 
         return response()->json($events);

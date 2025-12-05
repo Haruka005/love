@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import EventCard from "./EventCard";
+import { DateTime } from "./dateForatter";
 
 {/* 直近のイベント */}
 
@@ -40,11 +41,13 @@ function UpComingEvents(){
           {events.map((event) => (
             <EventCard
               key={event.id}
-              id={event.id}
-              name={event.name}
-              start_date={event.start_date}
-              end_date={event.end_date}
-              place={event.place}
+                id={event.id}
+                name={event.name}
+                catchphrase={event.catchphrase}
+                image={event.image_url}     // ← 画像のURLフィールドがある場合
+                start_date={DateTime(event.start_date)}
+                end_date={DateTime(event.end_date)}
+                location={event.location}
             />
           ))}
         </div>
