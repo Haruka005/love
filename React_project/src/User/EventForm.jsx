@@ -120,7 +120,7 @@ function EventForm() {
 
       {/* タイトル */}
       <div style={{ marginBottom: "10px" }}>
-        <label>タイトル</label>
+        <label>イベント名</label>
         <br />
         <input
           type="text"
