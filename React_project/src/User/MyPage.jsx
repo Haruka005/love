@@ -85,6 +85,13 @@ export default function MyPage() {
     height: "40px",
     fontSize: "20px",
     cursor: "pointer",
+    display: "block", 
+    margin: "20px auto",
+    display: "flex", 
+    justifyContent: "center", 
+    alignItems: "center", 
+    padding: 0, 
+    lineHeight: 1, 
   };
   
   // return の中に、このコンポーネントが画面に表示する内容を書く
@@ -136,15 +143,15 @@ export default function MyPage() {
 
       </div>
 
-       {/* メインページに戻る ✕ ボタン */}
-      <div style={{ marginTop: "20px" }}>
-        <button
-          style={closeButtonStyle}
-          onClick={() => navigate("/")} // ← ここでメインページに戻る
-        >
-        ✕
-        </button>
-      </div>
+      {/* メインページに戻る ✕ ボタン */}
+    
+      <button
+        style={closeButtonStyle}
+        onClick={() => navigate("/")} // ← ここでメインページに戻る
+      >
+      ✕
+      </button>
+      
     </div>
   );
 }
