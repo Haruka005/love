@@ -27,6 +27,7 @@ function EventForm() {
   }
   const { currentUser } = context;
 
+  // 画像アップロード
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -34,6 +35,13 @@ function EventForm() {
     setPreviewUrl(URL.createObjectURL(file));
   };
 
+  // 画像削除
+  const handleImageRemove = () => {
+    setImageFile(null);
+    setPreviewUrl(null);
+  };
+
+  // 入力変更
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -42,6 +50,7 @@ function EventForm() {
     }));
   };
 
+  // 送信処理
   const handleEventSubmit = async () => {
     if (!currentUser?.id) {
       alert("ログインしてください");
@@ -51,7 +60,9 @@ function EventForm() {
 
     const formDataToSend = new FormData();
     formDataToSend.append("user_id", currentUser.id);
-    formDataToSend.append("image", imageFile);
+    if (imageFile) {
+      formDataToSend.append("image", imageFile);
+    }
     Object.entries(formData).forEach(([key, value]) => {
       formDataToSend.append(key, value);
     });
@@ -107,20 +118,79 @@ function EventForm() {
       <h2 style={{ textAlign: "center" }}>イベント申請</h2>
 
       {/* プレビュー枠 */}
-      <div style={{ width: "100%", height: "150px", backgroundColor: "#ddd", marginBottom: "10px" }}>
+      <div
+        style={{
+          width: "100%",
+          marginBottom: "10px",
+          textAlign: "center",
+          border: "1px solid #ccc",
+          borderRadius: "8px",
+          padding: "10px",
+          backgroundColor: "#f9f9f9",
+        }}
+      >
         {previewUrl ? (
-          <img src={previewUrl} alt="プレビュー" style={{ maxWidth: "100%", maxHeight: "100%" }} />
+          <img
+            src={previewUrl}
+            alt="プレビュー"
+            style={{ maxWidth: "100%", height: "auto", borderRadius: "6px" }}
+          />
         ) : (
-          <span>見出し画像（仮）</span>
+          <span style={{ color: "#666" }}>見出し画像がここに表示されます</span>
         )}
       </div>
 
-      {/* 画像アップロード */}
-      <input type="file" onChange={handleImageUpload} style={{ display: "block", marginBottom: "20px" }} />
+      {/* 画像アップロードボタン */}
+      {!previewUrl ? (
+        <label
+          style={{
+            display: "inline-block",
+            padding: "6px 12px",
+            backgroundColor: "#aaa",
+            color: "white",
+            borderRadius: "5px",
+            cursor: "pointer",
+            marginBottom: "20px",
+          }}
+        >
+          画像を選択
+          <input type="file" onChange={handleImageUpload} style={{ display: "none" }} />
+        </label>
+      ) : (
+        <div style={{ marginBottom: "20px" }}>
+          <button
+            onClick={handleImageRemove}
+            style={{
+              padding: "8px 16px",
+              backgroundColor: "#aaa",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+              marginRight: "10px",
+            }}
+          >
+            削除
+          </button>
+          <label
+            style={{
+              display: "inline-block",
+              padding: "8px 16px",
+              backgroundColor: "#2196F3",
+              color: "white",
+              borderRadius: "5px",
+              cursor: "pointer",
+            }}
+          >
+            変更
+            <input type="file" onChange={handleImageUpload} style={{ display: "none" }} />
+          </label>
+        </div>
+      )}
 
-      {/* タイトル */}
+      {/* フォームフィールド */}
       <div style={{ marginBottom: "10px" }}>
-        <label>タイトル</label>
+        <label>イベント名</label>
         <br />
         <input
           type="text"
@@ -131,7 +201,6 @@ function EventForm() {
         />
       </div>
 
-      {/* 見出し */}
       <div style={{ marginBottom: "10px" }}>
         <label>見出し</label>
         <br />
@@ -144,7 +213,6 @@ function EventForm() {
         />
       </div>
 
-      {/* 開始日 */}
       <div style={{ marginBottom: "10px" }}>
         <label>開始日</label>
         <br />
@@ -157,7 +225,6 @@ function EventForm() {
         />
       </div>
 
-      {/* 終了日 */}
       <div style={{ marginBottom: "10px" }}>
         <label>終了日</label>
         <br />
@@ -170,26 +237,22 @@ function EventForm() {
         />
       </div>
 
-      {/* その他のフィールド */}
-      {[
-        { label: "場所", name: "location" },
-        { label: "URL", name: "url" },
-        { label: "主催者", name: "organizer" },
-      ].map((field) => (
-        <div key={field.name} style={{ marginBottom: "10px" }}>
-          <label>{field.label}</label>
-          <br />
-          <input
-            type="text"
-            name={field.name}
-            value={formData[field.name]}
-            onChange={handleChange}
-            style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
-          />
-        </div>
-      ))}
+      {[{ label: "場所", name: "location" }, { label: "URL", name: "url" }, { label: "主催者", name: "organizer" }].map(
+        (field) => (
+          <div key={field.name} style={{ marginBottom: "10px" }}>
+            <label>{field.label}</label>
+            <br />
+            <input
+              type="text"
+              name={field.name}
+              value={formData[field.name]}
+              onChange={handleChange}
+              style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
+            />
+          </div>
+        )
+      )}
 
-      {/* 予約選択 */}
       <div style={{ marginBottom: "10px" }}>
         <label>予約</label>
         <br />
@@ -205,7 +268,6 @@ function EventForm() {
         </select>
       </div>
 
-      {/* 詳細 */}
       <div style={{ marginBottom: "10px" }}>
         <label>詳細</label>
         <br />
@@ -218,8 +280,8 @@ function EventForm() {
         />
       </div>
 
-      {/* 注意事項 */}
       <div style={{ marginBottom: "20px" }}>
+       
         <label>注意事項</label>
         <br />
         <textarea
