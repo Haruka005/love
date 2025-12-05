@@ -3,115 +3,190 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Event; //Eventモデル使う
-use Carbon\Carbon; //日付処理簡単になるやつ使う
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use App\Models\Event;
+use App\Models\User;
+use Carbon\Carbon;
 
 class EventController extends Controller
 {
-    //mainpageの/api/events/2025/10から呼び出される
-    //指定された年月のイベントを取得する
-    public function getByMonth($year,$month)
+    // 指定された年月のイベントを取得
+    public function getByMonth($year, $month)
     {
-        
-          // 月の初日と末日をCarbonで取得
         $startOfMonth = Carbon::create($year, $month, 1)->startOfMonth();
         $endOfMonth = Carbon::create($year, $month, 1)->endOfMonth();
 
-        // start_date または end_date がその月にかかるイベントを取得
-        $events = Event::where(function($query) use ($startOfMonth, $endOfMonth) {
-                $query->whereBetween('start_date', [$startOfMonth, $endOfMonth])
-                      ->orWhereBetween('end_date', [$startOfMonth, $endOfMonth]);
-            })
-            ->orderBy('start_date', 'asc')
-            ->get([
-                'id',
-                'name',
-                'catchphrase',
-                'start_date',
-                'end_date',
-            ]);
+        $events = Event::where(function ($query) use ($startOfMonth, $endOfMonth) {
+            $query->whereBetween('start_date', [$startOfMonth, $endOfMonth])
+                  ->orWhereBetween('end_date', [$startOfMonth, $endOfMonth]);
+        })
+        ->orderBy('start_date', 'asc')
+        ->get([
+            'id',
+            'name',
+            'catchphrase',
+            'start_date',
+            'end_date',
+        ]);
 
-        // JSONで返す
         return response()->json($events);
     }
 
-    //今月のイベントを取得する
-   public function getUpComingEvent()
+    // 今月のイベントを取得
+    public function getUpComingEvent()
     {
         $now = Carbon::now();
         $year = $now->year;
         $month = $now->month;
 
-        // 今月のイベントを取得
         $startOfMonth = Carbon::create($year, $month, 1)->startOfMonth();
         $endOfMonth = Carbon::create($year, $month, 1)->endOfMonth();
 
-        $events = Event::where(function($query) use ($startOfMonth, $endOfMonth) {
-                $query->whereBetween('start_date', [$startOfMonth, $endOfMonth])
-                    ->orWhereBetween('end_date', [$startOfMonth, $endOfMonth]);
-            })
-            ->orderBy('start_date', 'asc')
-            ->get([
-                'id',
-                'name',
-                'catchphrase',
-                'start_date',
-                'end_date',
-            ]);
+        $events = Event::where(function ($query) use ($startOfMonth, $endOfMonth) {
+            $query->whereBetween('start_date', [$startOfMonth, $endOfMonth])
+                  ->orWhereBetween('end_date', [$startOfMonth, $endOfMonth]);
+        })
+        ->orderBy('start_date', 'asc')
+        ->get([
+            'id',
+            'name',
+            'catchphrase',
+            'start_date',
+            'end_date',
+        ]);
 
-        return response()->json($events); // ← ここで配列だけを返す
+        return response()->json($events);
     }
 
-
+    // イベント詳細取得
     public function show($id)
     {
         try {
-            // IDに基づいてイベントを取得。見つからなければ例外を投げる (404 Not Found)
             $event = Event::findOrFail($id);
-            
-            // 成功したイベントデータをJSONで返す
             return response()->json($event);
-
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            // イベントがデータベースに見つからなかった場合の処理
             return response()->json(['error' => '指定されたイベントが見つかりません。'], 404);
-            
         } catch (\Exception $e) {
-            // その他の予期せぬエラー (念のため500エラーを返すロジック)
-            // サーバーのログで詳細なエラー原因を確認することを推奨します
-            // Log::error("イベント詳細取得エラー: " . $e->getMessage()); 
             return response()->json(['error' => 'サーバー内部エラーが発生しました。'], 500);
         }
     }
 
-    //ログインしたユーザーのイベント登録履歴表示
+    // ログインユーザーのイベント登録履歴表示
     public function index(Request $request)
     {
-    try {
-        // ログインユーザーのIDを取得
-        $userId = $request->user()->id;
+        try {
+            $userId = $request->user()->id;
 
-        // ユーザーが申請したイベント一覧を取得
-        $events = Event::where('user_id', $userId)
-            ->orderBy('start_date', 'asc')
-            ->get([
-                'id',
-                'name',
-                'catchphrase',
-                'start_date',
-                'end_date',
-                'description',
-                'location',
-                'url',
-                'organizer',
-                'notes',
-                'image_url'
-            ]);
+            $events = Event::where('user_id', $userId)
+                ->orderBy('start_date', 'asc')
+                ->get([
+                    'id',
+                    'name',
+                    'catchphrase',
+                    'start_date',
+                    'end_date',
+                    'description',
+                    'location',
+                    'url',
+                    'organizer',
+                    'notes',
+                    'image_path' // ← image_url ではなく image_path
+                ]);
 
-        return response()->json($events);
-
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'イベント一覧の取得に失敗しました'], 500);
+            return response()->json($events);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'イベント一覧の取得に失敗しました'], 500);
+        }
     }
-}
+
+    // イベント情報を保存（画像含む）
+    public function storeEventData(Request $request)
+    {
+        Log::info('storeEventData に到達しました', ['user_id' => $request->input('user_id')]);
+
+        $userId = $request->input('user_id');
+        $user = User::find($userId);
+
+        if (!$user) {
+            return response()->json(['error' => 'ユーザーが見つかりません'], 404);
+        }
+
+        // ユーザー画像フォルダ作成
+        $folderPath = "user_images/{$user->id}";
+        if (!$user->has_image_folder) {
+            $created = Storage::disk('public')->makeDirectory($folderPath);
+            if ($created) {
+                $user->has_image_folder = true;
+                $user->save();
+            }
+        }
+
+        // 画像保存
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $eventFolderPath = "user_images/{$user->id}/events";
+            if (!Storage::disk('public')->exists($eventFolderPath)) {
+                Storage::disk('public')->makeDirectory($eventFolderPath);
+            }
+            $imagePath = $request->file('image')->store($eventFolderPath, 'public');
+        }
+
+        // イベント情報保存
+        $event = new Event(); // ← EventImage ではなく Event
+        $event->user_id = $user->id;
+        $event->name = $request->input('name');
+        $event->catchphrase = $request->input('catchphrase');
+        $event->description = $request->input('description');
+        $event->start_date = $request->input('start_date');
+        $event->end_date = $request->input('end_date');
+        $event->location = $request->input('location');
+        $event->url = $request->input('url');
+        $event->notes = $request->input('notes');
+        $event->organizer = $request->input('organizer');
+        $event->is_free_participation = $request->input('is_free_participation') === '自由参加' ? 1 : 0;
+        $event->is_open_enrollment = 1;
+        $event->approval_status_id = 0;
+        $event->rejection_reason = null;
+
+        if ($imagePath) {
+            $event->image_path = Storage::url($imagePath); // ← image_path に統一
+        }
+
+        $event->save();
+
+        return response()->json(['message' => 'イベント情報を保存しました']);
+    }
+
+    // イベント情報を更新(編集)
+    public function update(Request $request, $id)
+    {
+        try {
+            $event = Event::findOrFail($id);
+
+            $event->name = $request->input('name', $event->name);
+            $event->catchphrase = $request->input('catchphrase', $event->catchphrase);
+            $event->description = $request->input('description', $event->description);
+            $event->start_date = $request->input('start_date', $event->start_date);
+            $event->end_date = $request->input('end_date', $event->end_date);
+            $event->location = $request->input('location', $event->location);
+            $event->url = $request->input('url', $event->url);
+            $event->notes = $request->input('notes', $event->notes);
+            $event->organizer = $request->input('organizer', $event->organizer);
+            $event->is_free_participation = $request->input('is_free_participation', $event->is_free_participation);
+
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store("user_images/{$event->user_id}/events", 'public');
+                $event->image_path = Storage::url($imagePath); // ← image_path に統一
+            }
+
+            $event->save();
+
+            return response()->json(['message' => 'イベント情報を更新しました', 'event' => $event]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['error' => '指定されたイベントが見つかりません'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'イベント更新に失敗しました'], 500);
+        }
+    }
 }

@@ -65,6 +65,10 @@ class RestaurantController extends Controller
         $restaurant->area_id = $request->input('area_id');
         $restaurant->genre_id = $request->input('genre_id'); // ✅ 単一ジャンル
         $restaurant->tel = $request->input('tel');
+        $restaurant->business_hours = $request->input('business_hours');
+        $restaurant->holiday = $request->input('holiday');
+
+
 
         $restaurant->save();
 
