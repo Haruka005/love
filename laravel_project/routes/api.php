@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\EventController;
-use App\Http\Controllers\EventImageController;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EventDetailController;
@@ -29,13 +28,12 @@ Route::get('/restaurants/{id}', [RestaurantController::class, 'show']);
 // 店舗登録（認証不要で受け付ける）
 Route::post('/store-restaurant-data', [RestaurantController::class, 'storeRestaurantData']);
 
-//イベント登録（認証不要で受けつける）
-Route::post('/store-event-data', [EventImageController::class, 'storeEventData']);
+// イベント登録（認証不要で受け付ける）
+Route::post('/store-event-data', [EventController::class, 'storeEventData']);
 
-//イベント登録編集
+// イベント登録編集
 Route::get('/events', [EventController::class, 'index']);
 Route::put('/events/{id}', [EventController::class, 'update']);
-
 
 // マスターデータ取得（ラジオボタン用）
 Route::get('/m_areas', [RestaurantController::class, 'getAreas']);
@@ -75,7 +73,7 @@ Route::middleware('check.token')->group(function () {
 
     //ログアウト
     Route::post('/logout', function (Request $request) {
-         \Log::info('ログアウト処理開始', ['user' => $request->user()]);
+        \Log::info('ログアウト処理開始', ['user' => $request->user()]);
 
         // 認証トークン削除
         if ($request->user()) {
@@ -88,7 +86,8 @@ Route::middleware('check.token')->group(function () {
             ->cookie('token', '', -1);//クッキー削除
     });
 
-    Route::post('/upload-event-image', [EventImageController::class, 'uploadEventImage']);
+    // もし upload-event-image を使うなら EventController に移す必要あり
+    // Route::post('/upload-event-image', [EventController::class, 'uploadEventImage']);
 });
 
 // バージョン付きルート（例：v1）
