@@ -14,6 +14,8 @@ export function AuthProvider({ children }) {
     setToken(jwtToken);
     localStorage.setItem("token", jwtToken);
     localStorage.setItem("userName", userData.name);
+    localStorage.setItem("user", JSON.stringify(userData)); // ← 丸ごと保存
+
   };
 
   // ログアウト処理
@@ -25,46 +27,45 @@ export function AuthProvider({ children }) {
   };
 
   // 初期化処理（リロード時）
-  useEffect(() => {
-    const savedToken = localStorage.getItem("token");
-    const savedUserName = localStorage.getItem("userName");
+ useEffect(() => {
+  const savedToken = localStorage.getItem("token");
+  const savedUser = localStorage.getItem("user");
 
-    if (!savedToken) {
-      setLoading(false);
-      return;
-    }
+  if (!savedToken) {
+    setLoading(false);
+    return;
+  }
 
-    setToken(savedToken);
-    if (savedUserName) {
-      setUser({ name: savedUserName });
-    }
+  setToken(savedToken);
+  if (savedUser) {
+    setUser(JSON.parse(savedUser)); // ← id も復元
+  }
 
-    const fetchUser = async () => {
-      try {
-        const res = await fetch("http://localhost:8000/api/me", {
-          method: "GET",
-          headers: { Authorization: `Bearer ${savedToken}` },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          localStorage.setItem("userName", data.name);
-          setUser(data);
-        } else {
-          localStorage.removeItem("token");
-          setToken(null);
-          setUser(null);
-        }
-      } catch (error) {
-        console.error("ユーザー情報取得エラー:", error);
+  const fetchUser = async () => {
+    try {
+      const res = await fetch("http://localhost:8000/api/me", {
+        method: "GET",
+        headers: { Authorization: `Bearer ${savedToken}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem("user", JSON.stringify(data)); // ← 丸ごと保存
+        setUser(data);
+      } else {
+        localStorage.removeItem("token");
+        setToken(null);
         setUser(null);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error) {
+      console.error("ユーザー情報取得エラー:", error);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchUser();
-  }, []);
-
+  fetchUser();
+}, []);
   const isLoggedIn = !!user;   // ← User → user に修正
 
   return (

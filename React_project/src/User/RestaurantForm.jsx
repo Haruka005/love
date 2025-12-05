@@ -1,9 +1,12 @@
+// src/User/RestaurantForm.jsx
 import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
+
 function RestaurantForm() {
   const navigate = useNavigate();
-  const { currentUser } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);   // ← currentUser → user に修正
+
   const [formData, setFormData] = useState({
     topimages: [null],
     images: [null, null, null],
@@ -18,13 +21,14 @@ function RestaurantForm() {
     genre_id: "",
     area_id: "",
     tel: "",
-    business_hours: "",   
-    holiday: "",       
-
+    business_hours: "",
+    holiday: "",
   });
+
   const [areaOptions, setAreaOptions] = useState([]);
   const [budgetOptions, setBudgetOptions] = useState([]);
   const [genreOptions, setGenreOptions] = useState([]);
+
   useEffect(() => {
     const fetchMasters = async () => {
       const [areas, budgets, genres] = await Promise.all([
@@ -38,10 +42,12 @@ function RestaurantForm() {
     };
     fetchMasters();
   }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
   const handleAddressChange = async (e) => {
     const address = e.target.value;
     setFormData((prev) => ({ ...prev, address }));
@@ -73,26 +79,32 @@ function RestaurantForm() {
       }
     }
   };
+
   const handleTopImageChange = (index, file) => {
     const newTopImages = [...formData.topimages];
     newTopImages[index] = file;
     setFormData((prev) => ({ ...prev, topimages: newTopImages }));
   };
+
   const handleImageChange = (index, file) => {
     const newImages = [...formData.images];
     newImages[index] = file;
     setFormData((prev) => ({ ...prev, images: newImages }));
   };
+
   const handleRestaurantSubmit = async () => {
-    if (!currentUser?.id) {
+    if (!user?.id) {   // ← currentUser → user に修正
       alert("ログインしてください");
       navigate("/login");
       return;
     }
+
     const latitude = formData.latitude || "42.4123";
     const longitude = formData.longitude || "141.2063";
+
     const formDataToSend = new FormData();
-    formDataToSend.append("user_id", currentUser.id);
+    formDataToSend.append("user_id", user.id);   // ← currentUser → user に修正
+
     if (formData.topimages[0]) {
       formDataToSend.append("topimages[]", formData.topimages[0]);
     }
@@ -101,21 +113,26 @@ function RestaurantForm() {
         formDataToSend.append("images[]", img);
       }
     });
+
     formDataToSend.append("genre_id", formData.genre_id);
     formDataToSend.append("area_id", formData.area_id);
     formDataToSend.append("budget_id", formData.budget_id);
+
     Object.entries(formData).forEach(([key, value]) => {
       if (!["topimages", "images", "genre_id", "area_id", "budget_id", "latitude", "longitude"].includes(key)) {
         formDataToSend.append(key, value);
       }
     });
+
     formDataToSend.append("latitude", latitude);
     formDataToSend.append("longitude", longitude);
+
     const response = await fetch("http://127.0.0.1:8000/api/store-restaurant-data", {
       method: "POST",
       body: formDataToSend,
       credentials: "include",
     });
+
     if (response.ok) {
       alert("店舗情報を送信しました！");
       navigate("/MyPage");
@@ -123,10 +140,13 @@ function RestaurantForm() {
       alert("申請に失敗しました。");
     }
   };
+
   return (
     <div style={{ padding: "20px", maxWidth: "500px", margin: "0 auto" }}>
       <button onClick={() => navigate("/MyPage")} style={{ position: "absolute", top: "10px", left: "10px" }}>✕</button>
       <h2 style={{ textAlign: "center" }}>店舗情報登録</h2>
+
+      {/* トップ画像プレビュー */}
       <div style={{ height: "150px", backgroundColor: "#ddd", marginBottom: "10px" }}>
         {formData.topimages[0] ? (
           <img src={URL.createObjectURL(formData.topimages[0])} alt="トップ画像" style={{ maxWidth: "100%", maxHeight: "100%" }} />
@@ -135,6 +155,8 @@ function RestaurantForm() {
         )}
       </div>
       <input type="file" onChange={(e) => handleTopImageChange(0, e.target.files[0])} />
+
+      {/* 外観・内観画像 */}
       <div>
         <label>外観・内観画像（最大3枚）</label>
         {[0, 1, 2].map((i) => (
@@ -146,16 +168,21 @@ function RestaurantForm() {
           </div>
         ))}
       </div>
+
+      {/* 基本情報 */}
       {[{ label: "店名", name: "name" }, { label: "見出し", name: "catchphrase" }, { label: "URL", name: "url" }, { label: "電話番号", name: "tel" }].map((field) => (
         <div key={field.name}>
           <label>{field.label}</label>
           <input type="text" name={field.name} value={formData[field.name]} onChange={handleChange} />
         </div>
       ))}
+
       <div>
         <label>住所（地図に反映されます）</label>
         <input type="text" name="address" value={formData.address} onChange={handleAddressChange} />
       </div>
+
+      {/* 地域選択 */}
       <div>
         <label>地域（1つ選択）</label>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
@@ -175,30 +202,30 @@ function RestaurantForm() {
       </div>
 
       {/* 営業時間 */}
-    <div>
-      <label>営業時間</label>
-      <input
-        type="text"
-        name="business_hours"
-        value={formData.business_hours}
-        onChange={handleChange}
-        placeholder="例: 10:00-22:00"
-      />
-    </div>
+      <div>
+        <label>営業時間</label>
+        <input
+          type="text"
+          name="business_hours"
+          value={formData.business_hours}
+          onChange={handleChange}
+          placeholder="例: 10:00-22:00"
+        />
+      </div>
 
-    {/* 定休日 */}
-    <div>
-      <label>定休日</label>
-      <input
-        type="text"
-        name="holiday"
-        value={formData.holiday}
-        onChange={handleChange}
-        placeholder="例: 毎週月曜日"
-      />
-    </div>
+      {/* 定休日 */}
+      <div>
+        <label>定休日</label>
+        <input
+          type="text"
+          name="holiday"
+          value={formData.holiday}
+          onChange={handleChange}
+          placeholder="例: 毎週月曜日"
+        />
+      </div>
 
-
+      {/* 予算選択 */}
       <div>
         <label>予算（1つ選択）</label>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
