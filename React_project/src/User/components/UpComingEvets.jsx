@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import EventCard from "./EventCard";
 
 {/* 直近のイベント */}
 
@@ -35,16 +36,16 @@ function UpComingEvents(){
       {events.length === 0 ? (
         <p>現在予定されているイベントはありません。</p>
       ) : (
-        <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", justifyContent: "center" }}>
-          {events.map((event, i) => (
-            <div key={i} className="card">
-              <h3>{event.name}</h3>
-              <h4>{event.catchphrase}</h4>
-              <p>
-                開始日: {event.start_date}<br />
-                終了日: {event.end_date}
-              </p>
-            </div>
+        <div className="card-list">
+          {events.map((event) => (
+            <EventCard
+              key={event.id}
+              id={event.id}
+              name={event.name}
+              start_date={event.start_date}
+              end_date={event.end_date}
+              place={event.place}
+            />
           ))}
         </div>
       )}
