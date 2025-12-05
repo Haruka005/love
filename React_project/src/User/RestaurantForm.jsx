@@ -109,7 +109,6 @@ function RestaurantForm() {
     setFormData((prev) => ({ ...prev, images: newImages }));
   };
 
-  // --- 送信処理 ---
   const handleRestaurantSubmit = async () => {
     if (!user?.id) {
       alert("ログインしてください");
