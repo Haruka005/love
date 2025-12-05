@@ -67,7 +67,6 @@ function RestaurantForm() {
             longitude: lon,
           }));
         } else {
-          // デフォルト値など
           setFormData((prev) => ({
             ...prev,
             latitude: "42.4123",
@@ -86,29 +85,24 @@ function RestaurantForm() {
   };
 
   // --- 画像処理用ハンドラ ---
-
-  // トップ画像の変更
   const handleTopImageChange = (file) => {
     const newTopImages = [...formData.topimages];
     newTopImages[0] = file;
     setFormData((prev) => ({ ...prev, topimages: newTopImages }));
   };
 
-  // トップ画像の削除
   const handleTopImageRemove = () => {
     const newTopImages = [...formData.topimages];
     newTopImages[0] = null;
     setFormData((prev) => ({ ...prev, topimages: newTopImages }));
   };
 
-  // サブ画像（外観・内観）の変更
   const handleSubImageChange = (index, file) => {
     const newImages = [...formData.images];
     newImages[index] = file;
     setFormData((prev) => ({ ...prev, images: newImages }));
   };
 
-  // サブ画像の削除
   const handleSubImageRemove = (index) => {
     const newImages = [...formData.images];
     newImages[index] = null;
@@ -122,6 +116,39 @@ function RestaurantForm() {
       navigate("/login");
       return;
     }
+
+    // --- バリデーションチェック ---
+
+    // 1. トップ画像のチェック (必須)
+    if (!formData.topimages[0]) {
+      alert("トップ画像を設定してください。");
+      return;
+    }
+
+    // 2. 必須項目の定義 (詳細 comment は除外)
+    const requiredFields = {
+      name: "店名",
+      catchphrase: "見出し",
+      url: "URL",
+      tel: "電話番号",
+      address: "住所",
+      area_id: "地域",
+      business_hours: "営業時間",
+      holiday: "定休日",
+      budget_id: "予算",
+      genre_id: "ジャンル",
+    };
+
+    // 3. 必須項目のチェック
+    for (const [key, label] of Object.entries(requiredFields)) {
+      const value = formData[key];
+      // 文字列の空チェック または ID選択の未選択(空文字)チェック
+      if (!value || (typeof value === "string" && value.trim() === "")) {
+        alert(`${label}を入力（または選択）してください。\n該当しない場合は「なし」と記入してください。`);
+        return;
+      }
+    }
+    // --- バリデーション終了 ---
 
     const latitude = formData.latitude || "42.4123";
     const longitude = formData.longitude || "141.2063";
@@ -173,13 +200,14 @@ function RestaurantForm() {
   };
 
   // --- 共通の画像アップローダーUIレンダリング関数 ---
-  // file: 現在の画像ファイル, label: ラベル名, onUpload: アップロード時の関数, onRemove: 削除時の関数
-  const renderImageUploader = (file, label, onUpload, onRemove) => {
+  const renderImageUploader = (file, label, onUpload, onRemove, isRequired = false) => {
     const previewUrl = file ? URL.createObjectURL(file) : null;
 
     return (
       <div style={{ marginBottom: "20px" }}>
-        <label style={{ fontWeight: "bold", display: "block", marginBottom: "5px" }}>{label}</label>
+        <label style={{ fontWeight: "bold", display: "block", marginBottom: "5px" }}>
+          {label} {isRequired && <span style={{ color: "red" }}>※</span>}
+        </label>
         
         {/* プレビュー枠 */}
         <div
@@ -292,56 +320,81 @@ function RestaurantForm() {
 
       <h2 style={{ textAlign: "center" }}>店舗情報登録</h2>
 
-      {/* トップ画像 (EventFormと同じUI) */}
+      {/* 注意書きエリア */}
+      <div style={{
+        backgroundColor: "#fff3cd",
+        border: "1px solid #ffeeba",
+        color: "#856404",
+        padding: "10px",
+        borderRadius: "5px",
+        marginBottom: "20px",
+        fontSize: "0.9rem",
+        lineHeight: "1.5"
+      }}>
+        <strong>【入力について】</strong><br/>
+        <span style={{color: "red"}}>※</span> がついている項目はすべて必須です。<br/>
+        URLや定休日など、該当しない項目がある場合は<strong>「なし」</strong>と記入してください。
+      </div>
+
+      {/* トップ画像 (必須) */}
       {renderImageUploader(
         formData.topimages[0],
         "トップ画像",
         handleTopImageChange,
-        handleTopImageRemove
+        handleTopImageRemove,
+        true // 必須フラグ
       )}
 
-      {/* 外観・内観画像 (EventFormと同じUIを3つ繰り返し) */}
+      {/* 外観・内観画像 (任意) */}
       {[0, 1, 2].map((i) => (
         <div key={i}>
           {renderImageUploader(
             formData.images[i],
             `外観・内観画像 ${i + 1}`,
             (file) => handleSubImageChange(i, file),
-            () => handleSubImageRemove(i)
+            () => handleSubImageRemove(i),
+            false // 任意
           )}
         </div>
       ))}
 
-      {/* 基本情報 */}
-      {[{ label: "店名", name: "name" }, { label: "見出し", name: "catchphrase" }, { label: "URL", name: "url" }, { label: "電話番号", name: "tel" }].map((field) => (
+      {/* 基本情報 (店名と見出しのplaceholderを削除) */}
+      {[
+        { label: "店名", name: "name", placeholder: "" },
+        { label: "見出し", name: "catchphrase", placeholder: "" },
+        { label: "URL", name: "url", placeholder: "該当しない場合は「なし」と記入" },
+        { label: "電話番号", name: "tel", placeholder: "該当しない場合は「なし」と記入" }
+      ].map((field) => (
         <div key={field.name} style={{ marginBottom: "10px" }}>
-          <label>{field.label}</label>
+          <label>{field.label} <span style={{ color: "red" }}>※</span></label>
           <br />
           <input
             type="text"
             name={field.name}
             value={formData[field.name]}
             onChange={handleChange}
+            placeholder={field.placeholder}
             style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
           />
         </div>
       ))}
 
       <div style={{ marginBottom: "10px" }}>
-        <label>住所</label>
+        <label>住所 <span style={{ color: "red" }}>※</span></label>
         <br />
         <input
           type="text"
           name="address"
           value={formData.address}
           onChange={handleAddressChange}
+          placeholder="住所を入力"
           style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
         />
       </div>
 
       {/* 地域選択 */}
       <div style={{ marginBottom: "10px" }}>
-        <label>地域（1つ選択）</label>
+        <label>地域（1つ選択） <span style={{ color: "red" }}>※</span></label>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "5px" }}>
           {areaOptions.map((area) => (
             <label key={area.id} style={{ display: "flex", alignItems: "center" }}>
@@ -361,35 +414,35 @@ function RestaurantForm() {
 
       {/* 営業時間 */}
       <div style={{ marginBottom: "10px" }}>
-        <label>営業時間</label>
+        <label>営業時間 <span style={{ color: "red" }}>※</span></label>
         <br />
         <input
           type="text"
           name="business_hours"
           value={formData.business_hours}
           onChange={handleChange}
-          placeholder="例: 10:00-22:00"
+          placeholder="例: 10:00-22:00（該当しない場合は「なし」）"
           style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
         />
       </div>
 
       {/* 定休日 */}
       <div style={{ marginBottom: "10px" }}>
-        <label>定休日</label>
+        <label>定休日 <span style={{ color: "red" }}>※</span></label>
         <br />
         <input
           type="text"
           name="holiday"
           value={formData.holiday}
           onChange={handleChange}
-          placeholder="例: 毎週月曜日"
+          placeholder="例: 毎週月曜日（該当しない場合は「なし」）"
           style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
         />
       </div>
 
       {/* 予算選択 */}
       <div style={{ marginBottom: "10px" }}>
-        <label>予算（1つ選択）</label>
+        <label>予算（1つ選択） <span style={{ color: "red" }}>※</span></label>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "5px" }}>
           {budgetOptions.map((budget) => (
             <label key={budget.id} style={{ display: "flex", alignItems: "center" }}>
@@ -409,7 +462,7 @@ function RestaurantForm() {
 
       {/* ジャンル選択 */}
       <div style={{ marginBottom: "10px" }}>
-        <label>ジャンル（1つ選択）</label>
+        <label>ジャンル（1つ選択） <span style={{ color: "red" }}>※</span></label>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "5px" }}>
           {genreOptions.map((genre) => (
             <label key={genre.id} style={{ display: "flex", alignItems: "center" }}>
@@ -435,6 +488,7 @@ function RestaurantForm() {
           value={formData.comment}
           onChange={handleChange}
           rows={4}
+          placeholder="任意入力です"
           style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
         />
       </div>
