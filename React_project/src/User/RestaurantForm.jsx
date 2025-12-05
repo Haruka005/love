@@ -115,12 +115,40 @@ function RestaurantForm() {
     setFormData((prev) => ({ ...prev, images: newImages }));
   };
 
-  // --- 送信処理 ---
   const handleRestaurantSubmit = async () => {
     if (!user?.id) {
       alert("ログインしてください");
       navigate("/login");
       return;
+    }
+
+    //必須項目
+    const requiredFields = {
+      name: "店名",
+      address: "住所",
+      genre_id: "ジャンル",
+      area_id: "地域",
+      budget_id: "予算",
+    };
+
+    let missingFieldLabel = null;
+
+    for (const key in requiredFields) {
+      // 文字列フィールドの場合、空文字かどうかチェック
+      if (typeof formData[key] === 'string' && formData[key].trim() === "") {
+          missingFieldLabel = requiredFields[key];
+          break;
+      }
+      // 数値IDフィールドの場合、空文字または0でないかチェック
+      if (["genre_id", "area_id", "budget_id"].includes(key) && (formData[key] === "" || formData[key] === "0")) {
+          missingFieldLabel = requiredFields[key];
+          break;
+      }
+    }
+
+    if (missingFieldLabel) {
+        alert(`${missingFieldLabel} は必須項目です。入力（または選択）してください。`);
+        return; //必須項目が足りない場合はここで処理を中断
     }
 
     const latitude = formData.latitude || "42.4123";
