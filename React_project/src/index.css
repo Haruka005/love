@@ -26,6 +26,7 @@ body {
   height: 300px;      /* 固定高さ */
   overflow: hidden;   /* 内容がはみ出る場合は隠す */
   border: 1px solid #ccc; /* 見やすくするための枠線 */
+  text-align: center;
 }
 
 /* -----------------------
@@ -90,7 +91,8 @@ h2 {
 
 /* パスワード表示切替ボタン */
 .form-container button[type="button"] {
-  width: 50px;      /* 好きなサイズに調整 */
+  width: 50px;
+  height: 45px;
   align-self: flex-end; /* 入力欄の右側に配置 */
   padding: 8px 12px;
   font-size: 14px;
