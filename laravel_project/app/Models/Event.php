@@ -23,5 +23,6 @@ class Event extends Model
         'catchphrase',
         'start_date',
         'end_date',
+        'location'
     ];
 }

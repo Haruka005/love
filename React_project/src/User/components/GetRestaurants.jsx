@@ -74,14 +74,14 @@ function GetRestaurants(){
                 ) : (
                 filtered.map((shop) => (
                     <RestaurantCard
-                    key={shop.id}
-                    id={shop.id}
-                    name={shop.name ?? "名称未設定"}
-                    area={shop.area?.name ?? "エリア不明"}
-                    genre={Array.isArray(shop.genre_names) ? shop.genre_names.join("・") : "ジャンル不明"}
-                    budget={shop.budget?.name ?? "予算不明"}
-                    address={shop.address ?? "住所不明"}
-                    image={shop.image_url ?? ""}
+                        key={shop.id}
+                        id={shop.id}
+                        name={shop.name ?? "名称未設定"}
+                        area={shop.area?.name ?? "エリア不明"}
+                        genre={Array.isArray(shop.genre_names) ? shop.genre_names.join("・") : "ジャンル不明"}
+                        budget={shop.budget?.name ?? "予算不明"}
+                        address={shop.address ?? "住所不明"}
+                        image={shop.image_url ?? ""}
                     />
                 ))
                 )}

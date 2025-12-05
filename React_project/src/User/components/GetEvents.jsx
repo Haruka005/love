@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import EventCard from "./EventCard";
+import { DateTime } from "./dateForatter";
 import Pagenation from "./Pagenation";
 
 
@@ -130,9 +131,9 @@ function GetEvents() {
                 name={event.name}
                 catchphrase={event.catchphrase}
                 image={event.image_url}     // ← 画像のURLフィールドがある場合
-                start_date={event.start_date}
-                end_date={event.end_date}
-                place={event.place}
+                start_date={DateTime(event.start_date)}
+                end_date={DateTime(event.end_date)}
+                location={event.location}
               />
             ))}
           </div>

@@ -23,9 +23,8 @@ body {
    コンテンツスタイル
 ------------------------*/
 .container {
-  height: 300px;      /* 固定高さ */
-  overflow: hidden;   /* 内容がはみ出る場合は隠す */
-  border: 1px solid #ccc; /* 見やすくするための枠線 */
+  margin-bottom: 50px;
+  overflow: visible;   /* 内容がはみ出る場合は隠す */
   text-align: center;
 }
 

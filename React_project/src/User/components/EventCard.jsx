@@ -9,7 +9,7 @@ export default function EventCard({
   image,
   start_date,
   end_date,
-  place,
+  location,
 }) {
   const navigate = useNavigate();
 
@@ -35,9 +35,9 @@ export default function EventCard({
         <h3>{name}</h3>
         <p>{catchphrase}</p>
         <p>
-          □ {start_date} ～ {end_date}
+          📅 {start_date} ～ {end_date}
         </p>
-        <p>📍 会場：{place}</p>
+        <p>📍 会場：{location}</p>
       </div>
     </BaseCard>
   );
