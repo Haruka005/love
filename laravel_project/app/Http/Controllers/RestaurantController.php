@@ -18,6 +18,27 @@ class RestaurantController extends Controller
     {
         Log::info('storeRestaurantData に到達しました', ['user_id' => $request->input('user_id')]);
 
+        $validatedData = $request->validate([
+            // 画像は配列として受け取るため、*.を使用
+            'topimages.*' => 'required|image|max:5120', // 5120KB = 5MB
+            'images.*' => 'nullable|image|max:5120', // 5MB
+            
+            // その他の必須フィールドのバリデーション
+            'name' => 'required|string|max:255',
+            'catchphrase' => 'required|string|max:255',
+            'url' => 'required|string|max:255', // 「なし」を許容するなら string でOK
+            'tel' => 'required|string|max:20',
+            'address' => 'required|string|max:255',
+            'business_hours' => 'required|string|max:100',
+            'holiday' => 'required|string|max:50',
+            'genre_id' => 'required|integer|exists:m_genres,id',
+            'area_id' => 'required|integer|exists:m_areas,id', 
+            'budget_id' => 'required|integer|exists:m_budgets,id',
+            'comment' => 'nullable|string',
+            'latitude' => 'nullable|numeric', // ジオコーディング失敗時にデフォルト値を入れているため nullable
+            'longitude' => 'nullable|numeric',
+        ]);
+
         $user = User::find($request->input('user_id'));
         if (!$user) {
             return response()->json(['error' => 'ユーザーが見つかりません'], 404);

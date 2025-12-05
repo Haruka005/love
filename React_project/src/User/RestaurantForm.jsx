@@ -85,19 +85,37 @@ function RestaurantForm() {
   };
 
   // --- 画像処理用ハンドラ ---
+
+  //最大画像サイズ
+  const MAX_SIZE_MB = 5;
+
+  //トップ画像
   const handleTopImageChange = (file) => {
+    // ファイルサイズチェック
+    if (file && file.size > MAX_SIZE_MB * 1024 * 1024) {
+        alert(`ファイルサイズが大きすぎます。${MAX_SIZE_MB}MB以下の画像を選択してください。`);
+        return; // 処理を中断
+    }
+    
     const newTopImages = [...formData.topimages];
     newTopImages[0] = file;
     setFormData((prev) => ({ ...prev, topimages: newTopImages }));
   };
 
+  //削除処理
   const handleTopImageRemove = () => {
     const newTopImages = [...formData.topimages];
     newTopImages[0] = null;
     setFormData((prev) => ({ ...prev, topimages: newTopImages }));
   };
 
+  //サブ画像
   const handleSubImageChange = (index, file) => {
+    // ファイルサイズチェック
+    if (file && file.size > MAX_SIZE_MB * 1024 * 1024) {
+        alert(`ファイルサイズが大きすぎます。${MAX_SIZE_MB}MB以下の画像を選択してください。`);
+        return; // 処理を中断
+    }
     const newImages = [...formData.images];
     newImages[index] = file;
     setFormData((prev) => ({ ...prev, images: newImages }));
@@ -189,9 +207,30 @@ function RestaurantForm() {
       if (response.ok) {
         alert("店舗情報を送信しました！");
         navigate("/MyPage");
+      } 
+
+      if (response.status === 422) {
+        // Laravelのバリデーションエラー
+        const errorData = await response.json();
+        let errorMessage = "入力内容に不備があります。\n\n";
+        
+
+        if (errorData.errors) {
+          Object.values(errorData.errors).forEach(messages => {
+            messages.forEach(msg => {
+              errorMessage += `・${msg}\n`;
+            });
+          });
+        }
+        
+        alert(errorMessage);
+        console.error("バリデーションエラー:", errorData);
       } else {
-        alert("申請に失敗しました。");
+        // その他HTTPエラー (404, 500など)
+        alert(`申請に失敗しました。ステータスコード: ${response.status}`);
+        console.error("HTTPエラー:", response.status, response.statusText);
       }
+
     } catch (error) {
       console.error("送信エラー:", error);
       alert("送信中にエラーが発生しました。");
