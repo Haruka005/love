@@ -18,6 +18,9 @@ function RestaurantForm() {
     genre_id: "",
     area_id: "",
     tel: "",
+    business_hours: "",   
+    holiday: "",       
+
   });
   const [areaOptions, setAreaOptions] = useState([]);
   const [budgetOptions, setBudgetOptions] = useState([]);
@@ -170,6 +173,32 @@ function RestaurantForm() {
           ))}
         </div>
       </div>
+
+      {/* 営業時間 */}
+    <div>
+      <label>営業時間</label>
+      <input
+        type="text"
+        name="business_hours"
+        value={formData.business_hours}
+        onChange={handleChange}
+        placeholder="例: 10:00-22:00"
+      />
+    </div>
+
+    {/* 定休日 */}
+    <div>
+      <label>定休日</label>
+      <input
+        type="text"
+        name="holiday"
+        value={formData.holiday}
+        onChange={handleChange}
+        placeholder="例: 毎週月曜日"
+      />
+    </div>
+
+
       <div>
         <label>予算（1つ選択）</label>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
