@@ -1,1 +1,13 @@
+# DBバックアップファイル
 backup_all.sql
+
+# ローカルセッションファイル（拡張子が .session.sql）
+*.session.sql
+
+# VSCodeの設定フォルダ
+.vscode/
+
+# Laravelのログファイルを除外
+/storage/logs/*.log
+
+
