@@ -36,11 +36,11 @@ function GetRestaurants(){
       });
     },[]);
 
-    //ジャンルでフィルタリング（複数ジャンル対応）
+    //ジャンルでフィルタリング（単一ジャンル対応）
     const filtered = selectedGenre === "すべて"
-    ? restaurants
-    : restaurants.filter((shop) =>
-        Array.isArray(shop.genre_names) && shop.genre_names.includes(selectedGenre)
+        ? restaurants
+        : restaurants.filter((shop) =>
+         shop.genre?.name === selectedGenre
     );
 
         //.filter→配列の中から条件に合うものだけ取り出す関数
@@ -73,15 +73,15 @@ function GetRestaurants(){
                 <p>該当する店舗はありません。</p>
                 ) : (
                 filtered.map((shop) => (
-                    <RestaurantCard
-                        key={shop.id}
-                        id={shop.id}
-                        name={shop.name ?? "名称未設定"}
-                        area={shop.area?.name ?? "エリア不明"}
-                        genre={Array.isArray(shop.genre_names) ? shop.genre_names.join("・") : "ジャンル不明"}
-                        budget={shop.budget?.name ?? "予算不明"}
-                        address={shop.address ?? "住所不明"}
-                        image={shop.image_url ?? ""}
+                   <RestaurantCard
+                    key={shop.id}
+                    id={shop.id}
+                    name={shop.name ?? "名称未設定"}
+                    area={shop.area?.name ?? "エリア不明"}
+                    genre={shop.genre?.name ?? "ジャンル不明"}
+                    budget={shop.budget?.name ?? "予算不明"}
+                    address={shop.address ?? "住所不明"}
+                    image={shop.image_url ?? ""}
                     />
                 ))
                 )}
