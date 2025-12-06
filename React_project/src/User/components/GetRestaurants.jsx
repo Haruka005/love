@@ -43,10 +43,6 @@ function GetRestaurants(){
          shop.genre?.name === selectedGenre
     );
 
-        //.filter→配列の中から条件に合うものだけ取り出す関数
-    //shopは任意の名前　配列内の1件ずつを指す
-
-
 
     // 表示
     return (

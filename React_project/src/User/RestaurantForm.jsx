@@ -67,7 +67,6 @@ function RestaurantForm() {
             longitude: lon,
           }));
         } else {
-          // デフォルト値など
           setFormData((prev) => ({
             ...prev,
             latitude: "42.4123",
@@ -87,41 +86,86 @@ function RestaurantForm() {
 
   // --- 画像処理用ハンドラ ---
 
-  // トップ画像の変更
+  //最大画像サイズ
+  const MAX_SIZE_MB = 5;
+
+  //トップ画像
   const handleTopImageChange = (file) => {
+    // ファイルサイズチェック
+    if (file && file.size > MAX_SIZE_MB * 1024 * 1024) {
+        alert(`ファイルサイズが大きすぎます。${MAX_SIZE_MB}MB以下の画像を選択してください。`);
+        return; // 処理を中断
+    }
+    
     const newTopImages = [...formData.topimages];
     newTopImages[0] = file;
     setFormData((prev) => ({ ...prev, topimages: newTopImages }));
   };
 
-  // トップ画像の削除
+  //削除処理
   const handleTopImageRemove = () => {
     const newTopImages = [...formData.topimages];
     newTopImages[0] = null;
     setFormData((prev) => ({ ...prev, topimages: newTopImages }));
   };
 
-  // サブ画像（外観・内観）の変更
+  //サブ画像
   const handleSubImageChange = (index, file) => {
+    // ファイルサイズチェック
+    if (file && file.size > MAX_SIZE_MB * 1024 * 1024) {
+        alert(`ファイルサイズが大きすぎます。${MAX_SIZE_MB}MB以下の画像を選択してください。`);
+        return; // 処理を中断
+    }
     const newImages = [...formData.images];
     newImages[index] = file;
     setFormData((prev) => ({ ...prev, images: newImages }));
   };
 
-  // サブ画像の削除
   const handleSubImageRemove = (index) => {
     const newImages = [...formData.images];
     newImages[index] = null;
     setFormData((prev) => ({ ...prev, images: newImages }));
   };
 
-  // --- 送信処理 ---
   const handleRestaurantSubmit = async () => {
     if (!user?.id) {
       alert("ログインしてください");
       navigate("/login");
       return;
     }
+
+    // --- バリデーションチェック ---
+
+    // 1. トップ画像のチェック (必須)
+    if (!formData.topimages[0]) {
+      alert("トップ画像を設定してください。");
+      return;
+    }
+
+    // 2. 必須項目の定義 (詳細 comment は除外)
+    const requiredFields = {
+      name: "店名",
+      catchphrase: "見出し",
+      url: "URL",
+      tel: "電話番号",
+      address: "住所",
+      area_id: "地域",
+      business_hours: "営業時間",
+      holiday: "定休日",
+      budget_id: "予算",
+      genre_id: "ジャンル",
+    };
+
+    // 3. 必須項目のチェック
+    for (const [key, label] of Object.entries(requiredFields)) {
+      const value = formData[key];
+      // 文字列の空チェック または ID選択の未選択(空文字)チェック
+      if (!value || (typeof value === "string" && value.trim() === "")) {
+        alert(`${label}を入力（または選択）してください。\n該当しない場合は「なし」と記入してください。`);
+        return;
+      }
+    }
+    // --- バリデーション終了 ---
 
     const latitude = formData.latitude || "42.4123";
     const longitude = formData.longitude || "141.2063";
@@ -163,9 +207,30 @@ function RestaurantForm() {
       if (response.ok) {
         alert("店舗情報を送信しました！");
         navigate("/MyPage");
+      } 
+
+      if (response.status === 422) {
+        // Laravelのバリデーションエラー
+        const errorData = await response.json();
+        let errorMessage = "入力内容に不備があります。\n\n";
+        
+
+        if (errorData.errors) {
+          Object.values(errorData.errors).forEach(messages => {
+            messages.forEach(msg => {
+              errorMessage += `・${msg}\n`;
+            });
+          });
+        }
+        
+        alert(errorMessage);
+        console.error("バリデーションエラー:", errorData);
       } else {
-        alert("申請に失敗しました。");
+        // その他HTTPエラー (404, 500など)
+        alert(`申請に失敗しました。ステータスコード: ${response.status}`);
+        console.error("HTTPエラー:", response.status, response.statusText);
       }
+
     } catch (error) {
       console.error("送信エラー:", error);
       alert("送信中にエラーが発生しました。");
@@ -173,13 +238,14 @@ function RestaurantForm() {
   };
 
   // --- 共通の画像アップローダーUIレンダリング関数 ---
-  // file: 現在の画像ファイル, label: ラベル名, onUpload: アップロード時の関数, onRemove: 削除時の関数
-  const renderImageUploader = (file, label, onUpload, onRemove) => {
+  const renderImageUploader = (file, label, onUpload, onRemove, isRequired = false) => {
     const previewUrl = file ? URL.createObjectURL(file) : null;
 
     return (
       <div style={{ marginBottom: "20px" }}>
-        <label style={{ fontWeight: "bold", display: "block", marginBottom: "5px" }}>{label}</label>
+        <label style={{ fontWeight: "bold", display: "block", marginBottom: "5px" }}>
+          {label} {isRequired && <span style={{ color: "red" }}>※</span>}
+        </label>
         
         {/* プレビュー枠 */}
         <div
@@ -341,7 +407,8 @@ function RestaurantForm() {
         formData.topimages[0],
         <>トップ画像 <span style={{ color: "red" }}>※</span></>,  // ← 赤い※を追加
         handleTopImageChange,
-        handleTopImageRemove
+        handleTopImageRemove,
+        true // 必須フラグ
       )}
 
 
@@ -352,7 +419,8 @@ function RestaurantForm() {
             formData.images[i],
             `外観・内観画像 ${i + 1}`,
             (file) => handleSubImageChange(i, file),
-            () => handleSubImageRemove(i)
+            () => handleSubImageRemove(i),
+            false // 任意
           )}
         </div>
       ))}
@@ -513,6 +581,7 @@ function RestaurantForm() {
           value={formData.comment}
           onChange={handleChange}
           rows={4}
+          placeholder="任意入力です"
           style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
         />
       </div>
