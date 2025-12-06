@@ -145,7 +145,7 @@ function EventForm() {
       }}>
         <strong>【入力について】</strong><br/>
         <span style={{color: "red"}}>※</span> がついている項目はすべて必須です。<br/>
-        URLや場所など、該当しない項目がある場合は<strong>「なし」</strong>と記入してください。
+        URLなど、該当しない項目がある場合は<strong>「なし」</strong>と記入してください。
       </div>
 
       {/* プレビュー枠 */}
@@ -172,20 +172,22 @@ function EventForm() {
         ) : (
           <span style={{ color: "#666" }}>画像がここに表示されます</span>
         )}
-      {!previewUrl ? (
-        <label
-          style={{
-            display: "inline-block",
-            padding: "6px 12px",
-            backgroundColor: "#aaa",
-            color: "white",
-            borderRadius: "5px",
-            cursor: "pointer",
-            marginBottom: "20px",
-            marginTop: "10px"
-          }}
-        >
-          画像を選択
+      <div style={{ marginTop: "10px" }}></div>
+       {!previewUrl ? (
+              <label
+                style={{
+                  display: "inline-block",
+                  padding: "6px 10px",
+                   width: "150px",
+                  backgroundColor: "#aaa",
+                  color: "white",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                }}
+              >
+                画像を選択
+
+
           <input type="file" onChange={handleImageUpload} style={{ display: "none" }} />
         </label>
       ) : (
