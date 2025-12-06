@@ -25,7 +25,6 @@ function EventForm() {
   if (!context) {
     return <p>ログイン情報が取得できません。ログインしてください。</p>;
   }
-  // 変更箇所 1: currentUser -> user
   const { user } = context;
 
   // 画像アップロード
@@ -53,35 +52,48 @@ function EventForm() {
 
   // 送信処理
   const handleEventSubmit = async () => {
-    // 変更箇所 2: currentUser?.id -> user?.id
     if (!user?.id) {
       alert("ログインしてください");
       navigate("/login");
       return;
     }
 
-    const formDataToSend = new FormData();
-    // 変更箇所 3: currentUser.id -> user.id
-    formDataToSend.append("user_id", user.id);
-    if (imageFile) {
-      formDataToSend.append("image", imageFile);
-    }
-    Object.entries(formData).forEach(([key, value]) => {
-      formDataToSend.append(key, value);
-    });
+    // --- バリデーションチェック ---
 
-    const requiredFields = [
-      { key: "name", label: "タイトル" },
-      { key: "catchphrase", label: "見出し" },
-      { key: "start_date", label: "開始日" },
-      { key: "end_date", label: "終了日" },
-    ];
-    for (const field of requiredFields) {
-      if (!formData[field.key]) {
-        alert(`${field.label}を入力してください`);
+    // 1. 画像チェック (必須)
+    if (!imageFile) {
+      alert("見出し画像を設定してください。");
+      return;
+    }
+
+    // 2. 必須項目チェック（詳細と注意事項は除外）
+    const fieldLabels = {
+      name: "イベント名",
+      catchphrase: "見出し",
+      start_date: "開始日",
+      end_date: "終了日",
+      location: "場所",
+      url: "URL",
+      organizer: "主催者",
+      is_free_participation: "予約",
+      // description と notes は必須から除外しました
+    };
+
+    for (const [key, label] of Object.entries(fieldLabels)) {
+      if (!formData[key] || formData[key].trim() === "") {
+        alert(`${label}を入力してください。\n該当しない場合は「なし」と記入してください。`);
         return;
       }
     }
+
+    // --- 送信データ作成 ---
+    const formDataToSend = new FormData();
+    formDataToSend.append("user_id", user.id);
+    formDataToSend.append("image", imageFile);
+
+    Object.entries(formData).forEach(([key, value]) => {
+      formDataToSend.append(key, value);
+    });
 
     const response = await fetch("http://localhost:8000/api/store-event-data", {
       method: "POST",
@@ -120,7 +132,26 @@ function EventForm() {
 
       <h2 style={{ textAlign: "center" }}>イベント申請</h2>
 
+      {/* 注意書きエリア */}
+      <div style={{
+        backgroundColor: "#fff3cd",
+        border: "1px solid #ffeeba",
+        color: "#856404",
+        padding: "10px",
+        borderRadius: "5px",
+        marginBottom: "20px",
+        fontSize: "0.9rem",
+        lineHeight: "1.5"
+      }}>
+        <strong>【入力について】</strong><br/>
+        <span style={{color: "red"}}>※</span> がついている項目はすべて必須です。<br/>
+        URLや場所など、該当しない項目がある場合は<strong>「なし」</strong>と記入してください。
+      </div>
+
       {/* プレビュー枠 */}
+      <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>
+        見出し画像 <span style={{ color: "red" }}>※</span>
+      </label>
       <div
         style={{
           width: "100%",
@@ -139,7 +170,7 @@ function EventForm() {
             style={{ maxWidth: "100%", height: "auto", borderRadius: "6px" }}
           />
         ) : (
-          <span style={{ color: "#666" }}>見出し画像がここに表示されます</span>
+          <span style={{ color: "#666" }}>画像がここに表示されます</span>
         )}
       {!previewUrl ? (
         <label
@@ -151,13 +182,14 @@ function EventForm() {
             borderRadius: "5px",
             cursor: "pointer",
             marginBottom: "20px",
+            marginTop: "10px"
           }}
         >
           画像を選択
           <input type="file" onChange={handleImageUpload} style={{ display: "none" }} />
         </label>
       ) : (
-        <div style={{ marginBottom: "20px" }}>
+        <div style={{ marginBottom: "20px", marginTop: "10px" }}>
           <button
             onClick={handleImageRemove}
             style={{
@@ -191,7 +223,7 @@ function EventForm() {
 
       {/* フォームフィールド */}
       <div style={{ marginBottom: "10px" }}>
-        <label>イベント名</label>
+        <label>イベント名 <span style={{ color: "red" }}>※</span></label>
         <br />
         <input
           type="text"
@@ -203,7 +235,7 @@ function EventForm() {
       </div>
 
       <div style={{ marginBottom: "10px" }}>
-        <label>見出し</label>
+        <label>見出し <span style={{ color: "red" }}>※</span></label>
         <br />
         <input
           type="text"
@@ -215,7 +247,7 @@ function EventForm() {
       </div>
 
       <div style={{ marginBottom: "10px" }}>
-        <label>開始日</label>
+        <label>開始日 <span style={{ color: "red" }}>※</span></label>
         <br />
         <input
           type="datetime-local"
@@ -227,7 +259,7 @@ function EventForm() {
       </div>
 
       <div style={{ marginBottom: "10px" }}>
-        <label>終了日</label>
+        <label>終了日 <span style={{ color: "red" }}>※</span></label>
         <br />
         <input
           type="datetime-local"
@@ -241,13 +273,14 @@ function EventForm() {
       {[{ label: "場所", name: "location" }, { label: "URL", name: "url" }, { label: "主催者", name: "organizer" }].map(
         (field) => (
           <div key={field.name} style={{ marginBottom: "10px" }}>
-            <label>{field.label}</label>
+            <label>{field.label} <span style={{ color: "red" }}>※</span></label>
             <br />
             <input
               type="text"
               name={field.name}
               value={formData[field.name]}
               onChange={handleChange}
+              placeholder="該当しない場合は「なし」と記入"
               style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
             />
           </div>
@@ -255,7 +288,7 @@ function EventForm() {
       )}
 
       <div style={{ marginBottom: "10px" }}>
-        <label>予約</label>
+        <label>予約 <span style={{ color: "red" }}>※</span></label>
         <br />
         <select
           name="is_free_participation"
@@ -269,6 +302,7 @@ function EventForm() {
         </select>
       </div>
 
+      {/* 詳細（任意） */}
       <div style={{ marginBottom: "10px" }}>
         <label>詳細</label>
         <br />
@@ -281,8 +315,8 @@ function EventForm() {
         />
       </div>
 
+      {/* 注意事項（任意） */}
       <div style={{ marginBottom: "20px" }}>
-        
         <label>注意事項</label>
         <br />
         <textarea
