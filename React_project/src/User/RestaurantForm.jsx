@@ -214,16 +214,29 @@ function RestaurantForm() {
                   borderRadius: "5px",
                   cursor: "pointer",
                 }}
+
+               //画像大きさ制限↓ 
               >
                 画像を選択
                 <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    if (e.target.files[0]) onUpload(e.target.files[0]);
-                  }}
-                  style={{ display: "none" }}
-                />
+                type="file"
+                accept="image/*"
+                //押したとき5MB制限かけた（１枚当たり）
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) {
+                    // 5MB制限
+                    const MAX = 5 * 1024 * 1024;
+                    if (file.size > MAX) {
+                      alert("画像サイズは5MB以下にしてください");
+                      e.target.value = ""; // 同じファイルを再選択できるようにリセット
+                      return;
+                    }
+                    onUpload(file); // サイズOKならアップロード処理へ
+                  }
+                }}
+                style={{ display: "none" }}
+              />
               </label>
             ) : (
               <div>
@@ -251,16 +264,27 @@ function RestaurantForm() {
                     cursor: "pointer",
                   }}
                 >
-                  変更
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      if (e.target.files[0]) onUpload(e.target.files[0]);
-                    }}
-                    style={{ display: "none" }}
-                  />
-                </label>
+                   変更
+                    <input
+                      type="file"
+                      accept="image/*"
+                      //押したとき
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const MAX = 5 * 1024 * 1024;
+                          if (file.size > MAX) {
+                            alert("画像サイズは5MB以下にしてください");
+                            e.target.value = ""; // 同じファイルを再選択できるようにリセット
+                            return;
+                          }
+                          onUpload(file);
+                        }
+                      }}
+                      style={{ display: "none" }}
+                    />
+                  </label>
+
               </div>
             )}
           </div>
@@ -292,13 +316,34 @@ function RestaurantForm() {
 
       <h2 style={{ textAlign: "center" }}>店舗情報登録</h2>
 
-      {/* トップ画像 (EventFormと同じUI) */}
+       {/* 注意書きエリア */}
+    <div
+      style={{
+        backgroundColor: "#fff3cd",
+        border: "1px solid #ffeeba",
+        color: "#856404",
+        padding: "10px",
+        borderRadius: "5px",
+        marginBottom: "20px",
+        fontSize: "0.9rem",
+        lineHeight: "1.5",
+      }}
+    >
+      <strong>【入力について】</strong><br />
+      <span style={{ color: "red" }}>※</span> がついている項目はすべて必須です。<br />
+      URLなど、該当しない項目がある場合は<strong>「なし」</strong>と記入してください。<br />
+      画像は<strong>5MB以下</strong>でアップロードしてください。
+    </div>
+
+
+      {/* トップ画像 (必須) */}
       {renderImageUploader(
         formData.topimages[0],
-        "トップ画像",
+        <>トップ画像 <span style={{ color: "red" }}>※</span></>,  // ← 赤い※を追加
         handleTopImageChange,
         handleTopImageRemove
       )}
+
 
       {/* 外観・内観画像 (EventFormと同じUIを3つ繰り返し) */}
       {[0, 1, 2].map((i) => (
@@ -312,84 +357,112 @@ function RestaurantForm() {
         </div>
       ))}
 
-      {/* 基本情報 */}
-      {[{ label: "店名", name: "name" }, { label: "見出し", name: "catchphrase" }, { label: "URL", name: "url" }, { label: "電話番号", name: "tel" }].map((field) => (
-        <div key={field.name} style={{ marginBottom: "10px" }}>
-          <label>{field.label}</label>
-          <br />
-          <input
-            type="text"
-            name={field.name}
-            value={formData[field.name]}
-            onChange={handleChange}
-            style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
-          />
-        </div>
-      ))}
+      {/* 店名 */}
+    <div style={{ marginBottom: "10px" }}>
+      <label>
+        店名 <span style={{ color: "red" }}>※</span>
+      </label>
+      <br />
+      <input
+        type="text"
+        name="name"
+        value={formData.name}
+        onChange={handleChange}
+        required
+        placeholder="例：〇〇レストラン"
+        style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
+      />
+    </div>
 
+    {/* 住所 */}
+    <div style={{ marginBottom: "10px" }}>
+      <label>
+        住所 <span style={{ color: "red" }}>※</span>
+      </label>
+      <br />
+      <input
+        type="text"
+        name="address"
+        value={formData.address}
+        onChange={handleAddressChange}
+        required
+        placeholder="例：北海道室蘭市〇〇町1-2-3"
+        style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
+      />
+    </div>
+
+    {/* 営業時間 */}
+    <div style={{ marginBottom: "10px" }}>
+      <label>
+        営業時間 <span style={{ color: "red" }}>※</span>
+      </label>
+      <br />
+      <input
+        type="text"
+        name="business_hours"
+        value={formData.business_hours}
+        onChange={handleChange}
+        required
+        placeholder="例：10:00～22:00"
+        style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
+      />
+    </div>
+
+    {/* 定休日 */}
+    <div style={{ marginBottom: "10px" }}>
+      <label>
+        定休日 <span style={{ color: "red" }}>※</span>
+      </label>
+      <br />
+      <input
+        type="text"
+        name="holiday"
+        value={formData.holiday}
+        onChange={handleChange}
+        required
+        placeholder="例：毎週月曜日"
+        style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
+      />
+    </div>
+
+      {/* 電話番号 */}
       <div style={{ marginBottom: "10px" }}>
-        <label>住所</label>
+        <label>
+          電話番号 <span style={{ color: "red" }}>※</span> （ハイフンを入れてください）
+        </label>
         <br />
         <input
           type="text"
-          name="address"
-          value={formData.address}
-          onChange={handleAddressChange}
+          name="tel"
+          value={formData.tel}
+          onChange={handleChange}
+          required
+          placeholder="例：090-1234-5678"
           style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
         />
       </div>
 
-      {/* 地域選択 */}
+      {/* URL */}
       <div style={{ marginBottom: "10px" }}>
-        <label>地域（1つ選択）</label>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "5px" }}>
-          {areaOptions.map((area) => (
-            <label key={area.id} style={{ display: "flex", alignItems: "center" }}>
-              <input
-                type="radio"
-                name="area_id"
-                value={area.id}
-                checked={formData.area_id === String(area.id)}
-                onChange={handleChange}
-                style={{ marginRight: "5px" }}
-              />
-              {area.name}
-            </label>
-          ))}
-        </div>
-      </div>
-
-      {/* 営業時間 */}
-      <div style={{ marginBottom: "10px" }}>
-        <label>営業時間</label>
+        <label>
+          URL （ない場合は「なし」と記入してください）
+        </label>
         <br />
         <input
           type="text"
-          name="business_hours"
-          value={formData.business_hours}
+          name="url"
+          value={formData.url}
           onChange={handleChange}
-          placeholder="例: 10:00-22:00"
-          style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
-        />
-      </div>
-
-      {/* 定休日 */}
-      <div style={{ marginBottom: "10px" }}>
-        <label>定休日</label>
-        <br />
-        <input
-          type="text"
-          name="holiday"
-          value={formData.holiday}
-          onChange={handleChange}
-          placeholder="例: 毎週月曜日"
+          placeholder="例：https://example.com または なし"
           style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
         />
       </div>
 
       {/* 予算選択 */}
       <div style={{ marginBottom: "10px" }}>
-        <label>予算（1つ選択）</label>
+        <label>
+          予算（1つ選択） <span style={{ color: "red" }}>※</span>
+        </label>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "5px" }}>
           {budgetOptions.map((budget) => (
             <label key={budget.id} style={{ display: "flex", alignItems: "center" }}>
@@ -399,6 +472,7 @@ function RestaurantForm() {
                 value={budget.id}
                 checked={formData.budget_id === String(budget.id)}
                 onChange={handleChange}
+                required
                 style={{ marginRight: "5px" }}
               />
               {budget.name}
@@ -409,7 +483,9 @@ function RestaurantForm() {
 
       {/* ジャンル選択 */}
       <div style={{ marginBottom: "10px" }}>
-        <label>ジャンル（1つ選択）</label>
+        <label>
+          ジャンル（1つ選択） <span style={{ color: "red" }}>※</span>
+        </label>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "5px" }}>
           {genreOptions.map((genre) => (
             <label key={genre.id} style={{ display: "flex", alignItems: "center" }}>
@@ -419,6 +495,7 @@ function RestaurantForm() {
                 value={genre.id}
                 checked={formData.genre_id === String(genre.id)}
                 onChange={handleChange}
+                required
                 style={{ marginRight: "5px" }}
               />
               {genre.name}
@@ -427,6 +504,7 @@ function RestaurantForm() {
         </div>
       </div>
 
+      {/* 詳細 */}
       <div style={{ marginBottom: "20px" }}>
         <label>詳細</label>
         <br />
@@ -445,8 +523,8 @@ function RestaurantForm() {
       >
         登録する
       </button>
-    </div>
-  );
-}
+          </div>
+        );
+      }
 
-export default RestaurantForm;
+      export default RestaurantForm;
