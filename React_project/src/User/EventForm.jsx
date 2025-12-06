@@ -86,6 +86,15 @@ function EventForm() {
       }
     }
 
+    // 日付の整合性チェック
+    const start = new Date(formData.start_date);
+    const end = new Date(formData.end_date);
+    if (start >= end) {
+      alert("終了日は開始日より後に設定してください。");
+      return;
+    }
+
+
     // --- 送信データ作成 ---
     const formDataToSend = new FormData();
     formDataToSend.append("user_id", user.id);
