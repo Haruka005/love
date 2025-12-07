@@ -11,15 +11,17 @@ use Carbon\Carbon;
 
 class EventController extends Controller
 {
+    //GetEvennts.jsxのカードに表示させるカラムをここで指定してる
     // 指定された年月のイベントを取得
     public function getByMonth($year, $month)
     {
         $startOfMonth = Carbon::create($year, $month, 1)->startOfMonth();
         $endOfMonth = Carbon::create($year, $month, 1)->endOfMonth();
 
-        $events = Event::where(function ($query) use ($startOfMonth, $endOfMonth) {
+        $events = Event::where('approval_status_id', 1) 
+        ->where(function ($query) use ($startOfMonth, $endOfMonth) {
             $query->whereBetween('start_date', [$startOfMonth, $endOfMonth])
-                  ->orWhereBetween('end_date', [$startOfMonth, $endOfMonth]);
+                    ->orWhereBetween('end_date', [$startOfMonth, $endOfMonth]);
         })
         ->orderBy('start_date', 'asc')
         ->get([
@@ -28,25 +30,22 @@ class EventController extends Controller
             'catchphrase',
             'start_date',
             'end_date',
-            'location'
+            'location',
         ]);
 
         return response()->json($events);
     }
-
     // 今月のイベントを取得
     public function getUpComingEvent()
     {
-        $now = Carbon::now();
-        $year = $now->year;
-        $month = $now->month;
+        
+        $startOfMonth = Carbon::now()->startOfMonth();
+        $endOfMonth = Carbon::now()->endOfMonth();
 
-        $startOfMonth = Carbon::create($year, $month, 1)->startOfMonth();
-        $endOfMonth = Carbon::create($year, $month, 1)->endOfMonth();
-
-        $events = Event::where(function ($query) use ($startOfMonth, $endOfMonth) {
+        $events = Event::where('approval_status_id', 1) 
+        ->where(function ($query) use ($startOfMonth, $endOfMonth) {
             $query->whereBetween('start_date', [$startOfMonth, $endOfMonth])
-                  ->orWhereBetween('end_date', [$startOfMonth, $endOfMonth]);
+                    ->orWhereBetween('end_date', [$startOfMonth, $endOfMonth]);
         })
         ->orderBy('start_date', 'asc')
         ->get([
@@ -77,6 +76,7 @@ class EventController extends Controller
     // ログインユーザーのイベント登録履歴表示
     public function index(Request $request)
     {
+        \Log::info('index開始', ['user' => $request->user()]);
         try {
             $userId = $request->user()->id;
 
@@ -93,7 +93,10 @@ class EventController extends Controller
                     'url',
                     'organizer',
                     'notes',
-                    'image_path' // ← image_url ではなく image_path
+                    'image_path' ,
+                    'approval_status_id',   // ← 承認状態（0=未承認, 1=承認済, 2=拒否）
+                    'rejection_reason'      // ← 拒否理由（管理者メッセージ）
+
                 ]);
 
             return response()->json($events);
@@ -189,6 +192,27 @@ class EventController extends Controller
             return response()->json(['error' => '指定されたイベントが見つかりません'], 404);
         } catch (\Exception $e) {
             return response()->json(['error' => 'イベント更新に失敗しました'], 500);
+        }
+    }
+
+    // イベント削除（DBからも削除）
+    public function destroy(Request $request, $id)
+    {
+    try {
+        $event = Event::findOrFail($id);
+
+        // ログインユーザーのイベントか確認（セキュリティ対策）
+        if ($event->user_id !== $request->user()->id) {
+            return response()->json(['error' => '権限がありません'], 403);
+        }
+
+        $event->delete();
+
+        return response()->json(['message' => 'イベントを削除しました']);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['error' => '指定されたイベントが見つかりません'], 404);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'イベント削除に失敗しました'], 500);
         }
     }
 }

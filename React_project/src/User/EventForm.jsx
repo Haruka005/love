@@ -3,6 +3,10 @@ import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
 
+// 最大画像サイズ（5MB）を定数として定義
+const MAX_SIZE_MB = 5;
+const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+
 function EventForm() {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [formData, setFormData] = useState({
@@ -29,11 +33,20 @@ function EventForm() {
 
   // 画像アップロード
   const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    setImageFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
-  };
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // ファイルサイズチェック
+    if (file.size > MAX_SIZE_BYTES) {
+        alert(`ファイルサイズが大きすぎます。${MAX_SIZE_MB}MB以下の画像を選択してください。`);
+        // 同じファイルを再選択できるようにリセット
+        e.target.value = ""; 
+        return;
+    }
+
+    setImageFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
 
   // 画像削除
   const handleImageRemove = () => {
@@ -111,8 +124,9 @@ function EventForm() {
     });
 
     if (response.ok) {
-      alert("イベント申請が完了しました！");
-      navigate("/MyPage");
+      alert("イベント申請が完了しました！\n管理者による承認後に掲載されます。");
+      //ここで申請履歴ページに遷移
+      navigate("/EventApplicationHistory");
     } else {
       alert("申請に失敗しました。");
     }
@@ -154,7 +168,8 @@ function EventForm() {
       }}>
         <strong>【入力について】</strong><br/>
         <span style={{color: "red"}}>※</span> がついている項目はすべて必須です。<br/>
-        URLなど、該当しない項目がある場合は<strong>「なし」</strong>と記入してください。
+        該当しない項目がある場合は<strong>「なし」</strong>と記入してください。<br/>
+        画像は<strong>5MB以下</strong>でアップロードしてください
       </div>
 
       {/* プレビュー枠 */}

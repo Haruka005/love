@@ -4,28 +4,61 @@ import { useNavigate } from "react-router-dom";
 
 export default function EventApplicationHistory() {
   const navigate = useNavigate();
-
-  // 展開されているイベントのIDを保存する状態変数（nullなら何も開いていない）
   const [expandedId, setExpandedId] = useState(null);
-
-  // ページ番号の状態
   const [page, setPage] = useState(1);
-
-  // イベント申請履歴（APIから取得）
   const [events, setEvents] = useState([]);
+  const [activeTab, setActiveTab] = useState("pending"); // タブ状態
 
-  // データ取得
+  const itemsPerPage = 5;
+  const startIndex = (page - 1) * itemsPerPage;
+  const filteredEvents = events.filter(event => {
+    if (activeTab === "pending") return event.approval_status_id === 0;
+    if (activeTab === "approved") return event.approval_status_id === 1;
+    if (activeTab === "rejected") return event.approval_status_id === 2;
+    return true;
+  });
+  const currentEvents = filteredEvents.slice(startIndex, startIndex + itemsPerPage);
+  const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
+
+  useEffect(() => {
+    if (page > totalPages && totalPages > 0) {
+      setPage(totalPages);
+    }
+  }, [filteredEvents, page]);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("本当に削除しますか？")) return;
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:8000/api/events/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      if (res.ok) {
+        setEvents(events.filter((e) => e.id !== id));
+        alert("削除しました");
+      } else {
+        alert("削除に失敗しました");
+      }
+    } catch (err) {
+      console.error("通信エラー:", err);
+      alert("通信エラーが発生しました");
+    }
+  };
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
+        const token = localStorage.getItem("token");
         const res = await fetch("http://localhost:8000/api/events", {
-          credentials: "include", // 認証が必要なら追加
+          headers: { "Authorization": `Bearer ${token}` }
         });
         if (res.ok) {
           const data = await res.json();
           setEvents(data);
-        } else {
-          console.error("イベント取得失敗");
         }
       } catch (err) {
         console.error("通信エラー:", err);
@@ -35,122 +68,81 @@ export default function EventApplicationHistory() {
   }, []);
 
   return (
-    <div
-      style={{
-        padding: "20px",
-        fontFamily: "sans-serif",
-        maxWidth: "500px",
-        margin: "0 auto",
-        position: "relative",
-      }}
-    >
-      {/* ✕ 閉じるボタン */}
-      <button
-        onClick={() => navigate("/MyPage")}
-        style={{
-          position: "absolute",
-          top: "10px",
-          left: "10px",
-          backgroundColor: "#eee",
-          color: "#333",
-          border: "none",
-          borderRadius: "50%",
-          width: "40px",
-          height: "40px",
-          fontSize: "20px",
-          cursor: "pointer",
-        }}
-      >
-        ✕
-      </button>
+    <div style={{ padding: "20px", maxWidth: "600px", margin: "0 auto" }}>
+      <button onClick={() => navigate("/MyPage")} style={{ position: "absolute", top: "10px", left: "10px" }}>✕</button>
+      <h2 style={{ textAlign: "center" }}>イベント申請確認履歴</h2>
 
-      <h2 style={{ textAlign: "center", marginTop: "0" }}>
-        イベント申請確認履歴
-      </h2>
+      {/* タブ切り替え */}
+      <nav style={{ textAlign: "center", marginBottom: "20px" }}>
+        <button onClick={() => setActiveTab("pending")}>未承認</button>
+        <button onClick={() => setActiveTab("approved")}>承認済み</button>
+        <button onClick={() => setActiveTab("rejected")}>拒否済み</button>
+      </nav>
 
-      {/* イベントカード一覧 */}
-      {events.length === 0 ? (
-        <p>イベント申請履歴はまだありません。</p>
+      {filteredEvents.length === 0 ? (
+        <p>このタブにはイベントがありません。</p>
       ) : (
-        events.map((event) => (
-          <div
-            key={event.id}
-            style={{
-              border: "1px solid #ccc",
-              borderRadius: "6px",
-              padding: "10px",
-              marginBottom: "10px",
-              backgroundColor: "#f9f9f9",
-            }}
-          >
-            {/* タイトル部分 */}
-            <div
-              onClick={() =>
-                setExpandedId(expandedId === event.id ? null : event.id)
-              }
-              style={{
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "16px",
-                marginBottom: "5px",
-              }}
-            >
-              {event.title}
+        currentEvents.map(event => (
+          <div key={event.id} style={{ border: "1px solid #ddd", padding: "15px", marginBottom: "15px" }}>
+            <div onClick={() => setExpandedId(expandedId === event.id ? null : event.id)} style={{ cursor: "pointer" }}>
+              <strong>{event.name}</strong>
+              <span style={{ float: "right" }}>
+                {expandedId === event.id ? "▲ 詳細を閉じる" : "▼ 詳細を見る"}
+              </span>
             </div>
+            <p>
+              {event.approval_status_id === 1 && <span style={{ color: "green" }}>承認済</span>}
+              {event.approval_status_id === 0 && <span style={{ color: "orange" }}>未承認</span>}
+              {event.approval_status_id === 2 && <span style={{ color: "red" }}>拒否</span>}
+            </p>
 
-            {/* 詳細表示 */}
             {expandedId === event.id && (
-              <div style={{ fontSize: "14px", color: "#555" }}>
-                <p>開催日：{event.date}</p>
+              <div style={{ marginTop: "10px" }}>
+                <p>見出し: {event.catchphrase}</p>
+                <p>開始日：{event.start_date}</p>
+                <p>終了日：{event.end_date}</p>
+                <p>場所：{event.location ?? "未設定"}</p>
+                <p>URL：{event.url ?? "未設定"}</p>
+                <p>主催者：{event.organizer ?? "未設定"}</p>
+                <p>予約：
+                  {event.is_free_participation === 0
+                    ? "要予約"
+                    : event.is_free_participation === 1
+                    ? "自由参加"
+                    : "未設定"}
+                </p>
+                <p>説明: {event.description}</p>
+                <p>注意事項: {event.notes}</p>
+                {event.rejection_reason && (
+                  <p style={{ color: "red" }}>管理者メッセージ: {event.rejection_reason}</p>
+                )}
+                {event.image_path && (
+                  <img src={event.image_path} alt="イベント画像" style={{ maxWidth: "100%", marginTop: "10px" }} />
+                )}
 
-                {/* 画像 */}
-                <div
-                  style={{
-                    width: "100%",
-                    height: "120px",
-                    backgroundColor: "#ddd",
-                    borderRadius: "4px",
-                    marginBottom: "10px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#666",
-                  }}
-                >
-                  {event.image_url ? (
-                    <img
-                      src={event.image_url}
-                      alt={event.title}
-                      style={{
-                        maxWidth: "100%",
-                        maxHeight: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
-                  ) : (
-                    "画像なし"
+                {/* アクションボタン */}
+                <div style={{ marginTop: "20px", textAlign: "right" }}>
+                  {/* 編集は常に可能 → 再申請も兼ねる */}
+                  <button onClick={() => navigate(`/EventEdit/${event.id}`)} style={{ marginRight: "10px" }}>
+                    編集 ✏️
+                  </button>
+
+                  {/* 削除は未承認と拒否済みのみ */}
+                  {(event.approval_status_id === 0 || event.approval_status_id === 2) && (
+                    <button onClick={() => handleDelete(event.id)}>削除 ❌</button>
                   )}
                 </div>
-
-                <p>{event.description}</p>
-
-                {/* 編集ボタン */}
-                <button onClick={() => navigate(`/EventEdit/${event.id}`)}>
-                  編集
-                </button>
               </div>
             )}
           </div>
         ))
       )}
 
-      {/* ページ送り（ダミー構造） */}
-      <div style={{ marginTop: "20px", textAlign: "center" }}>
-        <button onClick={() => setPage(page - 1)} disabled={page === 1}>
-          前のページ
-        </button>
-        <span style={{ margin: "0 10px" }}>ページ {page}</span>
-        <button onClick={() => setPage(page + 1)}>次のページ</button>
+      {/* ページ送り */}
+      <div style={{ textAlign: "center" }}>
+        <button onClick={() => setPage(page - 1)} disabled={page === 1}>前のページ</button>
+        <span> ページ {page} / {totalPages || 1} </span>
+        <button onClick={() => setPage(page + 1)} disabled={page >= totalPages}>次のページ</button>
       </div>
     </div>
   );

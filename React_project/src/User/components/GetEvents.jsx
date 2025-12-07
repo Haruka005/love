@@ -45,6 +45,8 @@ function GetEvents() {
 
         //JavaScriptの形式に変換
         const data = await res.json();
+        console.log("取得データ:", data);
+
 
         setEvents(data);//取得したデータをセット
         setError(null);//成功したのでエラーをnullに
@@ -124,24 +126,21 @@ function GetEvents() {
           <p>イベント情報はありません</p>
         ) : (
           <div className="card-list">
-            {events.map((event) => (
+            {currentEvents.map((event) => (  
               <EventCard
                 key={event.id}
                 id={event.id}
                 name={event.name}
                 catchphrase={event.catchphrase}
-                image={event.image_url}     // ← 画像のURLフィールドがある場合
+                image={event.image_url}
                 start_date={DateTime(event.start_date)}
                 end_date={DateTime(event.end_date)}
                 location={event.location}
               />
             ))}
           </div>
-            
-
-        )}
+        )}            
       </div>
-
 
       {/* データの状態ごとに出し分け */}
       {loading && <p>読み込み中です…</p>}

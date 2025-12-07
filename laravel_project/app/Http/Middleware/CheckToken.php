@@ -5,6 +5,7 @@ use Closure;
 use Illuminate\Http\Request;
 use App\Models\Token;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth; 
 
 
 class CheckToken
@@ -48,10 +49,11 @@ class CheckToken
         //最終使用日時を更新
         $record->update(['last_used_at' => now()]);
 
-        //ユーザーをリクエストにセット
-        $request->setUserResolver(function () use ($record) {
-            return $record->user; // Tokenに紐づくUserモデル
-        });
+        // ユーザーをリクエストとAuthにセット
+        $user = $record->user;
+        $request->setUserResolver(fn () => $user);
+        Auth::setUser($user); 
+
         
         //確認用ログ
         Log::info('セッション情報確認', [
