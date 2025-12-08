@@ -11,7 +11,6 @@ function RestaurantForm() {
     topimages: [null], // トップ画像 (配列の0番目を使用)
     images: [null, null, null], // 外観・内観画像 (最大3枚)
     name: "",
-    catchphrase: "",
     url: "",
     comment: "",
     budget_id: "",
@@ -145,7 +144,6 @@ function RestaurantForm() {
     // 2. 必須項目の定義 (詳細 comment は除外)
     const requiredFields = {
       name: "店名",
-      catchphrase: "見出し",
       url: "URL",
       tel: "電話番号",
       address: "住所",
@@ -198,11 +196,12 @@ function RestaurantForm() {
     formDataToSend.append("longitude", longitude);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/store-restaurant-data", {
-        method: "POST",
-        body: formDataToSend,
-        credentials: "include",
-      });
+    const response = await fetch("http://127.0.0.1:8000/api/store-restaurant-data", {
+      method: "POST",
+      body: formDataToSend,
+      credentials: "include", // ← EventForm と同じ方式に統一
+    });
+
 
       if (response.ok) {
         alert("店舗情報を送信しました！");
@@ -405,7 +404,7 @@ function RestaurantForm() {
       {/* トップ画像 (必須) */}
       {renderImageUploader(
         formData.topimages[0],
-        <>トップ画像 <span style={{ color: "red" }}>※</span></>,  // ← 赤い※を追加
+        <>トップ画像 <span style={{ color: "red" }}></span></>,  // ← 赤い※を追加
         handleTopImageChange,
         handleTopImageRemove,
         true // 必須フラグ
@@ -442,6 +441,7 @@ function RestaurantForm() {
       />
     </div>
 
+
     {/* 住所 */}
     <div style={{ marginBottom: "10px" }}>
       <label>
@@ -458,6 +458,30 @@ function RestaurantForm() {
         style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
       />
     </div>
+
+      {/* 地域選択 */}
+      <div style={{ marginBottom: "10px" }}>
+        <label>
+          地域（1つ選択） <span style={{ color: "red" }}>※</span>
+        </label>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "5px" }}>
+          {areaOptions.map((area) => (
+            <label key={area.id} style={{ display: "flex", alignItems: "center" }}>
+              <input
+                type="radio"
+                name="area_id"
+                value={area.id}
+                checked={formData.area_id === String(area.id)}
+                onChange={handleChange}
+                required
+                style={{ marginRight: "5px" }}
+              />
+              {area.name}
+            </label>
+          ))}
+        </div>
+      </div>
+
 
     {/* 営業時間 */}
     <div style={{ marginBottom: "10px" }}>
