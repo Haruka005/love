@@ -144,7 +144,12 @@ export default function EventApproval({ onUpdate }) {
                                 <p><strong>キャッチフレーズ:</strong> {event.catchphrase}</p>
                                 <p><strong>開催期間:</strong> {event.start_date} から {event.end_date}</p>
                                 <p><strong>場所:</strong> {event.location}</p>
-                                <p><strong>予約:</strong> {event.is_free_participation}</p>
+                                <p><strong>予約:</strong> 
+                                    {Number(event.is_free_participation) === 0 ? "要予約" 
+                                    : Number(event.is_free_participation) === 1 ? "自由参加" 
+                                    : "未設定"}
+                                    </p>
+
                                 <p><strong>URL:</strong> <a href={event.url} target="_blank" rel="noopener noreferrer">{event.url}</a></p>
                                 <p><strong>主催者:</strong> {event.organizer}</p>
                                 <p><strong>詳細:</strong> {event.description || '記載なし'}</p>
