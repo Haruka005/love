@@ -6,7 +6,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 
 use App\Http\Middleware\CheckToken;
 use App\Http\Middleware\CorsMiddleware;
-use Illuminate\Session\Middleware\StartSession;
+//use Illuminate\Session\Middleware\StartSession;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -18,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // CorsMiddleware をグローバルに適用（最上位に）
         $middleware->prepend(CorsMiddleware::class);
-        $middleware->append(StartSession::class);
+        //$middleware->append(StartSession::class);
         $middleware->alias(['check.token' => CheckToken::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

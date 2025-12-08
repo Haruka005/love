@@ -5,7 +5,7 @@ use Closure;
 use Illuminate\Http\Request;
 use App\Models\Token;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth; 
+//use Illuminate\Support\Facades\Auth; 
 
 
 class CheckToken
@@ -52,7 +52,7 @@ class CheckToken
         // ユーザーをリクエストとAuthにセット
         $user = $record->user;
         $request->setUserResolver(fn () => $user);
-        Auth::setUser($user); 
+        //Auth::setUser($user); 
 
         
         //確認用ログ
