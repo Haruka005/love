@@ -15,6 +15,10 @@ class Event extends Model
     //とりあえず第一正規化からデータを取得している
     protected $table = 'test_events';
     //protected $table = 'm_events';
+
+     protected $casts = [
+        'is_free_participation' => 'integer',
+    ];
     
 
     // 書き換え可能なカラムを指定（任意）

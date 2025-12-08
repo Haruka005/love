@@ -105,13 +105,11 @@ export default function EventApplicationHistory() {
                 <p>URL：{event.url ?? "未設定"}</p>
                 <p>主催者：{event.organizer ?? "未設定"}</p>
                 <p>予約：
-                  {event.is_free_participation === 0
-                    ? "要予約"
-                    : event.is_free_participation === 1
-                    ? "自由参加"
-                    : "未設定"}
+                  {Number(event.is_free_participation) === 0 ? "要予約"
+                  : Number(event.is_free_participation) === 1 ? "自由参加"
+                  : "未設定"}
                 </p>
-                <p>説明: {event.description}</p>
+                 <p>説明: {event.description}</p>
                 <p>注意事項: {event.notes}</p>
                 {event.rejection_reason && (
                   <p style={{ color: "red" }}>管理者メッセージ: {event.rejection_reason}</p>

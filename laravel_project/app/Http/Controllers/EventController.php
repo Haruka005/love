@@ -95,7 +95,8 @@ class EventController extends Controller
                     'notes',
                     'image_path' ,
                     'approval_status_id',   // ← 承認状態（0=未承認, 1=承認済, 2=拒否）
-                    'rejection_reason'      // ← 拒否理由（管理者メッセージ）
+                    'rejection_reason'  ,    // ← 拒否理由（管理者メッセージ）
+                    'is_free_participation'
 
                 ]);
 
@@ -149,7 +150,7 @@ class EventController extends Controller
         $event->url = $request->input('url');
         $event->notes = $request->input('notes');
         $event->organizer = $request->input('organizer');
-        $event->is_free_participation = $request->input('is_free_participation') === '自由参加' ? 1 : 0;
+        $event->is_free_participation = (int) $request->input('is_free_participation');
         $event->is_open_enrollment = 1;
         $event->approval_status_id = 0;
         $event->rejection_reason = null;
@@ -178,7 +179,7 @@ class EventController extends Controller
             $event->url = $request->input('url', $event->url);
             $event->notes = $request->input('notes', $event->notes);
             $event->organizer = $request->input('organizer', $event->organizer);
-            $event->is_free_participation = $request->input('is_free_participation', $event->is_free_participation);
+            $event->is_free_participation = (int) $request->input('is_free_participation');
 
             if ($request->hasFile('image')) {
                 $imagePath = $request->file('image')->store("user_images/{$event->user_id}/events", 'public');

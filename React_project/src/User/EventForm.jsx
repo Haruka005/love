@@ -323,8 +323,8 @@ function EventForm() {
           style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
         >
           <option value="">選択してください</option>
-          <option value="要予約">要予約</option>
-          <option value="自由参加">自由参加</option>
+          <option value={0}>要予約</option>
+          <option value={1}>自由参加</option>
         </select>
       </div>
 
