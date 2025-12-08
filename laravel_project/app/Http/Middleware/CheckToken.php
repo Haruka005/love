@@ -42,7 +42,6 @@ class CheckToken
         if ($record->token_expires_at->isPast()) {
             Log::warning('【CheckToken】トークン期限切れ', ['token' => $token, 'expires_at' => $record->token_expires_at]);
             // 期限切れの場合、データベースからも削除します
-            $record->delete(); 
             return response()->json(['error' => 'Token expired'], 401);
         }
 
