@@ -31,13 +31,14 @@ export default function EventDetail() {
     <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
       <h2>{event.name}</h2>
 
-      {event.image_url && (
-        <img
-          src={event.image_url}
-          alt={event.name}
-          style={{ width: "100%", maxWidth: "500px", borderRadius: "8px" }}
-        />
-      )}
+
+  {event.image_path && ( 
+          <img
+            src={event.image_path} 
+            alt={event.name}
+            style={{ width: "100%", maxWidth: "500px", borderRadius: "8px" }}
+          />
+        )}
 
       <p>{event.catchphrase}</p>
 

@@ -31,7 +31,11 @@ function UpComingEvents(){
         fetchUpcomingEvents();
     }, []);
 
-    return (
+    if (error) {
+     return <p style={{ color: "red", padding: "20px" }}>エラー: {error}</p>;
+    }
+
+    return(
     <section className="container">
       <h2>直近のイベント</h2>
       {events.length === 0 ? (
@@ -44,7 +48,7 @@ function UpComingEvents(){
                 id={event.id}
                 name={event.name}
                 catchphrase={event.catchphrase}
-                image={event.image_url}     // ← 画像のURLフィールドがある場合
+                image={event.image_path}    
                 start_date={DateTime(event.start_date)}
                 end_date={DateTime(event.end_date)}
                 location={event.location}
