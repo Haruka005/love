@@ -109,13 +109,13 @@ export default function MyPage() {
       <div>
         <h3>メニュー</h3>
         <div style={gridStyle}>
-          <button  onClick={() => navigate("/VisitList")}>来店一覧</button>
-          <button  onClick={() => navigate("/FavoritesList")}>お気に入り一覧</button>
+         {/* <button  onClick={() => navigate("/VisitList")}>来店一覧</button>*/}
+         {/* <button  onClick={() => navigate("/FavoritesList")}>お気に入り一覧</button>*/}
           <button  onClick={() => navigate("/reset-pass")}>アカウント編集</button>
           <button  onClick={() => navigate("/HistoryList")}>閲覧履歴一覧</button>
-          <button  onClick={() => navigate("/EventApplicationHistory")}>イベント申請確認</button>
+          <button  onClick={() => navigate("/EventApplicationHistory")}>登録・申請確認</button>
           <button  onClick={() => navigate("/EventForm")}>イベント申請新規登録</button>
-          <button  onClick={() => navigate("/RestaurantForm")}>店登録（仮）</button>
+          <button  onClick={() => navigate("/RestaurantForm")}>店登録</button>
           {!loginOut && <button  onClick={handleLogoutClick}>ログアウト</button>}
 
         </div>
