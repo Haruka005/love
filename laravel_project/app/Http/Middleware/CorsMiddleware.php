@@ -12,7 +12,7 @@ class CorsMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         //許可する設定
-        $allowedOrigin = 'http://localhost:3000';
+        $allowedOrigin = '*';
         $allowCredentials = 'true'; //認証情報を伴うリクエストを許可
         $allowedMethods = 'GET, POST, PUT, DELETE, OPTIONS'; //許可するHTTPメソッド
         $allowedHeaders = 'Content-Type, X-Auth-Token, Origin, Authorization'; //許可するヘッダー
