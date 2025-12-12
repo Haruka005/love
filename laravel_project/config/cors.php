@@ -7,6 +7,7 @@ return [
         'http://localhost:3000',
         'http://127.0.0.1:3000',
         'http://172.16.117.200:3000',
+        '*',
     ],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],
