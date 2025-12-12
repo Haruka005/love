@@ -5,7 +5,7 @@ function UserManagement() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/users",{
+    fetch("/api/users",{
     })
         .then((res) => res.json())
         .then((data) => setUsers(data))

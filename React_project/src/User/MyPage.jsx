@@ -44,7 +44,7 @@ export default function MyPage() {
 
     try { 
       //サーバー側にログアウトを依頼
-      await fetch("http://localhost:8000/api/logout",{
+      await fetch("/api/logout",{
         method: "POST",
         headers: {
           "Authorization": `Bearer ${token}`,
