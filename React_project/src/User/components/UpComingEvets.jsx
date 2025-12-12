@@ -13,7 +13,7 @@ function UpComingEvents(){
         const fetchUpcomingEvents = async () => { // async･･･awaitから結果帰ってくるまで次の処理しないで待つ
             try {
                 // バックエンドにリクエスト送る
-                const response = await fetch("http://127.0.0.1:8000/api/events/upcoming");
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/events/upcoming`);
                
                 // 帰ってきたイベント一覧（JSON形式）をJavaScript形式に変換してdataに入れる
                 const data = await response.json();
