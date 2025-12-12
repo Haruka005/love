@@ -367,6 +367,7 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
             $this,
             $this->runClassInSeparateProcess && !$this->runTestInSeparateProcess,
             $this->preserveGlobalState,
+            $this->requiresXdebug(),
         );
     }
 
@@ -620,7 +621,7 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
                 Event\Code\ComparisonFailureBuilder::from($e),
             );
         } catch (Throwable $exceptionRaisedDuringTearDown) {
-            if (!isset($e)) {
+            if (!isset($e) || $e instanceof SkippedWithMessageException) {
                 $this->status = TestStatus::error($exceptionRaisedDuringTearDown->getMessage());
                 $e            = $exceptionRaisedDuringTearDown;
 
@@ -1800,6 +1801,10 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
                 return true;
             }
 
+            if (!$passedTests->hasReturnValue($dependencyTarget)) {
+                return true;
+            }
+
             $returnValue = $passedTests->returnValue($dependencyTarget);
 
             if ($dependency->deepClone()) {
@@ -2101,18 +2106,31 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
             }
         }
 
-        return new Snapshot(
-            $excludeList,
-            $backupGlobals,
-            (bool) $this->backupStaticProperties,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-            false,
-        );
+        try {
+            return new Snapshot(
+                $excludeList,
+                $backupGlobals,
+                (bool) $this->backupStaticProperties,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+                false,
+            );
+        } catch (Throwable $t) {
+            Event\Facade::emitter()->testPreparationFailed(
+                $this->valueObjectForEvents(),
+            );
+
+            Event\Facade::emitter()->testErrored(
+                $this->valueObjectForEvents(),
+                Event\Code\ThrowableBuilder::from($t),
+            );
+
+            throw $t;
+        }
     }
 
     private function compareGlobalStateSnapshots(Snapshot $before, Snapshot $after): void
@@ -2583,6 +2601,11 @@ abstract class TestCase extends Assert implements Reorderable, SelfDescribing, T
     private function requirementsNotSatisfied(): bool
     {
         return (new Requirements)->requirementsNotSatisfiedFor(static::class, $this->methodName) !== [];
+    }
+
+    private function requiresXdebug(): bool
+    {
+        return (new Requirements)->requiresXdebug(static::class, $this->methodName);
     }
 
     /**

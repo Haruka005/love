@@ -20,7 +20,7 @@ function GetRestaurants(){
 
     // APIからデータを取得
     useEffect(() => {
-       fetch("/api/restaurants")
+       fetch("http://127.0.0.1:8000/api/restaurants")
         .then((response) => {
             if (!response.ok) throw new Error("通信エラー");
             return response.json();

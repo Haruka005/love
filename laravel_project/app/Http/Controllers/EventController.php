@@ -38,26 +38,43 @@ class EventController extends Controller
     // 今月のイベントを取得
     public function getUpComingEvent()
     {
-        
-        $startOfMonth = Carbon::now()->startOfMonth();
-        $endOfMonth = Carbon::now()->endOfMonth();
+        try {
+            $startOfMonth = Carbon::now()->startOfMonth();
+            $endOfMonth = Carbon::now()->endOfMonth();
 
-        $events = Event::where('approval_status_id', 1) 
-        ->where(function ($query) use ($startOfMonth, $endOfMonth) {
-            $query->whereBetween('start_date', [$startOfMonth, $endOfMonth])
-                    ->orWhereBetween('end_date', [$startOfMonth, $endOfMonth]);
-        })
-        ->orderBy('start_date', 'asc')
-        ->get([
-            'id',
-            'name',
-            'catchphrase',
-            'start_date',
-            'end_date',
-            'location'
-        ]);
+            $events = Event::where('approval_status_id', 1) 
+                ->where(function ($query) use ($startOfMonth, $endOfMonth) {
+                    $query->whereBetween('start_date', [$startOfMonth, $endOfMonth])
+                        ->orWhereBetween('end_date', [$startOfMonth, $endOfMonth]);
+                })
+                ->orderBy('start_date', 'asc')
+                ->get([
+                    'id',
+                    'name',
+                    'catchphrase',
+                    'start_date',
+                    'end_date',
+                    'location',
+                    'image_path' 
+                ]);
+            
+            // 成功時は必ず JSON を返す。データがない場合は空の JSON 配列 [] が返る
+            return response()->json($events); 
 
-        return response()->json($events);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // データベース接続やクエリ自体に問題があった場合 (デバッグログ代わり)
+            \Log::error("イベント取得クエリ失敗: " . $e->getMessage());
+            
+            // データの有無にかかわらず、空のデータを返して React のエラーを防ぎます。
+            return response()->json([], 200); 
+
+        } catch (\Exception $e) {
+            // その他の PHP エラー（未定義変数など）
+            \Log::error("イベント取得中に予期せぬエラー: " . $e->getMessage());
+            
+            // サーバー内部エラーとして JSON 応答を返します
+            return response()->json(['error' => 'イベントデータの取得中にサーバーエラーが発生しました'], 500);
+        }
     }
 
     // イベント詳細取得
