@@ -38,7 +38,12 @@ function GetEvents() {
         const monthStr = String(selectedMonth).padStart(2, "0");
 
         //サーバーからイベント取得
+<<<<<<< HEAD
         const res = await fetch(`${process.env.REACT_APP_API_URL}/events/${selectedYear}/${monthStr}`);
+=======
+        const res = await fetch(`http://127.0.0.1:8000/api/events/${selectedYear}/${monthStr}`);
+
+>>>>>>> b2f47b5686e2316a15122f59afa084b8cd9158c7
         //取得失敗したら例外を投げる
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 

@@ -10,7 +10,7 @@ export default function EventDetail() {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/api/events/${id}`);
+        const res = await fetch(`/api/events/${id}`);
         if (!res.ok) throw new Error("イベント取得失敗");
         const data = await res.json();
         setEvent(data);

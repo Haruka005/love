@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import EventApproval from './EventApproval.jsx'; // EventApprovalコンポーネントをインポート
 
 // EventApproval.js と同じAPI_URLを使用
-const API_URL = "http://localhost:8000/api/admin/events"; 
+const API_URL = "/api/admin/events"; 
 
 // --- 承認済みイベント一覧コンポーネント ---
 

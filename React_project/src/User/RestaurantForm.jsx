@@ -196,7 +196,7 @@ function RestaurantForm() {
     formDataToSend.append("longitude", longitude);
 
     try {
-    const response = await fetch("http://127.0.0.1:8000/api/store-restaurant-data", {
+    const response = await fetch("/api/store-restaurant-data", {
       method: "POST",
       body: formDataToSend,
       credentials: "include", // ← EventForm と同じ方式に統一
