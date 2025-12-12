@@ -117,7 +117,7 @@ function EventForm() {
       formDataToSend.append(key, value);
     });
 
-    const response = await fetch("http://localhost:8000/api/store-event-data", {
+    const response = await fetch("/api/store-event-data", {
       method: "POST",
       body: formDataToSend,
       credentials: "include",
