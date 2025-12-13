@@ -3,3 +3,25 @@
 
  これでその状態に他のブランチを戻せる
  
+
+ EventApplicationHistory
+   //ローカル環境
+      const res = await fetch(`http://localhost:8000/api/events/${id}`, {
+     //本番環境
+      //const res = await fetch(`http://localhost:8000/api/events/${id}`,{
+
+
+  EventDetail
+   //ローカル環境
+        const res = await fetch(`http://localhost:8000/api/events/${id}`);
+
+        //本番環境
+        //const res = await fetch(`http://localhost:8000/api/events/${id}`);
+
+
+
+EventForm
+     const response = await fetch("/api/store-event-data", {
++    const response = await fetch("http://localhost:8000/api/store-event-data", {
+
+    

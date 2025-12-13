@@ -56,6 +56,10 @@ function RestaurantForm() {
     setFormData((prev) => ({ ...prev, address }));
     if (address.length > 3) {
       try {
+
+        //本番用
+        //const response = await fetch("/api/store-restaurant-data", {
+        
         const res = await fetch(`http://127.0.0.1:8000/api/geocode?q=${encodeURIComponent(address)}`);
         const data = await res.json();
         if (data.length > 0) {

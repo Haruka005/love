@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from "react";
 
 // ステータス更新APIのエンドポイント
+//本番用
+//const API_URL = "/api/admin/events";
+
 const API_URL = "http://localhost:8000/api/admin/events"; 
 
 // onUpdateはAdminTopから渡される、件数再取得用の関数

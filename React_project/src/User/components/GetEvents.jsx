@@ -37,6 +37,9 @@ function GetEvents() {
         //選択した月をURLに渡せるように文字列に変換する
         const monthStr = String(selectedMonth).padStart(2, "0");
 
+        //本番用
+        //const res = await fetch(`http://127.0.0.1:8000/api/events/${selectedYear}/${monthStr}`);
+        
         //サーバーからイベント取得
         const res = await fetch(`http://localhost:8000/api/events/${selectedYear}/${monthStr}`);
 

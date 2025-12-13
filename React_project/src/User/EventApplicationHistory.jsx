@@ -30,7 +30,11 @@ export default function EventApplicationHistory() {
     if (!window.confirm("本当に削除しますか？")) return;
     try {
       const token = localStorage.getItem("token");
+     //ローカル環境
       const res = await fetch(`http://localhost:8000/api/events/${id}`, {
+     //本番環境
+      //const res = await fetch(`http://localhost:8000/api/events/${id}`,{
+      
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`,

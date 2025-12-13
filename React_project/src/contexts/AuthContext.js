@@ -43,6 +43,9 @@ export function AuthProvider({ children }) {
 
   const fetchUser = async () => {
     try {
+      //本番用
+      //const res = await fetch("/api/me", {
+      
       const res = await fetch("http://localhost:8000/api/me", {
         method: "GET",
         headers: { Authorization: `Bearer ${savedToken}` },

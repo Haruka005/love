@@ -11,7 +11,7 @@ use Carbon\Carbon;
 
 class EventController extends Controller
 {
-    //GetEvennts.jsxのカードに表示させるカラムをここで指定してる
+    // GetEvennts.jsxのカードに表示させるカラムをここで指定してる
     // 指定された年月のイベントを取得
     public function getByMonth($year, $month)
     {
@@ -35,10 +35,48 @@ class EventController extends Controller
 
         return response()->json($events);
     }
+
     // 今月のイベントを取得
     public function getUpComingEvent()
     {
-        
+        // --- main(本番環境)側で追加されていた try/catch 処理 ---
+        /*
+        try {
+            $startOfMonth = Carbon::now()->startOfMonth();
+            $endOfMonth = Carbon::now()->endOfMonth();
+
+            $events = Event::where('approval_status_id', 1) 
+                ->where(function ($query) use ($startOfMonth, $endOfMonth) {
+                    $query->whereBetween('start_date', [$startOfMonth, $endOfMonth])
+                        ->orWhereBetween('end_date', [$startOfMonth, $endOfMonth]);
+                })
+                ->orderBy('start_date', 'asc')
+                ->get([
+                    'id',
+                    'name',
+                    'catchphrase',
+                    'start_date',
+                    'end_date',
+                    'location',
+                    'image_path'  // ← main側で追加されていたカラム
+                ]);
+            
+            // 成功時は必ず JSON を返す。データがない場合は空の JSON 配列 [] が返る
+            return response()->json($events); 
+
+        } catch (\Illuminate\Database\QueryException $e) {
+            // データベース接続やクエリ自体に問題があった場合
+            \Log::error("イベント取得クエリ失敗: " . $e->getMessage());
+            return response()->json([], 200); 
+
+        } catch (\Exception $e) {
+            // その他の PHP エラー
+            \Log::error("イベント取得中に予期せぬエラー: " . $e->getMessage());
+            return response()->json(['error' => 'イベントデータの取得中にサーバーエラーが発生しました'], 500);
+        }
+        */
+
+        // --- local側で有効な処理 ---
         $startOfMonth = Carbon::now()->startOfMonth();
         $endOfMonth = Carbon::now()->endOfMonth();
 
@@ -55,6 +93,7 @@ class EventController extends Controller
             'start_date',
             'end_date',
             'location'
+            // 'image_path' ← main側で追加されていたが local では未使用
         ]);
 
         return response()->json($events);
@@ -94,10 +133,9 @@ class EventController extends Controller
                     'organizer',
                     'notes',
                     'image_path' ,
-                    'approval_status_id',   // ← 承認状態（0=未承認, 1=承認済, 2=拒否）
-                    'rejection_reason'  ,    // ← 拒否理由（管理者メッセージ）
+                    'approval_status_id',   // ← 承認状態
+                    'rejection_reason'  ,   // ← 拒否理由
                     'is_free_participation'
-
                 ]);
 
             return response()->json($events);
@@ -139,7 +177,7 @@ class EventController extends Controller
         }
 
         // イベント情報保存
-        $event = new Event(); // ← EventImage ではなく Event
+        $event = new Event();
         $event->user_id = $user->id;
         $event->name = $request->input('name');
         $event->catchphrase = $request->input('catchphrase');
@@ -156,7 +194,7 @@ class EventController extends Controller
         $event->rejection_reason = null;
 
         if ($imagePath) {
-            $event->image_path = Storage::url($imagePath); // ← image_path に統一
+            $event->image_path = Storage::url($imagePath);
         }
 
         $event->save();

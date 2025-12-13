@@ -117,7 +117,12 @@ function EventForm() {
       formDataToSend.append(key, value);
     });
 
+    //ローカル環境
     const response = await fetch("http://localhost:8000/api/store-event-data", {
+
+    //本番環境
+    //const response = await fetch("/api/store-event-data", {
+    
       method: "POST",
       body: formDataToSend,
       credentials: "include",

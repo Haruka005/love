@@ -10,6 +10,11 @@ export default function RestaurantDetail() {
   useEffect(() => {
     const fetchRestaurant = async () => {
       try {
+        
+        //本番環境
+        //const res = await fetch(`/api/restaurants/${id}`);
+        
+        //ローカル環境
         const res = await fetch(`http://localhost:8000/api/restaurants/${id}`);
         if (!res.ok) throw new Error("飲食店取得失敗");
         const data = await res.json();

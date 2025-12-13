@@ -12,6 +12,10 @@ function UpComingEvents(){
     useEffect(() => {
         const fetchUpcomingEvents = async () => { // async･･･awaitから結果帰ってくるまで次の処理しないで待つ
             try {
+
+              //本番用
+              //const response = await fetch(`${process.env.REACT_APP_API_URL}/events/upcoming`);
+              
                 // バックエンドにリクエスト送る
                 const response = await fetch("http://127.0.0.1:8000/api/events/upcoming");
                
