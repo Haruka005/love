@@ -22,8 +22,14 @@ function GetRestaurants(){
     useEffect(() => {
        fetch("http://127.0.0.1:8000/api/restaurants")
         .then((response) => {
-            if (!response.ok) throw new Error("通信エラー");
-            return response.json();
+        if (!response.ok) {
+            // ステータスコードが4xx/5xxの場合、レスポンスの本文をエラーとして取得を試みる
+            return response.text().then(text => {
+                throw new Error(`HTTP error! status: ${response.status}. Detail: ${text.substring(0, 200)}...`);
+            });
+        }
+        
+    return response.json();
         })
        .then((data) => {
             setRestaurants(data);
