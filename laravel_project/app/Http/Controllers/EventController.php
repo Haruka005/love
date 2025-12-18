@@ -31,6 +31,7 @@ class EventController extends Controller
             'start_date',
             'end_date',
             'location',
+            'image_path'
         ]);
 
         return response()->json($events);

@@ -34,13 +34,6 @@ Route::get('/events/{id}', [EventController::class, 'show']);
 Route::get('/restaurants', [RestaurantController::class, 'getRestaurant']);
 Route::get('/restaurants/{id}', [RestaurantController::class, 'show']);
 
-// 店舗登録（認証不要で受け付ける）
-Route::post('/store-restaurant-data', [RestaurantController::class, 'storeRestaurantData']);
-
-// イベント登録（認証不要で受け付ける）
-Route::post('/store-event-data', [EventController::class, 'storeEventData']);
-
-
 // マスターデータ取得（ラジオボタン用）
 Route::get('/m_areas', [RestaurantController::class, 'getAreas']);
 Route::get('/m_budgets', [RestaurantController::class, 'getBudgets']);
@@ -75,6 +68,12 @@ Route::middleware(['check.token'])->group(function () {
 
     // ログインユーザー情報
     Route::get('/me', [UserController::class, 'me']); 
+
+    // 店舗登録（認証必須へ移動）
+    Route::post('/store-restaurant-data', [RestaurantController::class, 'storeRestaurantData']);
+
+    // イベント登録（認証必須へ移動）
+    Route::post('/store-event-data', [EventController::class, 'storeEventData']);
 
     // ログアウト
     Route::post('/logout', function (Request $request) {
@@ -116,4 +115,3 @@ Route::prefix('v1')->group(function () {
 Route::middleware(['web', 'check.token'])->get('/test-token', function () {
     return ['message' => 'Token OK'];
 });
-

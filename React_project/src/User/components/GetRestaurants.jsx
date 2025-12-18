@@ -75,16 +75,17 @@ function GetRestaurants(){
                 <p>該当する店舗はありません。</p>
                 ) : (
                 filtered.map((shop) => (
-                   <RestaurantCard
-                    key={shop.id}
-                    id={shop.id}
-                    name={shop.name ?? "名称未設定"}
-                    area={shop.area?.name ?? "エリア不明"}
-                    genre={shop.genre?.name ?? "ジャンル不明"}
-                    budget={shop.budget?.name ?? "予算不明"}
-                    address={shop.address ?? "住所不明"}
-                    image={shop.image_url ?? ""}
-                    />
+                        <RestaurantCard
+                key={shop.id}
+                id={shop.id}
+                name={shop.name ?? "名称未設定"}
+                area={shop.area?.name ?? "エリア不明"}
+                genre={shop.genre?.name ?? "ジャンル不明"}
+                budget={shop.budget?.name ?? "予算不明"}
+                address={shop.address ?? "住所不明"}
+                // image_url ではなく topimage_path （DBのカラム名）になっているか確認
+                image={shop.topimage_path ?? ""} 
+            />
                 ))
                 )}
             </div>
