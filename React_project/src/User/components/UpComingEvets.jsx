@@ -12,9 +12,13 @@ function UpComingEvents(){
     useEffect(() => {
         const fetchUpcomingEvents = async () => { // async･･･awaitから結果帰ってくるまで次の処理しないで待つ
             try {
-                // バックエンドにリクエスト送る
-                const response = await fetch(`${process.env.REACT_APP_API_URL}/events/upcoming`);
                
+                // バックエンドにリクエスト送る
+                //const response = await fetch(`${process.env.REACT_APP_API_URL}/events/upcoming`);
+               
+                //ローカルではこれだよ
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/events/upcoming`);
+
                 // 帰ってきたイベント一覧（JSON形式）をJavaScript形式に変換してdataに入れる
                 const data = await response.json();
 
@@ -48,7 +52,7 @@ function UpComingEvents(){
                 id={event.id}
                 name={event.name}
                 catchphrase={event.catchphrase}
-                image={event.image_path}    
+                //image={event.image_path}    
                 start_date={DateTime(event.start_date)}
                 end_date={DateTime(event.end_date)}
                 location={event.location}
@@ -59,5 +63,6 @@ function UpComingEvents(){
     </section>
   );
 }
+
 export default UpComingEvents;
 

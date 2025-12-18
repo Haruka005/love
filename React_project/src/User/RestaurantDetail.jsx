@@ -10,7 +10,9 @@ export default function RestaurantDetail() {
   useEffect(() => {
     const fetchRestaurant = async () => {
       try {
-        const res = await fetch(`/api/restaurants/${id}`);
+
+        //ローカル
+       const res = await fetch(`${process.env.REACT_APP_API_URL}/api/restaurants/${id}`);
         if (!res.ok) throw new Error("飲食店取得失敗");
         const data = await res.json();
         setRestaurant(data);
@@ -31,13 +33,20 @@ export default function RestaurantDetail() {
     <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
       <h2>{restaurant.name}</h2>
 
-      {restaurant.image_url && (
-        <img
-          src={restaurant.image_url}
-          alt={restaurant.name}
-          style={{ width: "100%", maxWidth: "500px", borderRadius: "8px" }}
-        />
+      {/* 画像一覧 */}
+      {restaurant.images && restaurant.images.length > 0 && (
+        <div style={{ marginTop: "10px" }}>
+          {restaurant.images.map((img, index) => (
+            <img
+              key={index}
+              src={`${process.env.REACT_APP_API_URL}${img}`}
+              alt={`${restaurant.name} 画像${index+1}`}
+              style={{ width: "100%", maxWidth: "500px", borderRadius: "8px", marginBottom: "10px" }}
+            />
+          ))}
+        </div>
       )}
+
 
       <p style={{ fontSize: "18px", marginTop: "10px" }}>{restaurant.catchphrase}</p>
 

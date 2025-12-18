@@ -10,7 +10,9 @@ export default function EventDetail() {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const res = await fetch(`/api/events/${id}`);
+        
+        //ローカルと本番環境両方でできるらしい書き方
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/events/${id}`);
         if (!res.ok) throw new Error("イベント取得失敗");
         const data = await res.json();
         setEvent(data);
