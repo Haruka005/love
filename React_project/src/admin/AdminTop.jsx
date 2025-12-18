@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import UserManagement from './components/user_mg';
 import EventManagement from './EventManagement.jsx'; // 新しく分割したファイルをインポート
 
-const API_URL = "/api/admin/events"; 
+const API_URL = `${process.env.REACT_APP_API_URL}/api/admin/events`;  
 
 const badgeStyle = {
     marginLeft: '8px',

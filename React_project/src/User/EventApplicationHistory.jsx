@@ -26,46 +26,46 @@ export default function EventApplicationHistory() {
     }
   }, [filteredEvents, page]);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("本当に削除しますか？")) return;
+ const handleDelete = async (id) => {
+  if (!window.confirm("本当に削除しますか？")) return;
+  try {
+    const token = localStorage.getItem("token");
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/events/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
+    if (res.ok) {
+      setEvents(events.filter((e) => e.id !== id));
+      alert("削除しました");
+    } else {
+      alert("削除に失敗しました");
+    }
+  } catch (err) {
+    console.error("通信エラー:", err);
+    alert("通信エラーが発生しました");
+  }
+};
+
+useEffect(() => {
+  const fetchEvents = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`/api/events/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/events`, {
+        headers: { "Authorization": `Bearer ${token}` }
       });
       if (res.ok) {
-        setEvents(events.filter((e) => e.id !== id));
-        alert("削除しました");
-      } else {
-        alert("削除に失敗しました");
+        const data = await res.json();
+        setEvents(data);
       }
     } catch (err) {
       console.error("通信エラー:", err);
-      alert("通信エラーが発生しました");
     }
   };
-
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch("/api/events", {
-          headers: { "Authorization": `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setEvents(data);
-        }
-      } catch (err) {
-        console.error("通信エラー:", err);
-      }
-    };
-    fetchEvents();
-  }, []);
+  fetchEvents();
+}, []);
 
   return (
     <div style={{ padding: "20px", maxWidth: "600px", margin: "0 auto" }}>

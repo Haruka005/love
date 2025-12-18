@@ -43,7 +43,7 @@ export function AuthProvider({ children }) {
 
   const fetchUser = async () => {
     try {
-      const res = await fetch("/api/me", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/me`, {
         method: "GET",
         headers: { Authorization: `Bearer ${savedToken}` },
       });

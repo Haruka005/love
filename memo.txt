@@ -1,0 +1,59 @@
+
+@UpComingEvents
+// バックエンドにリクエスト送る
+//const response = await fetch(`${process.env.REACT_APP_API_URL}/events/upcoming`);
+               
+//ローカルではこれだよ
+const response = await fetch(`${process.env.REACT_APP_API_URL}/api/events/upcoming`);
+
+// 帰ってきたイベント一覧（JSON形式）をJavaScript形式に変換してdataに入れる
+const data = await response.json();
+
+# --------------------------------------------------------
+# DB 設定（ローカル用）
+# --------------------------------------------------------
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=love_db
+DB_USERNAME=root
+DB_PASSWORD=root
+
+
+Connection Assistant<Step 2/3
+Connection Settings
+
+
+Connection name*
+local_love_db
+Connection group
+Connect using*
+
+Server and Port
+Server Address*
+localhost
+Port*
+3306
+Database*
+love_db
+Username*
+root
+Password mode
+
+SQLTools Driver Credentials
+MySQL driver specific options
+Authentication Protocol
+
+default
+Try to switch protocols in case you have problems.
+
+SSL
+
+Disabled
+Over SSH
+
+Disabled
+Connection Timeout
+Show records default limit
+50
+Save ConnectionTest ConnectionOpen Settings

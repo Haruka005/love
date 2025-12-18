@@ -121,13 +121,22 @@ class RestaurantController extends Controller
 
     // 店舗詳細取得
     public function show($id)
-    {
-        $restaurant = Restaurant::with(['genre', 'area', 'budget'])->find($id);
+{
+    $restaurant = Restaurant::with(['genre', 'area', 'budget'])->find($id);
 
-        if (!$restaurant) {
-            return response()->json(['message' => '店舗が見つかりません'], 404);
-        }
-
-        return response()->json($restaurant);
+    if (!$restaurant) {
+        return response()->json(['message' => '店舗が見つかりません'], 404);
     }
+
+    // 画像を配列にまとめる
+    $images = [];
+    if ($restaurant->topimage_path) $images[] = $restaurant->topimage_path;
+    if ($restaurant->image1_path) $images[] = $restaurant->image1_path;
+    if ($restaurant->image2_path) $images[] = $restaurant->image2_path;
+    if ($restaurant->image3_path) $images[] = $restaurant->image3_path;
+
+    $restaurant->images = $images;
+
+    return response()->json($restaurant);
+}
 }
