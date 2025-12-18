@@ -1,3 +1,6 @@
 node_modules/
 /storage/
-.env
+dump_love_db_20251216.sql
+Local_love_db.session.sql
+love_db.session.sql
+laravel_project/.env
