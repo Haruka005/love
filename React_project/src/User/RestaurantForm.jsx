@@ -30,12 +30,13 @@ function RestaurantForm() {
 
   useEffect(() => {
     const fetchMasters = async () => {
-      try {
-        const [areas, budgets, genres] = await Promise.all([
-          fetch("http://127.0.0.1:8000/api/m_areas").then((res) => res.json()),
-          fetch("http://127.0.0.1:8000/api/m_budgets").then((res) => res.json()),
-          fetch("http://127.0.0.1:8000/api/m_genres").then((res) => res.json()),
-        ]);
+    try {
+      const [areas, budgets, genres] = await Promise.all([
+        fetch(`${process.env.REACT_APP_API_URL}/api/m_areas`).then((res) => res.json()),
+        fetch(`${process.env.REACT_APP_API_URL}/api/m_budgets`).then((res) => res.json()),
+        fetch(`${process.env.REACT_APP_API_URL}/api/m_genres`).then((res) => res.json()),
+      ]);
+
         setAreaOptions(areas);
         setBudgetOptions(budgets);
         setGenreOptions(genres);
@@ -56,7 +57,7 @@ function RestaurantForm() {
     setFormData((prev) => ({ ...prev, address }));
     if (address.length > 3) {
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/geocode?q=${encodeURIComponent(address)}`);
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/geocode?q=${encodeURIComponent(address)}`);
         const data = await res.json();
         if (data.length > 0) {
           const { lat, lon } = data[0];
@@ -196,7 +197,7 @@ function RestaurantForm() {
     formDataToSend.append("longitude", longitude);
 
     try {
-    const response = await fetch("/api/store-restaurant-data", {
+     const response = await fetch(`${process.env.REACT_APP_API_URL}/api/store-restaurant-data`, {
       method: "POST",
       body: formDataToSend,
       credentials: "include", // ← EventForm と同じ方式に統一
@@ -416,7 +417,7 @@ function RestaurantForm() {
         <div key={i}>
           {renderImageUploader(
             formData.images[i],
-            `外観・内観画像 ${i + 1}`,
+            `外観・内観・メニュー画像 ${i + 1}`,
             (file) => handleSubImageChange(i, file),
             () => handleSubImageRemove(i),
             false // 任意

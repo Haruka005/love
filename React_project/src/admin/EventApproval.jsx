@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from "react";
 
 // ステータス更新APIのエンドポイント
-const API_URL = "/api/admin/events"; 
+//環境変数に合わせて修正した
+const API_URL = `${process.env.REACT_APP_API_URL}/api/admin/events`;  
+
 
 // onUpdateはAdminTopから渡される、件数再取得用の関数
 export default function EventApproval({ onUpdate }) {
@@ -16,7 +18,7 @@ export default function EventApproval({ onUpdate }) {
         setLoading(true);
         try {
             const token = localStorage.getItem("token"); // ← 保存済みトークンを取得
-            const response = await fetch(`${API_URL}/pending`, {
+             const response = await fetch(`${API_URL}/pending`, {
                 headers: {
                     "Authorization": `Bearer ${token}`, // ← Bearerトークンを送信
                 },
