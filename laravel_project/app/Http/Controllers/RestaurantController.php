@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use App\Models\Restaurant;
 use App\Models\Genre;
@@ -13,130 +14,114 @@ use App\Models\Budget;
 
 class RestaurantController extends Controller
 {
-    // 店舗登録処理
+    // --- 店舗登録処理 (React側の送信データ名に完全に合わせました) ---
     public function storeRestaurantData(Request $request)
     {
-        Log::info('storeRestaurantData に到達しました', ['user_id' => $request->input('user_id')]);
+        Log::info("storeRestaurantData 処理開始", $request->all());
 
-        $validatedData = $request->validate([
-            // 画像は配列として受け取るため、*.を使用
-            'topimages.*' => 'required|image|max:5120', // 5120KB = 5MB
-            'images.*' => 'nullable|image|max:5120', // 5MB
-            
-            // その他の必須フィールドのバリデーション
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required',
             'name' => 'required|string|max:255',
             'catchphrase' => 'required|string|max:255',
-            'url' => 'required|string|max:255', // 「なし」を許容するなら string でOK
-            'tel' => 'required|string|max:20',
-            'address' => 'required|string|max:255',
-            'business_hours' => 'required|string|max:100',
-            'holiday' => 'required|string|max:50',
-            'genre_id' => 'required|integer|exists:m_genres,id',
-            'area_id' => 'required|integer|exists:m_areas,id', 
-            'budget_id' => 'required|integer|exists:m_budgets,id',
-            'comment' => 'nullable|string',
-            'latitude' => 'nullable|numeric', // ジオコーディング失敗時にデフォルト値を入れているため nullable
-            'longitude' => 'nullable|numeric',
+            'tel' => 'required|string',
+            'address' => 'required|string',
+            'area_id' => 'required',
+            'genre_id' => 'required',
+            'budget_id' => 'required',
+            'business_hours' => 'required',
+            'holiday' => 'required',
+            'url' => 'nullable',
+            // 画像のバリデーションは、React側のキー名に合わせる
+            'topimage' => 'required|image|max:5120', 
+            'image1' => 'nullable|image|max:5120',
+            'image2' => 'nullable|image|max:5120',
+            'image3' => 'nullable|image|max:5120',
         ]);
 
-        $user = User::find($request->input('user_id'));
-        if (!$user) {
-            return response()->json(['error' => 'ユーザーが見つかりません'], 404);
+        if ($validator->fails()) {
+            Log::error("バリデーション失敗", $validator->errors()->toArray());
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // フォルダ作成
-        $folderPath = "user_images/{$user->id}/restaurants";
-        if (!$user->has_restaurant_folder) {
-            if (Storage::disk('public')->makeDirectory($folderPath)) {
-                $user->has_restaurant_folder = true;
-                $user->save();
-            }
-        }
+        $user = User::find($request->user_id);
+        if (!$user) return response()->json(['error' => 'User not found'], 404);
 
         $restaurant = new Restaurant();
+        
+        // データの代入
         $restaurant->user_id = $user->id;
+        $restaurant->name = $request->name;
+        $restaurant->catchphrase = $request->catchphrase;
+        $restaurant->tel = $request->tel;
+        $restaurant->address = $request->address;
+        $restaurant->url = $request->url;
+        $restaurant->comment = $request->comment;
+        $restaurant->business_hours = $request->business_hours;
+        $restaurant->holiday = $request->holiday;
+        $restaurant->genre_id = (int)$request->genre_id;
+        $restaurant->area_id = (int)$request->area_id;
+        $restaurant->budget_id = (int)$request->budget_id;
+        $restaurant->latitude = $request->latitude ?: 42.4123;
+        $restaurant->longitude = $request->longitude ?: 141.2063;
+        $restaurant->approval_status_id = 0;
 
-        // TOP画像
-        if ($request->hasFile('topimages')) {
-            $topImagePath = $request->file('topimages')[0]->store("user_images/{$user->id}/restaurants/top", 'public');
-            $restaurant->topimage_path = Storage::url($topImagePath);
-        } else {
-            return response()->json(['error' => 'TOP画像は必須です'], 422);
+        // 画像保存用パス
+        $basePath = "user_images/{$user->id}/restaurants";
+
+        // TOP画像 (React: topimage)
+        if ($request->hasFile('topimage')) {
+            $path = $request->file('topimage')->store($basePath, 'public');
+            $restaurant->topimage_path = Storage::url($path);
         }
 
-        // 詳細画像
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $index => $image) {
-                if ($index < 3 && $image) {
-                    $path = $image->store("user_images/{$user->id}/restaurants/detail", 'public');
-                    $restaurant->{'image'.($index + 1).'_path'} = Storage::url($path);
-                }
+        // サブ画像 (React: image1, image2, image3)
+        for ($i = 1; $i <= 3; $i++) {
+            $key = "image{$i}";
+            if ($request->hasFile($key)) {
+                $path = $request->file($key)->store($basePath, 'public');
+                $col = "image{$i}_path";
+                $restaurant->$col = Storage::url($path);
             }
         }
 
-        // 入力情報
-        $restaurant->name = $request->input('name');
-        $restaurant->catchphrase = $request->input('catchphrase');
-        $restaurant->url = $request->input('url');
-        $restaurant->address = $request->input('address');
-        $restaurant->latitude = $request->input('latitude') ?: 42.4123;
-        $restaurant->longitude = $request->input('longitude') ?: 141.2063;
-        $restaurant->comment = $request->input('comment');
-        $restaurant->budget_id = $request->input('budget_id');
-        $restaurant->area_id = $request->input('area_id');
-        $restaurant->genre_id = $request->input('genre_id'); 
-        $restaurant->tel = $request->input('tel');
-        $restaurant->business_hours = $request->input('business_hours');
-        $restaurant->holiday = $request->input('holiday');
-
-
-
-        $restaurant->save();
-
-        return response()->json(['message' => 'レストラン情報を保存しました']);
+        if ($restaurant->save()) {
+            return response()->json(['message' => 'Success'], 201);
+        }
+        return response()->json(['error' => 'Save failed'], 500);
     }
 
-    // マスターデータ取得
-    public function getGenres()
-    {
-        return response()->json(Genre::all());
-    }
+    // --- 以下、Reactが表示のために必要としているマスターデータ取得API ---
+    public function getGenres() { return response()->json(Genre::all()); }
+    public function getAreas() { return response()->json(Area::all()); }
+    public function getBudgets() { return response()->json(Budget::all()); }
 
-    public function getAreas()
-    {
-        return response()->json(Area::all());
-    }
-
-    public function getBudgets()
-    {
-        return response()->json(Budget::all());
-    }
-
-    // 店舗一覧取得（リレーション付き）
     public function getRestaurant()
     {
+    try {
+        // モデル Restaurant.php で protected $table = 'm_restaurants'; 
+        // が設定されていれば、これで取得できます。
         $restaurants = Restaurant::with(['genre', 'area', 'budget'])->get();
         return response()->json($restaurants);
+    } catch (\Exception $e) {
+        // 何かエラーがあればログに出力
+        Log::error("一覧取得エラー: " . $e->getMessage());
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
     }
 
-    // 店舗詳細取得
+    
     public function show($id)
-{
-    $restaurant = Restaurant::with(['genre', 'area', 'budget'])->find($id);
-
-    if (!$restaurant) {
-        return response()->json(['message' => '店舗が見つかりません'], 404);
+    {
+        $restaurant = Restaurant::with(['genre', 'area', 'budget'])->find($id);
+        if (!$restaurant) return response()->json(['message' => 'Not found'], 404);
+        
+        $images = array_filter([
+            $restaurant->topimage_path,
+            $restaurant->image1_path,
+            $restaurant->image2_path,
+            $restaurant->image3_path
+        ]);
+        $restaurant->images = $images;
+        return response()->json($restaurant);
     }
-
-    // 画像を配列にまとめる
-    $images = [];
-    if ($restaurant->topimage_path) $images[] = $restaurant->topimage_path;
-    if ($restaurant->image1_path) $images[] = $restaurant->image1_path;
-    if ($restaurant->image2_path) $images[] = $restaurant->image2_path;
-    if ($restaurant->image3_path) $images[] = $restaurant->image3_path;
-
-    $restaurant->images = $images;
-
-    return response()->json($restaurant);
-}
 }
