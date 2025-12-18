@@ -1,1 +1,5 @@
 node_modules/
+git rm --cached .env
+git rm --cached love_db.sql
+git rm --cached local_love_db.session.sql
+git commit -m "不要なファイルをGit管理から除外"
