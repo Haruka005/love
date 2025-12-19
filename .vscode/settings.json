@@ -7,12 +7,27 @@
             },
             "ssh": "Disabled",
             "previewLimit": 50,
+            "server": "172.16.117.200",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "love_db",
+            "database": "love_db",
+            "username": "love_user",
+            "askForPassword": true
+        },
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
             "server": "localhost",
             "port": 3306,
             "driver": "MySQL",
-            "database": "love_test_db",
-            "username": "root",
-            "name": "iida"
+            "name": "local_love_db",
+            "database": "mysql",
+            "username": "root"
         }
     ]
 }

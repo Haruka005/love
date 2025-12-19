@@ -25,78 +25,38 @@ import EventDetail from "./User/EventDetail";
 import RestaurantDetail from "./User/RestaurantDetail"; 
 
 import AdminTop from "./admin/AdminTop";
-
 import RestaurantForm from './User/RestaurantForm';
 
-
-
+import AdminLogin from "./admin/components/AdminLogin"; // ★ 追加！
 
 function App() {
-  // 仮のログインユーザー情報（本番ではログイン処理と連携）
-  /*const [currentUser] = useState({
-    id: 123,
-    has_image_folder: 0,
-  });*/
-  
   return (
-    //ReactのContext APIを使って「ログインユーザー情報（currentUser）」をアプリ全体に共有するための仕組みらしい
     <AuthProvider>
-    <BrowserRouter>
-      <Routes>
-        {/* トップページ */}
-        <Route path="/" element={<MainPage />} />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<MainPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login-complete" element={<LoginComplete />} />
+          <Route path="/AccountCreated" element={<AccountCreated />} />
+          <Route path="/ReportForm" element={<ReportForm />} />
+          <Route path="/MyPage" element={<MyPage />} />
+          <Route path="/restaurants/:id" element={<RestaurantDetail />} />
+          <Route path="/events/:id" element={<EventDetail />} />
+          <Route path="/reset-pass" element={<ResetPass />} />
+          <Route path="/VisitList" element={<VisitList />} />
+          <Route path="/FavoritesList" element={<FavoritesList />} />
+          <Route path="/HistoryList" element={<HistoryList />} />
+          <Route path="/EventApplicationHistory" element={<EventApplicationHistory />} />
+          <Route path="/EventForm" element={<EventForm />} />
+          <Route path="/RestaurantForm" element={<RestaurantForm />} />
+          <Route path="/AdminTop" element={<AdminTop />} />
 
-        {/* ログインページ */}
-        <Route path="/login" element={<Login />} />
+          <Route path="/admin/login" element={<AdminLogin />} /> {/* ★ 管理者ログインページ追加 */}
 
-        {/* サインアップページ */}
-        <Route path="/signup" element={<Signup />} />
-
-        {/* ログイン完了ページ */}
-        <Route path="/login-complete" element={<LoginComplete />} />
-
-        {/* アカウント作成完了ページ */}
-        <Route path="/AccountCreated" element={<AccountCreated />} />
-
-        {/* 通報ページ */}
-        <Route path="/ReportForm" element={<ReportForm />} />
-
-        {/* マイページ */}
-        <Route path="/MyPage" element={<MyPage />} />
-
-        {/* 飲食店詳細 */}
-        <Route path="/restaurants/:id" element={<RestaurantDetail />} />
-
-        {/* イベント詳細 */}
-        <Route path="/events/:id" element={<EventDetail />} />
-
-        {/*パスワード再設定ページ*/}
-        <Route path="/reset-pass" element={<ResetPass/>}/>
-
-        {/*来店一覧*/}
-        <Route path="/VisitList" element={<VisitList />} />
-
-        {/* お気に入り一覧ページ */}
-        <Route path="/FavoritesList" element={<FavoritesList />} />
-        
-        {/*閲覧履歴一覧*/}
-        <Route path="/HistoryList" element={<HistoryList />} />
-
-       {/*イベント親戚確認 */}
-        <Route path="/EventApplicationHistory" element={<EventApplicationHistory />} />
-
-       {/*イベント新規登録 */}
-        <Route path="/EventForm" element={<EventForm />} />
-
-        {/*イベント新規登録 */}
-        <Route path="/RestaurantForm" element={<RestaurantForm />} />
-
-        {/*管理者TOP*/}
-        <Route path="/AdminTop" element={<AdminTop />} />
-
-      </Routes>
-    </BrowserRouter>
-     </AuthProvider>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
