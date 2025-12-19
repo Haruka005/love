@@ -90,6 +90,7 @@ function GetRestaurants(){
                 )}
             </div>
 
+
             {/* ---------- データの状態ごとに出し分け ---------- */}
             {loading && <p>読み込み中です…</p>}
             {error && <p>エラー: {error}</p>}

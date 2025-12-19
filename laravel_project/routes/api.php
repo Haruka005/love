@@ -61,7 +61,7 @@ Route::get('/geocode', function (Request $request) {
     return response()->json($data ?: []);
 });
 
-/// ==============================
+// ==============================
 // 認証必須ルート (Bearerトークン)
 // ==============================
 Route::middleware(['check.token'])->group(function () {
@@ -69,10 +69,10 @@ Route::middleware(['check.token'])->group(function () {
     // ログインユーザー情報
     Route::get('/me', [UserController::class, 'me']); 
 
-    // 店舗登録（認証必須へ移動）
+    // 店舗登録
     Route::post('/store-restaurant-data', [RestaurantController::class, 'storeRestaurantData']);
 
-    // イベント登録（認証必須へ移動）
+    // イベント登録
     Route::post('/store-event-data', [EventController::class, 'storeEventData']);
 
     // ログアウト
@@ -88,19 +88,29 @@ Route::middleware(['check.token'])->group(function () {
         return response()->json(['message' => 'Logged out'], 200);
     });
 
-    // 管理者イベントAPI
+    // ------------------------------
+    // 管理者イベントAPI (順序が重要！)
+    // ------------------------------
+    
+    // 1. 具体的なパスを持つものを優先的に上に書く
     Route::get('/admin/events/pending', [AdminEventController::class, 'getPendingEvents']); 
-    Route::post('/admin/events/{id}/status', [AdminEventController::class, 'updateEventStatus']);
     Route::get('/admin/events/approved', [AdminEventController::class, 'getApprovedEvents']);
+    
+    // 2. パラメータ {id} を含むものは下に書く（pendingなどがここに吸い込まれないようにするため）
+    Route::get('/admin/events/{id}', [AdminEventController::class, 'show']);
+    Route::put('/admin/events/{id}', [AdminEventController::class, 'update']);
+    Route::post('/admin/events/{id}/status', [AdminEventController::class, 'updateEventStatus']);
 
+    // ------------------------------
+    // 一般ユーザー用イベント操作
+    // ------------------------------
     // ユーザー自身のイベント登録履歴
     Route::get('/events', [EventController::class, 'index']);
 
     // イベント編集・削除
     Route::put('/events/{id}', [EventController::class, 'update']);
-    Route::delete('/events/{id}', [EventController::class, 'destroy']); // destroyメソッド要実装
+    Route::delete('/events/{id}', [EventController::class, 'destroy']); 
 });
-
 
 // ==============================
 // バージョン付きルート

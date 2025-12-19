@@ -28,8 +28,8 @@ import RestaurantForm from './User/RestaurantForm';
 import Header from "./User/components/Header";
 import Footer from "./User/components/Footer";
 
-
-
+// 管理者用：イベント編集画面をインポート
+import EventEdit from "./admin/EventEdit"; 
 
 function App() {
 
@@ -89,6 +89,9 @@ function App() {
 
         {/*管理者TOP*/}
         <Route path="/AdminTop" element={<AdminTop />} />
+
+        {/* 【管理者用】イベント編集画面のルートを追加 */}
+        <Route path="/EventEdit/:id" element={<EventEdit />} />
 
       </Routes>    
      </BrowserRouter>

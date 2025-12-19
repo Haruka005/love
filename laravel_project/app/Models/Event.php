@@ -23,10 +23,20 @@ class Event extends Model
 
     // 書き換え可能なカラムを指定（任意）
     protected $fillable = [
-        'name',
-        'catchphrase',
-        'start_date',
-        'end_date',
-        'location'
-    ];
+    'user_id',
+    'name',
+    'catchphrase',
+    'description',
+    'start_date',
+    'end_date',
+    'location',
+    'url',
+    'notes',
+    'organizer',
+    'is_free_participation',
+    'is_open_enrollment',
+    'approval_status_id', // 承認ステータス
+    'rejection_reason',   // 却下理由
+    'image_path',         // 画像
+];
 }

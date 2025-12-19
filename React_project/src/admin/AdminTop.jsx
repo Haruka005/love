@@ -17,6 +17,9 @@ const badgeStyle = {
     fontWeight: 'normal',
 };
 
+
+
+
 // --- AdminTop (メインコンポーネント) ---
 export default function AdminTop() {
     const [activeTab, setActiveTab] = useState("users");
@@ -25,12 +28,13 @@ export default function AdminTop() {
     const fetchPendingCount = async () => {
         try {
             const token = localStorage.getItem("token"); 
-            const response = await fetch(`${API_URL}/pending`, {
-                headers: {
-                    "Authorization": `Bearer ${token}`, 
-                },
-            });
-            
+           const response = await fetch(`${API_URL}/pending`, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Accept": "application/json", // これを追加するとエラー内容がわかりやすくなります
+            },
+        });
             if (response.ok) {
                 const data = await response.json();
                 setPendingCount(data.length); 

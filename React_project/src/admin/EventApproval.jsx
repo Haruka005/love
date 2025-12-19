@@ -143,7 +143,7 @@ export default function EventApproval({ onUpdate }) {
                         {/* 詳細情報 */}
                         {expandedId === event.id && (
                             <div style={{ marginTop: "10px", padding: "10px", borderTop: "1px dashed #eee" }}>
-                                <p><strong>キャッチフレーズ:</strong> {event.catchphrase}</p>
+                                <p><strong>見出し:</strong> {event.catchphrase}</p>
                                 <p><strong>開催期間:</strong> {event.start_date} から {event.end_date}</p>
                                 <p><strong>場所:</strong> {event.location}</p>
                                 <p><strong>予約:</strong> 

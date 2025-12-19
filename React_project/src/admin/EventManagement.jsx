@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // 編集画面への遷移に必要
+import { useNavigate } from "react-router-dom";
 import EventApproval from './EventApproval.jsx';
 
-// 環境変数からベースURLを取得
-const API_URL = `${process.env.REACT_APP_API_URL}/api/admin/events`; 
+const API_URL = `${process.env.REACT_APP_API_URL}/api/admin/events`;
 
-// --- 承認済みイベント一覧コンポーネント ---
-function ApprovedEventList() {
-    const [approvedEvents, setApprovedEvents] = useState([]);
+// --- イベント一覧コンポーネント (公開中・非公開 共通) ---
+function EventList({ status, title }) {
+    const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [expandedId, setExpandedId] = useState(null); // 詳細表示用のID
+    const [expandedId, setExpandedId] = useState(null);
     const navigate = useNavigate();
     
     const today = new Date();
@@ -17,214 +16,191 @@ function ApprovedEventList() {
         `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
     );
 
-    const generateYearMonthOptions = () => {
+    const yearMonthOptions = (() => {
         const options = [];
         const currentYear = today.getFullYear();
-        const currentMonth = today.getMonth() + 1;
-
         for (let y = currentYear; y >= currentYear - 1; y--) {
-            const startMonth = (y === currentYear) ? currentMonth : 12;
-            for (let m = startMonth; m >= 1; m--) {
-                const monthString = String(m).padStart(2, '0');
-                const value = `${y}-${monthString}`;
-                options.push({ value: value, label: `${y}年${m}月` });
-                if (y < currentYear && m === 1) break;
+            for (let m = 12; m >= 1; m--) {
+                const value = `${y}-${String(m).padStart(2, '0')}`;
+                options.push({ value, label: `${y}年${m}月` });
             }
         }
         return options;
-    };
-    
-    const yearMonthOptions = generateYearMonthOptions();
+    })();
 
-    // 承認済みイベント取得API
-    const fetchApprovedEvents = async () => {
+    const fetchEvents = async () => {
         setLoading(true);
         try {
             const token = localStorage.getItem("token"); 
-            const url = `${API_URL}/approved?year_month=${selectedYearMonth}`;
-            
+            const url = `${API_URL}/approved?year_month=${selectedYearMonth}&status=${status}`;
             const response = await fetch(url, {
                 headers: { "Authorization": `Bearer ${token}` },
             });
             if (response.ok) {
                 const data = await response.json();
-                setApprovedEvents(data);
-            } else {
-                console.error("承認済みイベントの取得に失敗しました。");
+                setEvents(data);
             }
         } catch (error) {
-            console.error("通信エラー:", error);
+            console.error("Fetch Error:", error);
         } finally {
             setLoading(false);
         }
     };
 
-    // 削除処理
-    const handleDelete = async (id) => {
-        if (!window.confirm("この承認済みイベントを削除しますか？\n(サイト上の表示からも消去されます)")) return;
+    const handleUpdateStatus = async (e, id, newStatus) => {
+        e.stopPropagation();
+        const msg = newStatus === 1 ? "このイベントを再度【公開】しますか？" : "このイベントを【非公開】にしますか？";
+        if (!window.confirm(msg)) return;
+        
         try {
             const token = localStorage.getItem("token");
-            const res = await fetch(`${API_URL}/${id}`, {
-                method: "DELETE",
+            const res = await fetch(`${API_URL}/${id}/status`, {
+                method: "POST", 
                 headers: {
                     "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json"
-                }
+                },
+                body: JSON.stringify({ 
+                    status: newStatus, 
+                    reason: '管理者によるステータス変更' 
+                })
             });
+
             if (res.ok) {
-                setApprovedEvents(approvedEvents.filter((e) => e.id !== id));
-                alert("削除しました");
-            } else {
-                alert("削除に失敗しました");
+                setEvents(prev => prev.filter((e) => e.id !== id));
+                alert(newStatus === 1 ? "公開しました。" : "非公開にしました。");
             }
         } catch (err) {
-            console.error("通信エラー:", err);
-            alert("通信エラーが発生しました");
+            console.error("Update Error:", err);
         }
     };
 
     useEffect(() => {
-        fetchApprovedEvents();
-    }, [selectedYearMonth]);
-    
-    const handleYearMonthChange = (e) => {
-        setSelectedYearMonth(e.target.value);
-    };
+        fetchEvents();
+    }, [selectedYearMonth, status]);
 
-    if (loading) return <p>承認済みイベントを読み込み中...</p>;
+    if (loading) return <p style={{ padding: "20px" }}>読み込み中...</p>;
 
     return (
-        <div>
-            <h4>承認済みイベント ({approvedEvents.length} 件)</h4>
-            
+        <div style={{ padding: "10px" }}>
+            <h4>{title} ({events.length} 件)</h4>
             <div style={{ marginBottom: '15px' }}>
-                <label style={{ marginRight: '10px' }}>表示年月：</label>
                 <select 
                     value={selectedYearMonth} 
-                    onChange={handleYearMonthChange}
+                    onChange={(e) => setSelectedYearMonth(e.target.value)}
                     style={{ padding: '5px', borderRadius: '4px' }}
                 >
-                    {yearMonthOptions.map(option => (
-                        <option key={option.value} value={option.value}>
-                            {option.label}
-                        </option>
-                    ))}
+                    {yearMonthOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
             </div>
             
-            {approvedEvents.length === 0 
-                ? <p style={{ color: "gray" }}>選択された年月には承認済みのイベントはありません。</p>
-                : approvedEvents.map(event => (
+            {events.length === 0 ? (
+                <p style={{ color: "gray" }}>該当するイベントはありません。</p>
+            ) : (
+                events.map(event => (
                     <div key={event.id} style={{ borderBottom: '1px solid #eee', padding: '15px 0' }}>
-                        {/* タイトル部分：クリックで詳細を表示 */}
                         <div 
-                            onClick={() => setExpandedId(expandedId === event.id ? null : event.id)}
+                            onClick={() => setExpandedId(expandedId === event.id ? null : event.id)} 
                             style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
                         >
                             <span>
-                                <strong>{event.name}</strong> 
-                                <span style={{ fontSize: '0.85em', color: '#666', marginLeft: '10px' }}>({event.start_date}~)</span>
+                                <strong style={{ color: status === 9 ? "#666" : "#000" }}>{event.name}</strong> 
+                                <span style={{ fontSize: '0.85em', color: '#666', marginLeft: '10px' }}>
+                                    ({event.start_date}~)
+                                </span>
                             </span>
-                            <span style={{ color: '#007bff', fontSize: '0.9em' }}>
-                                {expandedId === event.id ? "▲ 閉じる" : "▼ 詳細・編集"}
+                            <span style={{ color: '#007bff', fontSize: '0.8em' }}>
+                                {expandedId === event.id ? "▲ 閉じる" : "▼ 詳細・操作"}
                             </span>
                         </div>
 
-                        {/* 詳細情報とアクションボタン */}
+                        {/* --- 詳細表示（全項目網羅） --- */}
                         {expandedId === event.id && (
-                            <div style={{ marginTop: "10px", padding: "15px", backgroundColor: "#f9f9f9", borderRadius: "8px" }}>
-                                <p><strong>場所:</strong> {event.location || "未設定"}</p>
-                                <p><strong>主催者:</strong> {event.organizer || "未設定"}</p>
-                                <p><strong>説明:</strong> {event.description}</p>
+                            <div style={{ 
+                                marginTop: "10px", padding: "20px", backgroundColor: "#f9f9f9", 
+                                borderRadius: "8px", fontSize: "0.95em", border: "1px solid #ddd" 
+                            }}>
+                                <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: "8px" }}>
+                                    <strong>ID:</strong> <span>{event.id}</span>
+                                    <strong>イベント名:</strong> <span>{event.name}</span>
+                                    <strong>キャッチコピー:</strong> <span>{event.catchphrase || "未設定"}</span>
+                                    <strong>開催期間:</strong> <span>{event.start_date} ～ {event.end_date}</span>
+                                    <strong>場所:</strong> <span>{event.location || "未設定"}</span>
+                                    <strong>主催者:</strong> <span>{event.organizer || "未設定"}</span>
+                                    <strong>料金:</strong> <span>{event.price || "未設定"}</span>
+                                    <strong>公式サイト:</strong> <span>{event.url ? <a href={event.url} target="_blank">{event.url}</a> : "未設定"}</span>
+                                    <strong>カテゴリ:</strong> <span>{event.category || "未設定"}</span>
+                                    <strong>お問合せ:</strong> <span>{event.contact_info || "未設定"}</span>
+                                </div>
                                 
-                                {event.image_url && (
-                                    <div style={{ marginTop: '10px' }}>
-                                        <img src={event.image_url} alt="イベント" style={{ maxWidth: '200px', borderRadius: '4px' }} />
-                                    </div>
-                                )}
+                                <div style={{ marginTop: "10px", borderTop: "1px dotted #ccc", paddingTop: "10px" }}>
+                                    <strong>詳細説明:</strong>
+                                    <p style={{ whiteSpace: "pre-wrap", backgroundColor: "#fff", padding: "10px", border: "1px solid #eee", marginTop: "5px" }}>
+                                        {event.description || "記載なし"}
+                                    </p>
+                                </div>
 
-                                <div style={{ marginTop: "15px", textAlign: "right", borderTop: "1px solid #ddd", paddingTop: "10px" }}>
+                                <div style={{ marginTop: "15px", textAlign: "right", borderTop: "1px solid #eee", paddingTop: "15px" }}>
                                     <button 
                                         onClick={() => navigate(`/EventEdit/${event.id}`)}
-                                        style={{ 
-                                            marginRight: "10px", 
-                                            padding: "6px 12px", 
-                                            cursor: "pointer",
-                                            backgroundColor: "#fff",
-                                            border: "1px solid #ccc",
-                                            borderRadius: "4px"
-                                        }}
+                                        style={{ padding: "6px 15px", cursor: "pointer", backgroundColor: "#007bff", color: "#fff", border: "none", borderRadius: "4px", marginRight: "10px", fontWeight: "bold" }}
                                     >
-                                        編集 ✏️
+                                        編集画面を開く ✏️
                                     </button>
-                                    <button 
-                                        onClick={() => handleDelete(event.id)}
-                                        style={{ 
-                                            padding: "6px 12px", 
-                                            cursor: "pointer", 
-                                            backgroundColor: "#dc3545", 
-                                            color: "white", 
-                                            border: "none", 
-                                            borderRadius: "4px" 
-                                        }}
-                                    >
-                                        削除 ❌
-                                    </button>
+                                    
+                                    {status === 1 ? (
+                                        <button 
+                                            onClick={(e) => handleUpdateStatus(e, event.id, 9)}
+                                            style={{ padding: "6px 15px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+                                        >
+                                            非公開にする ❌
+                                        </button>
+                                    ) : (
+                                        <button 
+                                            onClick={(e) => handleUpdateStatus(e, event.id, 1)}
+                                            style={{ padding: "6px 15px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+                                        >
+                                            再公開する 🔓
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         )}
                     </div>
                 ))
-            }
+            )}
         </div>
     );
 }
 
-// --- イベント管理メインコンポーネント ---
+// --- メインコンポーネント ---
 export default function EventManagement({ onStatusUpdate }) {
     const [eventTab, setEventTab] = useState("pending");
     
+    const tabStyle = (id) => ({
+        padding: '10px 20px', 
+        border: 'none',
+        borderBottom: eventTab === id ? '3px solid #f93d5d' : 'none',
+        background: 'none', 
+        cursor: 'pointer',
+        fontWeight: eventTab === id ? 'bold' : 'normal',
+        color: eventTab === id ? '#f93d5d' : '#666',
+    });
+
     return (
-        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
             <h2>イベント管理</h2>
 
-            <div style={{ marginBottom: '15px', borderBottom: '1px solid #eee' }}>
-                <button 
-                    onClick={() => setEventTab("pending")} 
-                    style={{ 
-                        padding: '8px 15px',
-                        border: 'none',
-                        borderBottom: eventTab === 'pending' ? '2px solid #f93d5d' : 'none',
-                        background: 'none',
-                        cursor: 'pointer',
-                        fontWeight: eventTab === 'pending' ? 'bold' : 'normal', 
-                        marginRight: '10px' 
-                    }}
-                >
-                    未承認リスト
-                </button>
-                <button 
-                    onClick={() => setEventTab("approved")} 
-                    style={{ 
-                        padding: '8px 15px',
-                        border: 'none',
-                        borderBottom: eventTab === 'approved' ? '2px solid #f93d5d' : 'none',
-                        background: 'none',
-                        cursor: 'pointer',
-                        fontWeight: eventTab === 'approved' ? 'bold' : 'normal' 
-                    }}
-                >
-                    承認済みリスト
-                </button>
+            <div style={{ marginBottom: '15px', borderBottom: '1px solid #eee', display: 'flex' }}>
+                <button onClick={() => setEventTab("pending")} style={tabStyle("pending")}>未承認</button>
+                <button onClick={() => setEventTab("approved")} style={tabStyle("approved")}>公開中</button>
+                <button onClick={() => setEventTab("hidden")} style={tabStyle("hidden")}>非公開</button>
             </div>
             
-            {eventTab === "pending" && (
-                <EventApproval onUpdate={onStatusUpdate} />
-            )}
-            
-            {eventTab === "approved" && (
-                <ApprovedEventList />
-            )}
+            {eventTab === "pending" && <EventApproval onUpdate={onStatusUpdate} />}
+            {eventTab === "approved" && <EventList status={1} title="公開中のイベント" />}
+            {eventTab === "hidden" && <EventList status={9} title="非公開のイベント" />}
         </div>
     );
 }
+
