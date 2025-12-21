@@ -18,7 +18,6 @@ import FavoritesList from "./User/FavoritesList";
 import HistoryList from "./User/HistoryList"; 
 import EventApplicationHistory from "./User/EventApplicationHistory";
 import EventForm from "./User/EventForm";
-//import ShopForm from "./User/ShopForm";
 import EventDetail from "./User/EventDetail"; 
 import RestaurantDetail from "./User/RestaurantDetail"; 
 
@@ -30,6 +29,12 @@ import Footer from "./User/components/Footer";
 
 // 管理者用：イベント編集画面をインポート
 import EventEdit from "./admin/EventEdit"; 
+//店編集画面
+import RestaurantEdit from "./admin/RestaurantEdit";
+
+//管理者用店登録
+import RestaurantApproval from "./admin/RestaurantApproval.jsx";
+
 
 function App() {
 
@@ -92,6 +97,12 @@ function App() {
 
         {/* 【管理者用】イベント編集画面のルートを追加 */}
         <Route path="/EventEdit/:id" element={<EventEdit />} />
+
+        {/*管理者用　店舗申請承認画面 */}
+        <Route path="/RestaurantApproval" element={<RestaurantApproval />} />
+
+        {/*飲食店編集画面 */}
+       <Route path="/RestaurantEdit/:id" element={<RestaurantEdit />} />
 
       </Routes>    
      </BrowserRouter>

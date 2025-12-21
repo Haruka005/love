@@ -13,16 +13,19 @@ class AdminEventController extends Controller
      */
     public function getPendingEvents(Request $request)
     {
-        $events = Event::where('approval_status_id', 0)
-                       ->orderBy('created_at', 'desc')
-                       ->get();
+        // status 0 (新規申請) と 3 (再申請) の両方を取得
+        $events = Event::whereIn('approval_status_id', [0, 3])
+                    ->orderBy('created_at', 'desc')
+                    ->get();
 
         $events = $events->map(function ($event) {
             $event->image_url = $event->image_path ? asset($event->image_path) : null;
+            // フロントエンドで判定しやすいようフラグを追加しても良い
+            $event->is_resubmitted = ($event->approval_status_id == 3);
             return $event;
-        });
+    });
 
-        return response()->json($events);
+    return response()->json($events);
     }
 
     /**
@@ -96,31 +99,33 @@ class AdminEventController extends Controller
         return response()->json($event);
     }
 
-    /**
-     * 【追加】イベント内容の更新保存
-     */
-    public function update(Request $request, $id)
-    {
-        $event = Event::findOrFail($id);
+ /**
+ * 【追加】イベント内容の更新保存
+ */
+public function update(Request $request, $id)
+{
+    $event = Event::findOrFail($id);
 
-        // バリデーション（必要に応じて項目を追加してください）
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date',
-            // 他の項目は任意（nullable）として受け取る設定
-        ]);
+    // バリデーション
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'start_date' => 'nullable|date',
+        'end_date' => 'nullable|date',
+    ]);
 
+    // 1. 送られてきたデータを更新
+    $event->fill($request->all());
 
-        
+    // 2. ここが重要！再申請時はステータスを強制的に「3 (再申請中)」に書き換える
+    // 管理者が編集した際も再度「未承認」状態に戻すための処理です
+    $event->approval_status_id = 3;
 
-        // 送られてきたデータをまるごと更新
-        // ※ Eventモデルの $fillable に記述があるカラムのみ更新されます
-        $event->update($request->all());
+    // 3. 保存
+    $event->save();
 
-        return response()->json([
-            'message' => 'イベント情報を更新しました',
-            'event' => $event
-        ]);
-    }
+    return response()->json([
+        'message' => 'イベント情報を更新（再申請）しました',
+        'event' => $event
+    ]);
+}
 }

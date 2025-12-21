@@ -4,8 +4,8 @@ import EventApproval from './EventApproval.jsx';
 
 const API_URL = `${process.env.REACT_APP_API_URL}/api/admin/events`;
 
-// --- イベント一覧コンポーネント (公開中・非公開 共通) ---
-function EventList({ status, title }) {
+// --- 公開中・非公開リスト用コンポーネント ---
+function EventList({ status, title, onStatusUpdate }) {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState(null);
@@ -34,7 +34,10 @@ function EventList({ status, title }) {
             const token = localStorage.getItem("token"); 
             const url = `${API_URL}/approved?year_month=${selectedYearMonth}&status=${status}`;
             const response = await fetch(url, {
-                headers: { "Authorization": `Bearer ${token}` },
+                headers: { 
+                    "Authorization": `Bearer ${token}`,
+                    "Accept": "application/json"
+                },
             });
             if (response.ok) {
                 const data = await response.json();
@@ -58,17 +61,16 @@ function EventList({ status, title }) {
                 method: "POST", 
                 headers: {
                     "Authorization": `Bearer ${token}`,
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
                 },
-                body: JSON.stringify({ 
-                    status: newStatus, 
-                    reason: '管理者によるステータス変更' 
-                })
+                body: JSON.stringify({ status: newStatus })
             });
 
             if (res.ok) {
                 setEvents(prev => prev.filter((e) => e.id !== id));
                 alert(newStatus === 1 ? "公開しました。" : "非公開にしました。");
+                if (onStatusUpdate) onStatusUpdate();
             }
         } catch (err) {
             console.error("Update Error:", err);
@@ -83,7 +85,8 @@ function EventList({ status, title }) {
 
     return (
         <div style={{ padding: "10px" }}>
-            <h4>{title} ({events.length} 件)</h4>
+            <h4 style={{ marginBottom: "15px" }}>{title} ({events.length} 件)</h4>
+            
             <div style={{ marginBottom: '15px' }}>
                 <select 
                     value={selectedYearMonth} 
@@ -95,79 +98,103 @@ function EventList({ status, title }) {
             </div>
             
             {events.length === 0 ? (
-                <p style={{ color: "gray" }}>該当するイベントはありません。</p>
+                <p style={{ color: "#888", padding: "10px" }}>該当するイベントはありません。</p>
             ) : (
-                events.map(event => (
-                    <div key={event.id} style={{ borderBottom: '1px solid #eee', padding: '15px 0' }}>
-                        <div 
-                            onClick={() => setExpandedId(expandedId === event.id ? null : event.id)} 
-                            style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-                        >
-                            <span>
-                                <strong style={{ color: status === 9 ? "#666" : "#000" }}>{event.name}</strong> 
-                                <span style={{ fontSize: '0.85em', color: '#666', marginLeft: '10px' }}>
-                                    ({event.start_date}~)
-                                </span>
-                            </span>
-                            <span style={{ color: '#007bff', fontSize: '0.8em' }}>
-                                {expandedId === event.id ? "▲ 閉じる" : "▼ 詳細・操作"}
-                            </span>
-                        </div>
-
-                        {/* --- 詳細表示（全項目網羅） --- */}
-                        {expandedId === event.id && (
-                            <div style={{ 
-                                marginTop: "10px", padding: "20px", backgroundColor: "#f9f9f9", 
-                                borderRadius: "8px", fontSize: "0.95em", border: "1px solid #ddd" 
-                            }}>
-                                <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: "8px" }}>
-                                    <strong>ID:</strong> <span>{event.id}</span>
-                                    <strong>イベント名:</strong> <span>{event.name}</span>
-                                    <strong>キャッチコピー:</strong> <span>{event.catchphrase || "未設定"}</span>
-                                    <strong>開催期間:</strong> <span>{event.start_date} ～ {event.end_date}</span>
-                                    <strong>場所:</strong> <span>{event.location || "未設定"}</span>
-                                    <strong>主催者:</strong> <span>{event.organizer || "未設定"}</span>
-                                    <strong>料金:</strong> <span>{event.price || "未設定"}</span>
-                                    <strong>公式サイト:</strong> <span>{event.url ? <a href={event.url} target="_blank">{event.url}</a> : "未設定"}</span>
-                                    <strong>カテゴリ:</strong> <span>{event.category || "未設定"}</span>
-                                    <strong>お問合せ:</strong> <span>{event.contact_info || "未設定"}</span>
-                                </div>
-                                
-                                <div style={{ marginTop: "10px", borderTop: "1px dotted #ccc", paddingTop: "10px" }}>
-                                    <strong>詳細説明:</strong>
-                                    <p style={{ whiteSpace: "pre-wrap", backgroundColor: "#fff", padding: "10px", border: "1px solid #eee", marginTop: "5px" }}>
-                                        {event.description || "記載なし"}
-                                    </p>
-                                </div>
-
-                                <div style={{ marginTop: "15px", textAlign: "right", borderTop: "1px solid #eee", paddingTop: "15px" }}>
-                                    <button 
-                                        onClick={() => navigate(`/EventEdit/${event.id}`)}
-                                        style={{ padding: "6px 15px", cursor: "pointer", backgroundColor: "#007bff", color: "#fff", border: "none", borderRadius: "4px", marginRight: "10px", fontWeight: "bold" }}
-                                    >
-                                        編集画面を開く ✏️
-                                    </button>
-                                    
-                                    {status === 1 ? (
-                                        <button 
-                                            onClick={(e) => handleUpdateStatus(e, event.id, 9)}
-                                            style={{ padding: "6px 15px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
-                                        >
-                                            非公開にする ❌
-                                        </button>
+                events.map(event => {
+                    const isResubmitted = Number(event.approval_status_id) === 3;
+                    return (
+                        <div key={event.id} style={{
+                            ...cardStyle,
+                            // borderLeftの色は不要とのことなので統一
+                            borderLeft: "1px solid #ddd" 
+                        }}>
+                            <div 
+                                onClick={() => setExpandedId(expandedId === event.id ? null : event.id)} 
+                                style={cardHeaderStyle}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <strong style={{ color: status === 9 ? "#666" : "#333" }}>{event.name}</strong> 
+                                    {isResubmitted ? (
+                                        <span style={resubmitBadgeStyle}>再申請経由</span>
                                     ) : (
-                                        <button 
-                                            onClick={(e) => handleUpdateStatus(e, event.id, 1)}
-                                            style={{ padding: "6px 15px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
-                                        >
-                                            再公開する 🔓
-                                        </button>
+                                        <span style={newBadgeStyle}>新規申請経由</span>
                                     )}
                                 </div>
+                                <span style={{ float: 'right', color: '#333', fontWeight: 'normal', fontSize: '14px' }}>
+                                    {expandedId === event.id ? "▲ 閉じる" : "▼ 詳細編集・公開設定"}
+                                </span>
                             </div>
-                        )}
-                    </div>
-                ))
+                            <p style={cardSubTextStyle}>
+                                ({event.start_date.substring(0, 16)} ～) | 場所: {event.location}
+                            </p>
+
+                            {expandedId === event.id && (
+                                <div style={cardDetailStyle}>
+                                    <div style={{ marginBottom: "20px" }}>
+                                        <p style={{ fontWeight: "bold", borderBottom: "1px solid #eee", paddingBottom: "5px", marginBottom: "10px" }}>見出し画像</p>
+                                        <div>
+                                            {event.image_path ? (
+                                                <img src={event.image_path} alt="Event" style={thumbStyleLarge} />
+                                            ) : (
+                                                <div style={noImage}>No Image</div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div style={infoGridStyle}>
+                                        <p><strong>イベント名:</strong> {event.name}</p>
+                                        <p><strong>見出し:</strong> {event.catchphrase}</p>
+                                        <p><strong>開始日時:</strong> {event.start_date}</p>
+                                        <p><strong>終了日時:</strong> {event.end_date}</p>
+                                        <p><strong>場所:</strong> {event.location}</p>
+                                        <p><strong>予約:</strong> 
+                                            {Number(event.is_free_participation) === 1 
+                                                ? <span style={{color: "green", fontWeight: "bold", marginLeft: "5px"}}>自由参加</span> 
+                                                : <span style={{color: "orange", fontWeight: "bold", marginLeft: "5px"}}>要予約</span>
+                                            }
+                                        </p>
+                                        <p><strong>主催者:</strong> {event.organizer}</p>
+                                        <p><strong>URL:</strong> 
+                                            {event.url && event.url !== "なし" ? (
+                                                <a href={event.url} target="_blank" rel="noreferrer" style={{ wordBreak: "break-all" }}>{event.url}</a>
+                                            ) : "なし"}
+                                        </p>
+                                    </div>
+
+                                    <div style={{ marginTop: "15px", padding: "12px", backgroundColor: "#fff", borderRadius: "4px", border: "1px solid #eee" }}>
+                                        <strong style={{ display: "block", marginBottom: "5px" }}>イベント詳細:</strong>
+                                        <p style={{ whiteSpace: "pre-wrap", margin: 0, lineHeight: "1.5", color: "#333", fontSize: "14px" }}>
+                                            {event.description || "（入力なし）"}
+                                        </p>
+                                    </div>
+
+                                    <div style={{ marginTop: "10px", padding: "12px", backgroundColor: "#fffbe6", borderRadius: "4px", border: "1px solid #ffe58f" }}>
+                                        <strong style={{ display: "block", marginBottom: "5px", color: "#856404" }}>注意事項:</strong>
+                                        <p style={{ whiteSpace: "pre-wrap", margin: 0, lineHeight: "1.5", color: "#856404", fontSize: "14px" }}>
+                                            {event.notes || "（入力なし）"}
+                                        </p>
+                                    </div>
+
+                                    <div style={actionAreaStyle}>
+                                        <button 
+                                            onClick={() => navigate(`/EventEdit/${event.id}`, { state: { fromAdmin: true } })}
+                                            style={editButtonStyle}
+                                        >
+                                            編集 ✏️
+                                        </button>
+                                        
+                                        <button 
+                                            onClick={(e) => handleUpdateStatus(e, event.id, status === 1 ? 9 : 1)}
+                                            style={status === 1 ? hideButtonStyle : showButtonStyle}
+                                        >
+                                            {status === 1 ? "非公開にする" : "再公開する"}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    );
+                })
             )}
         </div>
     );
@@ -178,29 +205,148 @@ export default function EventManagement({ onStatusUpdate }) {
     const [eventTab, setEventTab] = useState("pending");
     
     const tabStyle = (id) => ({
-        padding: '10px 20px', 
-        border: 'none',
-        borderBottom: eventTab === id ? '3px solid #f93d5d' : 'none',
-        background: 'none', 
-        cursor: 'pointer',
+        padding: '10px 20px', border: 'none',
+        borderBottom: eventTab === id ? '3px solid #f93d5d' : '3px solid transparent',
+        background: 'none', cursor: 'pointer',
         fontWeight: eventTab === id ? 'bold' : 'normal',
         color: eventTab === id ? '#f93d5d' : '#666',
+        transition: 'all 0.3s ease',
     });
 
     return (
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
-            <h2>イベント管理</h2>
+            <h2 style={{ paddingLeft: '15px', marginBottom: '25px' }}>イベント管理</h2>
 
-            <div style={{ marginBottom: '15px', borderBottom: '1px solid #eee', display: 'flex' }}>
+            <div style={{ marginBottom: '20px', borderBottom: '1px solid #eee', display: 'flex' }}>
                 <button onClick={() => setEventTab("pending")} style={tabStyle("pending")}>未承認</button>
                 <button onClick={() => setEventTab("approved")} style={tabStyle("approved")}>公開中</button>
                 <button onClick={() => setEventTab("hidden")} style={tabStyle("hidden")}>非公開</button>
             </div>
             
-            {eventTab === "pending" && <EventApproval onUpdate={onStatusUpdate} />}
-            {eventTab === "approved" && <EventList status={1} title="公開中のイベント" />}
-            {eventTab === "hidden" && <EventList status={9} title="非公開のイベント" />}
+            <div style={{ backgroundColor: '#fff', borderRadius: '8px', minHeight: '300px' }}>
+                {eventTab === "pending" && <EventApproval onUpdate={onStatusUpdate} />}
+                {eventTab === "approved" && (
+                    <EventList status={1} title="公開中のイベント" onStatusUpdate={onStatusUpdate} />
+                )}
+                {eventTab === "hidden" && (
+                    <EventList status={9} title="非公開のイベント" onStatusUpdate={onStatusUpdate} />
+                )}
+            </div>
         </div>
     );
 }
 
+// --- スタイル定義 (飲食店管理と完全に統一) ---
+// 枠を太くしたい場合はここの border: "1px..." を "2px..." に変更してください
+const cardStyle = { 
+    border: "1px solid #ddd", 
+    borderRadius: "8px", 
+    padding: "15px", 
+    marginBottom: "15px", 
+    backgroundColor: "#fff", 
+    boxShadow: "0 2px 4px rgba(0,0,0,0.05)", 
+    position: 'relative' 
+};
+
+const cardHeaderStyle = { 
+    cursor: "pointer", 
+    fontWeight: "bold", 
+    fontSize: "18px", 
+    color: "#333", 
+    display: "flex", 
+    justifyContent: "space-between", 
+    alignItems: "center" 
+};
+
+const cardSubTextStyle = { 
+    fontSize: '12px', 
+    color: '#666', 
+    marginTop: '5px' 
+};
+
+const cardDetailStyle = { 
+    marginTop: "10px", 
+    padding: "10px", 
+    borderTop: "1px dashed #eee" 
+};
+
+const resubmitBadgeStyle = { 
+    backgroundColor: "#faad14", 
+    color: "white", 
+    fontSize: "11px", 
+    padding: "2px 8px", 
+    borderRadius: "10px", 
+    marginLeft: "10px" 
+};
+
+const newBadgeStyle = { 
+    backgroundColor: "#1890ff", 
+    color: "white", 
+    fontSize: "11px", 
+    padding: "2px 8px", 
+    borderRadius: "10px", 
+    marginLeft: "10px" 
+};
+
+const infoGridStyle = { 
+    fontSize: "14px", 
+    lineHeight: "1.8", 
+    color: "#444" 
+};
+
+const actionAreaStyle = { 
+    marginTop: "20px", 
+    textAlign: "right", 
+    borderTop: "1px solid #eee", 
+    paddingTop: "15px" 
+};
+
+const thumbStyleLarge = { 
+    maxWidth: "300px", 
+    height: "auto", 
+    borderRadius: "6px", 
+    border: "1px solid #ddd" 
+};
+
+const noImage = { 
+    width: '150px', 
+    height: '100px', 
+    backgroundColor: '#eee', 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    fontSize: '12px', 
+    color: '#999', 
+    borderRadius: '6px' 
+};
+
+const editButtonStyle = { 
+    padding: "8px 16px", 
+    backgroundColor: "#6c757d", 
+    color: "#fff", 
+    border: "none", 
+    borderRadius: "4px", 
+    marginRight: "10px", 
+    fontWeight: "bold", 
+    cursor: "pointer" 
+};
+
+const hideButtonStyle = { 
+    padding: "8px 16px", 
+    backgroundColor: "#dc3545", 
+    color: "white", 
+    border: "none", 
+    borderRadius: "4px", 
+    fontWeight: "bold", 
+    cursor: "pointer" 
+};
+
+const showButtonStyle = { 
+    padding: "8px 16px", 
+    backgroundColor: "#28a745", 
+    color: "white", 
+    border: "none", 
+    borderRadius: "4px", 
+    fontWeight: "bold", 
+    cursor: "pointer" 
+};
