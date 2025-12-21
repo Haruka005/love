@@ -4,13 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Genre;
-use App\Models\Area;
-use App\Models\Budget;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Restaurant extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $table = 'm_restaurants';
 
@@ -31,11 +30,9 @@ class Restaurant extends Model
         'image1_path',
         'image2_path',
         'image3_path',
-        'business_hours', 
-        'holiday',   
-];
-
-    
+        'approval_status_id',
+        'rejection_reason'
+    ];
 
     public function genre()
     {
@@ -51,5 +48,11 @@ class Restaurant extends Model
     public function budget()
     {
         return $this->belongsTo(Budget::class, 'budget_id');
+    }
+
+    
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

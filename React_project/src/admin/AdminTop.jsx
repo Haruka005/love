@@ -1,11 +1,12 @@
-// AdminTop.js (最終修正版)
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react"; // useCallbackを追加
 import { useNavigate } from 'react-router-dom';
 import UserManagement from './components/user_mg';
-import EventManagement from './EventManagement.jsx'; // 新しく分割したファイルをインポート
+import EventManagement from './EventManagement.jsx';
+import RestaurantManagement from './RestaurantManagement.jsx'; 
 
-const API_URL = `${process.env.REACT_APP_API_URL}/api/admin/events`;  
+// APIエンドポイントの設定
+const EVENT_API_URL = `${process.env.REACT_APP_API_URL}/api/admin/events`;  
+const SHOP_API_URL = `${process.env.REACT_APP_API_URL}/api/admin/restaurants`; 
 
 const badgeStyle = {
     marginLeft: '8px',
@@ -17,52 +18,53 @@ const badgeStyle = {
     fontWeight: 'normal',
 };
 
-// --- AdminTop (メインコンポーネント) ---
 export default function AdminTop() {
     const [activeTab, setActiveTab] = useState("users");
-    const [pendingCount, setPendingCount] = useState(0);
+    const [eventCount, setEventCount] = useState(0);
+    const [shopCount, setShopCount] = useState(0);
 
-    const fetchPendingCount = async () => {
+    // useCallbackで囲むことで、再レンダリングのたびに関数が作り直されるのを防ぎ、無限ループを止めます
+    const fetchCounts = useCallback(async () => {
         try {
             const token = localStorage.getItem("token"); 
-            const response = await fetch(`${API_URL}/pending`, {
-                headers: {
-                    "Authorization": `Bearer ${token}`, 
-                },
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                setPendingCount(data.length); 
-            } else {
-                console.error("承認待ち件数の取得に失敗しました。");
+            const headers = {
+                "Authorization": `Bearer ${token}`,
+                "Accept": "application/json",
+            };
+
+            // イベントと飲食店の件数を同時に取得
+            const [eventRes, shopRes] = await Promise.all([
+                fetch(`${EVENT_API_URL}/pending`, { headers }),
+                fetch(`${SHOP_API_URL}/pending`, { headers })
+            ]);
+
+            if (eventRes.ok) {
+                const eventData = await eventRes.json();
+                setEventCount(eventData.length);
+            }
+            if (shopRes.ok) {
+                const shopData = await shopRes.json();
+                setShopCount(shopData.length);
             }
         } catch (error) {
-            console.error("通信エラー:", error);
+            console.error("承認待ち件数の取得エラー:", error);
         }
-    };
+    }, []); // 依存配列は空
 
     useEffect(() => {
-        fetchPendingCount();
-    }, []);
+        fetchCounts();
+    }, [fetchCounts]); // fetchCountsを監視
 
     return (
-        <div>
+        <div style={{ padding: "20px" }}>
             <h1>管理者ページ</h1>
 
-            {/* タブ切り替えメニュー */}
-            <nav
-                style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    gap: "10px",
-                    margin: "20px 0",
-                }}
-            >
+            {/* タブメニュー */}
+            <nav style={{ display: "flex", justifyContent: "center", gap: "10px", margin: "20px 0" }}>
                 {[
                     { key: "users", label: "ユーザー管理" },
-                    { key: "events", label: "イベント管理" },
-                    { key: "restaurants", label: "飲食店管理" },
+                    { key: "events", label: "イベント管理", count: eventCount },
+                    { key: "restaurants", label: "飲食店管理", count: shopCount },
                     { key: "site", label: "サイト管理" },
                 ].map((tab) => (
                     <button
@@ -78,42 +80,30 @@ export default function AdminTop() {
                         }}
                     >
                         {tab.label}
-                        
-                        {/* イベント管理タブにのみバッジを表示 */}
-                        {tab.key === 'events' && pendingCount > 0 && (
-                            <span style={badgeStyle}>
-                                {pendingCount}
-                            </span>
-                        )}
+                        {tab.count > 0 && <span style={badgeStyle}>{tab.count}</span>}
                     </button>
                 ))}
             </nav>
 
-            {/* コンテンツ切り替え */}
-            <div style={{ background: "#fff", borderRadius: "15px", padding: "20px" }}>
+            {/* 各コンテンツの表示エリア */}
+            <div style={{ background: "#fff", borderRadius: "15px", padding: "20px", border: "1px solid #eee" }}>
+                
                 {activeTab === "users" && <UserManagement />}
-                {activeTab === "events" && <EventManagement onStatusUpdate={fetchPendingCount} />} 
-                {activeTab === "restaurants" && <RestaurantManagement />}
+                
+                {activeTab === "events" && (
+                    <EventManagement onStatusUpdate={fetchCounts} />
+                )} 
+
+                {activeTab === "restaurants" && (
+                    <RestaurantManagement onStatusUpdate={fetchCounts} />
+                )}
                 {activeTab === "site" && <SiteManagement />}
             </div>
         </div>
     );
 }
 
-// --- AdminTop.js に残す最小限のコンポーネント定義 ---
-
-/* 飲食店管理 */
-function RestaurantManagement() {
-    return (
-        <div>
-            <h2>飲食店管理</h2>
-            <p>お店情報の登録・編集・削除が行えます。</p>
-            <button>＋ 店舗を追加</button>
-        </div>
-    );
-}
-
-/* サイト管理 */
+/* サイト管理用サブコンポーネント */
 function SiteManagement() {
     return (
         <div>
@@ -123,11 +113,11 @@ function SiteManagement() {
                 <input
                     type="text"
                     placeholder="例：登別の魅力を発信中！"
-                    style={{ width: "80%", marginLeft: "10px" }}
+                    style={{ width: "80%", marginLeft: "10px", padding: "5px" }}
                 />
             </label>
             <br /><br />
-            <button>💾 保存</button>
+            <button style={{ padding: "10px 20px", cursor: "pointer" }}>💾 保存</button>
         </div>
     );
 }

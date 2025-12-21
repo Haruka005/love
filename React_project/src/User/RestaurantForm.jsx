@@ -615,7 +615,7 @@ function RestaurantForm() {
         onClick={handleRestaurantSubmit}
         style={{ width: "100%", padding: "12px", backgroundColor: "#a1a5a1ff", color: "white", border: "none" }}
       >
-        登録する
+        申請する
       </button>
           </div>
         );
