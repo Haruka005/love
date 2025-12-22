@@ -1,5 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+
+// APIのベースURLを環境変数から取得し、末尾の /api を適切に処理する関数
+const getBaseApiUrl = () => {
+    const envUrl = process.env.REACT_APP_API_URL || "http://localhost:8000";
+    // すでに末尾が /api で終わっている場合はそのまま、そうでなければ /api を付与
+    return envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;
+};
+
+const API_BASE = getBaseApiUrl();
 
 export default function EventEdit() {
     const { id } = useParams();
@@ -8,7 +17,7 @@ export default function EventEdit() {
     
     const [loading, setLoading] = useState(true);
 
-    // 管理者モードの判定
+    // 管理者モードの判定 (Location state経由)
     const isAdminMode = location.state?.fromAdmin === true;
 
     const [formData, setFormData] = useState({
@@ -28,38 +37,61 @@ export default function EventEdit() {
     const [previewUrl, setPreviewUrl] = useState(null);
     const [imageFile, setImageFile] = useState(null);
 
-    // データ取得用URL
+    // 修正ポイント：API_BASEを使用してURLの重複を防ぐ
     const GET_URL = isAdminMode 
-        ? `${process.env.REACT_APP_API_URL}/api/admin/events/${id}`
-        : `${process.env.REACT_APP_API_URL}/api/events/${id}`;
+        ? `${API_BASE}/admin/events/${id}`
+        : `${API_BASE}/events/${id}`;
+
+    const fetchEvent = useCallback(async () => {
+        const token = localStorage.getItem("token");
+        
+        // 認証チェック：トークンがない場合は即リダイレクト
+        if (!token) {
+            console.error("トークンがありません。");
+            navigate("/login");
+            return;
+        }
+
+        try {
+            const response = await fetch(GET_URL, {
+                headers: { 
+                    "Authorization": `Bearer ${token}`,
+                    "Accept": "application/json"
+                }
+            });
+
+            // 認証チェック：トークンが無効（401）な場合
+            if (response.status === 401) {
+                alert("ログインの有効期限が切れました。再度ログインしてください。");
+                localStorage.removeItem("token");
+                navigate("/login");
+                return;
+            }
+
+            if (response.ok) {
+                const data = await response.json();
+                
+                // 日時フォーマットの調整 (input type="datetime-local"用)
+                if (data.start_date) data.start_date = data.start_date.replace(' ', 'T').slice(0, 16);
+                if (data.end_date) data.end_date = data.end_date.replace(' ', 'T').slice(0, 16);
+                
+                setFormData(data);
+                if (data.image_path) setPreviewUrl(data.image_path);
+            } else {
+                alert("データの取得に失敗しました。");
+                navigate(-1);
+            }
+        } catch (error) {
+            console.error("Fetch Error:", error);
+            alert("通信エラーが発生しました。");
+        } finally {
+            setLoading(false);
+        }
+    }, [id, GET_URL, navigate]);
 
     useEffect(() => {
-        const fetchEvent = async () => {
-            try {
-                const token = localStorage.getItem("token");
-                const response = await fetch(GET_URL, {
-                    headers: { "Authorization": `Bearer ${token}` }
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    // 日時フォーマットの調整 (input type="datetime-local"用)
-                    if (data.start_date) data.start_date = data.start_date.replace(' ', 'T').slice(0, 16);
-                    if (data.end_date) data.end_date = data.end_date.replace(' ', 'T').slice(0, 16);
-                    
-                    setFormData(data);
-                    if (data.image_path) setPreviewUrl(data.image_path);
-                } else {
-                    alert("データの取得に失敗しました。");
-                    navigate(-1);
-                }
-            } catch (error) {
-                console.error("Fetch Error:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchEvent();
-    }, [id, GET_URL, navigate]);
+    }, [fetchEvent]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -85,6 +117,11 @@ export default function EventEdit() {
 
         try {
             const token = localStorage.getItem("token");
+            if (!token) {
+                navigate("/login");
+                return;
+            }
+
             const data = new FormData();
             
             // 既存データのセット
@@ -96,23 +133,20 @@ export default function EventEdit() {
                 data.append("image", imageFile);
             }
 
-            // --- 送信先とステータスの切り替え ---
-            let SUBMIT_URL;
+            // 送信先URLの構築
+            let SUBMIT_URL = isAdminMode 
+                ? `${API_BASE}/admin/events/${id}`
+                : `${API_BASE}/events/${id}`;
+
             if (isAdminMode) {
-                SUBMIT_URL = `${process.env.REACT_APP_API_URL}/api/admin/events/${id}`;
                 data.set("approval_status_id", formData.approval_status_id);
             } else {
-                SUBMIT_URL = `${process.env.REACT_APP_API_URL}/api/events/${id}`;
-                
-                // 【修正箇所】
-                // 未承認(0)ではなく、再申請(3)をセットすることで管理者画面でオレンジ色のラベルが表示されるようにします
+                // 一般ユーザーの再申請時はステータスを「3（再申請）」にする
                 data.set("approval_status_id", "3"); 
-                
-                // 過去の却下理由をクリアする
                 data.set("rejection_reason", ""); 
             }
 
-            // CORS回避のための擬似PUT
+            // Laravelの擬似PUT対応
             data.append("_method", "PUT");
 
             const response = await fetch(SUBMIT_URL, {
@@ -123,6 +157,12 @@ export default function EventEdit() {
                 },
                 body: data
             });
+
+            if (response.status === 401) {
+                alert("認証エラーです。再ログインしてください。");
+                navigate("/login");
+                return;
+            }
 
             if (response.ok) {
                 const successMsg = isAdminMode 

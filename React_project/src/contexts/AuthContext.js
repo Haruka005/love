@@ -44,7 +44,7 @@ export function AuthProvider({ children }) {
 
   const fetchUser = async () => {
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/me`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/me`, {
         method: "GET",
         headers: { Authorization: `Bearer ${savedToken}` },
       });

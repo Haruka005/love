@@ -1,49 +1,60 @@
 // EventManagement.js
 
-import React, { useState, useEffect } from "react";
-import EventApproval from './EventApproval.jsx'; // EventApprovalコンポーネントをインポート
+import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import EventApproval from './EventApproval.jsx';
 
-// EventApproval.js と同じAPI_URLを使用
-const API_URL = "/api/admin/events"; 
+// APIのベースURL（環境変数があればそれを使用）
+const API_URL = process.env.REACT_APP_API_URL 
+    ? `${process.env.REACT_APP_API_URL}/admin/events` 
+    : "/api/admin/events";
+
+// --- スタイル定義 (ReferenceError防止のため先に定義) ---
+const cardStyle = { border: "1px solid #ddd", borderRadius: "8px", padding: "15px", marginBottom: "15px", backgroundColor: "#fff", boxShadow: "0 2px 4px rgba(0,0,0,0.05)", position: 'relative' };
+const cardHeaderStyle = { cursor: "pointer", fontWeight: "bold", fontSize: "18px", color: "#333", display: "flex", justifyContent: "space-between", alignItems: "center" };
+const cardSubTextStyle = { fontSize: '12px', color: '#666', marginTop: '5px' };
+const cardDetailStyle = { marginTop: "10px", padding: "10px", borderTop: "1px dashed #eee" };
+const resubmitBadgeStyle = { backgroundColor: "#faad14", color: "white", fontSize: "11px", padding: "2px 8px", borderRadius: "10px", marginLeft: "10px" };
+const newBadgeStyle = { backgroundColor: "#1890ff", color: "white", fontSize: "11px", padding: "2px 8px", borderRadius: "10px", marginLeft: "10px" };
+const infoGridStyle = { fontSize: "14px", lineHeight: "1.8", color: "#444" };
+const actionAreaStyle = { marginTop: "20px", textAlign: "right", borderTop: "1px solid #eee", paddingTop: "15px" };
+const thumbStyleLarge = { maxWidth: "300px", height: "auto", borderRadius: "6px", border: "1px solid #ddd" };
+const noImage = { width: '150px', height: '100px', backgroundColor: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: '#999', borderRadius: '6px' };
+const editButtonStyle = { padding: "8px 16px", backgroundColor: "#6c757d", color: "#fff", border: "none", borderRadius: "4px", marginRight: "10px", fontWeight: "bold", cursor: "pointer" };
+const hideButtonStyle = { padding: "8px 16px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", fontWeight: "bold", cursor: "pointer" };
+const showButtonStyle = { padding: "8px 16px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "4px", fontWeight: "bold", cursor: "pointer" };
 
 // --- 公開中・非公開リスト用コンポーネント ---
 function EventList({ status, title, onStatusUpdate }) {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [expandedId, setExpandedId] = useState(null); // 追加: 詳細表示の管理
+    const navigate = useNavigate(); // 追加: 編集画面への遷移用
     
     const today = new Date();
     const [selectedYearMonth, setSelectedYearMonth] = useState(
         `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`
     );
 
-    const generateYearMonthOptions = () => {
+    const yearMonthOptions = (() => {
         const options = [];
         const currentYear = today.getFullYear();
-        const currentMonth = today.getMonth() + 1;
-
-        // 過去1年間までを生成
         for (let y = currentYear; y >= currentYear - 1; y--) {
-            const startMonth = (y === currentYear) ? currentMonth : 12;
-            for (let m = startMonth; m >= 1; m--) {
-                const monthString = String(m).padStart(2, '0');
-                const value = `${y}-${monthString}`;
-                options.push({
-                    value: value,
-                    label: `${y}年${m}月`
-                });
-                if (y < currentYear && m === 1) break; // 1年前までで停止
+            for (let m = 12; m >= 1; m--) {
+                const value = `${y}-${String(m).padStart(2, '0')}`;
+                options.push({ value, label: `${y}年${m}月` });
             }
         }
         return options;
-    };
-    
-    const yearMonthOptions = generateYearMonthOptions();
+    })();
 
-    const fetchApprovedEvents = async () => {
+    // APIからデータを取得する関数
+    const fetchEvents = useCallback(async () => {
         setLoading(true);
         try {
             const token = localStorage.getItem("token"); 
-            const url = `${API_URL}/approved?year_month=${selectedYearMonth}`;
+            // 修正: statusパラメータもURLに含める
+            const url = `${API_URL}/approved?year_month=${selectedYearMonth}&status=${status}`;
             
             const response = await fetch(url, {
                 headers: { 
@@ -53,16 +64,18 @@ function EventList({ status, title, onStatusUpdate }) {
             });
             if (response.ok) {
                 const data = await response.json();
-                setApprovedEvents(data);
-            } else {
-                console.error("承認済みイベントの取得に失敗しました。");
+                setEvents(data); // 修正: setApprovedEventsから変更
             }
         } catch (error) {
-            console.error("通信エラー:", error);
+            console.error("Fetch Error:", error);
         } finally {
             setLoading(false);
         }
-    };
+    }, [selectedYearMonth, status]);
+
+    useEffect(() => {
+        fetchEvents();
+    }, [fetchEvents]);
 
     const handleUpdateStatus = async (e, id, newStatus) => {
         e.stopPropagation();
@@ -82,7 +95,7 @@ function EventList({ status, title, onStatusUpdate }) {
             });
 
             if (res.ok) {
-                setEvents(prev => prev.filter((e) => e.id !== id));
+                setEvents(prev => prev.filter((ev) => ev.id !== id));
                 alert(newStatus === 1 ? "公開しました。" : "非公開にしました。");
                 if (onStatusUpdate) onStatusUpdate();
             }
@@ -91,7 +104,7 @@ function EventList({ status, title, onStatusUpdate }) {
         }
     };
 
-    if (loading) return <p>承認済みイベントを読み込み中...</p>;
+    if (loading) return <p style={{ padding: "20px" }}>読み込み中...</p>;
 
     return (
         <div style={{ padding: "10px" }}>
@@ -101,13 +114,11 @@ function EventList({ status, title, onStatusUpdate }) {
                 <label style={{ marginRight: '10px' }}>表示年月：</label>
                 <select 
                     value={selectedYearMonth} 
-                    onChange={handleYearMonthChange}
+                    onChange={(e) => setSelectedYearMonth(e.target.value)} // 修正: 直接useStateを更新
                     style={{ padding: '5px', borderRadius: '4px' }}
                 >
-                    {yearMonthOptions.map(option => (
-                        <option key={option.value} value={option.value}>
-                            {option.label}
-                        </option>
+                    {yearMonthOptions.map(opt => (
+                        <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                 </select>
             </div>
@@ -117,14 +128,11 @@ function EventList({ status, title, onStatusUpdate }) {
             ) : (
                 events.map(event => {
                     const isResubmitted = Number(event.approval_status_id) === 3;
+                    const isExpanded = expandedId === event.id;
                     return (
-                        <div key={event.id} style={{
-                            ...cardStyle,
-                            // borderLeftの色は不要とのことなので統一
-                            borderLeft: "1px solid #ddd" 
-                        }}>
+                        <div key={event.id} style={{ ...cardStyle, borderLeft: "1px solid #ddd" }}>
                             <div 
-                                onClick={() => setExpandedId(expandedId === event.id ? null : event.id)} 
+                                onClick={() => setExpandedId(isExpanded ? null : event.id)} 
                                 style={cardHeaderStyle}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -136,14 +144,14 @@ function EventList({ status, title, onStatusUpdate }) {
                                     )}
                                 </div>
                                 <span style={{ float: 'right', color: '#333', fontWeight: 'normal', fontSize: '14px' }}>
-                                    {expandedId === event.id ? "▲ 閉じる" : "▼ 詳細編集・公開設定"}
+                                    {isExpanded ? "▲ 閉じる" : "▼ 詳細編集・公開設定"}
                                 </span>
                             </div>
                             <p style={cardSubTextStyle}>
                                 ({event.start_date.substring(0, 16)} ～) | 場所: {event.location}
                             </p>
 
-                            {expandedId === event.id && (
+                            {isExpanded && (
                                 <div style={cardDetailStyle}>
                                     <div style={{ marginBottom: "20px" }}>
                                         <p style={{ fontWeight: "bold", borderBottom: "1px solid #eee", paddingBottom: "5px", marginBottom: "10px" }}>見出し画像</p>
@@ -215,9 +223,7 @@ function EventList({ status, title, onStatusUpdate }) {
     );
 }
 
-
-// --- イベント管理メインコンポーネント (export default) ---
-
+// --- メインコンポーネント ---
 export default function EventManagement({ onStatusUpdate }) {
     const [eventTab, setEventTab] = useState("pending");
     
@@ -252,118 +258,3 @@ export default function EventManagement({ onStatusUpdate }) {
         </div>
     );
 }
-
-// --- スタイル定義 (飲食店管理と完全に統一) ---
-// 枠を太くしたい場合はここの border: "1px..." を "2px..." に変更してください
-const cardStyle = { 
-    border: "1px solid #ddd", 
-    borderRadius: "8px", 
-    padding: "15px", 
-    marginBottom: "15px", 
-    backgroundColor: "#fff", 
-    boxShadow: "0 2px 4px rgba(0,0,0,0.05)", 
-    position: 'relative' 
-};
-
-const cardHeaderStyle = { 
-    cursor: "pointer", 
-    fontWeight: "bold", 
-    fontSize: "18px", 
-    color: "#333", 
-    display: "flex", 
-    justifyContent: "space-between", 
-    alignItems: "center" 
-};
-
-const cardSubTextStyle = { 
-    fontSize: '12px', 
-    color: '#666', 
-    marginTop: '5px' 
-};
-
-const cardDetailStyle = { 
-    marginTop: "10px", 
-    padding: "10px", 
-    borderTop: "1px dashed #eee" 
-};
-
-const resubmitBadgeStyle = { 
-    backgroundColor: "#faad14", 
-    color: "white", 
-    fontSize: "11px", 
-    padding: "2px 8px", 
-    borderRadius: "10px", 
-    marginLeft: "10px" 
-};
-
-const newBadgeStyle = { 
-    backgroundColor: "#1890ff", 
-    color: "white", 
-    fontSize: "11px", 
-    padding: "2px 8px", 
-    borderRadius: "10px", 
-    marginLeft: "10px" 
-};
-
-const infoGridStyle = { 
-    fontSize: "14px", 
-    lineHeight: "1.8", 
-    color: "#444" 
-};
-
-const actionAreaStyle = { 
-    marginTop: "20px", 
-    textAlign: "right", 
-    borderTop: "1px solid #eee", 
-    paddingTop: "15px" 
-};
-
-const thumbStyleLarge = { 
-    maxWidth: "300px", 
-    height: "auto", 
-    borderRadius: "6px", 
-    border: "1px solid #ddd" 
-};
-
-const noImage = { 
-    width: '150px', 
-    height: '100px', 
-    backgroundColor: '#eee', 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    fontSize: '12px', 
-    color: '#999', 
-    borderRadius: '6px' 
-};
-
-const editButtonStyle = { 
-    padding: "8px 16px", 
-    backgroundColor: "#6c757d", 
-    color: "#fff", 
-    border: "none", 
-    borderRadius: "4px", 
-    marginRight: "10px", 
-    fontWeight: "bold", 
-    cursor: "pointer" 
-};
-
-const hideButtonStyle = { 
-    padding: "8px 16px", 
-    backgroundColor: "#dc3545", 
-    color: "white", 
-    border: "none", 
-    borderRadius: "4px", 
-    fontWeight: "bold", 
-    cursor: "pointer" 
-};
-
-const showButtonStyle = { 
-    padding: "8px 16px", 
-    backgroundColor: "#28a745", 
-    color: "white", 
-    border: "none", 
-    borderRadius: "4px", 
-    fontWeight: "bold", 
-    cursor: "pointer" 
-};

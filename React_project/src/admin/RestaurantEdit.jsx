@@ -1,6 +1,14 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useCallback, useContext } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
+
+// APIのベースURLを調整（末尾の /api 重複を防止）
+const getBaseApiUrl = () => {
+    const envUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+    return envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;
+};
+
+const API_BASE = getBaseApiUrl();
 
 export default function RestaurantEdit() {
     const { id } = useParams();
@@ -9,7 +17,7 @@ export default function RestaurantEdit() {
     const { user } = useContext(AuthContext);
 
     const [loading, setLoading] = useState(true);
-    // 管理者モードの判定 (管理者画面からの遷移かどうか)
+    // 管理者モードの判定
     const isAdminMode = location.state?.fromAdmin === true;
 
     // 基本データ
@@ -39,58 +47,77 @@ export default function RestaurantEdit() {
     const [previews, setPreviews] = useState({ topimage: null, image1: null, image2: null, image3: null });
     const [files, setFiles] = useState({ topimage: null, image1: null, image2: null, image3: null });
 
-    const API_URL = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
-
-    // 取得用URLもモードによって切り替える
+    // 取得用URL
     const GET_URL = isAdminMode 
-        ? `${API_URL}/api/admin/restaurants/${id}`
-        : `${API_URL}/api/restaurants/${id}`;
+        ? `${API_BASE}/admin/restaurants/${id}`
+        : `${API_BASE}/restaurants/${id}`;
+
+    const fetchData = useCallback(async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            navigate("/login");
+            return;
+        }
+
+        try {
+            const headers = { 
+                "Authorization": `Bearer ${token}`,
+                "Accept": "application/json"
+            };
+
+            // マスタデータと店舗詳細を同時に取得
+            const [areasRes, budgetsRes, genresRes, shopRes] = await Promise.all([
+                fetch(`${API_BASE}/m_areas`, { headers }),
+                fetch(`${API_BASE}/m_budgets`, { headers }),
+                fetch(`${API_BASE}/m_genres`, { headers }),
+                fetch(GET_URL, { headers })
+            ]);
+
+            // 401エラー（認証切れ）のチェック
+            if ([areasRes, budgetsRes, genresRes, shopRes].some(res => res.status === 401)) {
+                alert("セッションが切れました。再ログインしてください。");
+                localStorage.removeItem("token");
+                navigate("/login");
+                return;
+            }
+
+            // マスタデータのセット
+            if (areasRes.ok) setAreaOptions(await areasRes.json());
+            if (budgetsRes.ok) setBudgetOptions(await budgetsRes.json());
+            if (genresRes.ok) setGenreOptions(await genresRes.json());
+
+            if (shopRes.ok) {
+                const data = await shopRes.json();
+                setFormData({
+                    ...data,
+                    genre_id: String(data.genre_id || ""),
+                    area_id: String(data.area_id || ""),
+                    budget_id: String(data.budget_id || ""),
+                    latitude: String(data.latitude || ""),
+                    longitude: String(data.longitude || ""),
+                    approval_status_id: String(data.approval_status_id || ""),
+                });
+                setPreviews({
+                    topimage: data.topimage_path,
+                    image1: data.image1_path,
+                    image2: data.image2_path,
+                    image3: data.image3_path
+                });
+            } else {
+                alert("店舗データの取得に失敗しました。");
+                navigate(-1);
+            }
+        } catch (error) {
+            console.error("Fetch Error:", error);
+            alert("通信エラーが発生しました。");
+        } finally {
+            setLoading(false);
+        }
+    }, [GET_URL, navigate]);
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const token = localStorage.getItem("token");
-                const headers = { "Authorization": `Bearer ${token}` };
-
-                // マスタデータと店舗詳細を同時に取得
-                const [areas, budgets, genres, shopRes] = await Promise.all([
-                    fetch(`${API_URL}/api/m_areas`).then(res => res.json()),
-                    fetch(`${API_URL}/api/m_budgets`).then(res => res.json()),
-                    fetch(`${API_URL}/api/m_genres`).then(res => res.json()),
-                    fetch(GET_URL, { headers })
-                ]);
-
-                setAreaOptions(areas);
-                setBudgetOptions(budgets);
-                setGenreOptions(genres);
-
-                if (shopRes.ok) {
-                    const data = await shopRes.json();
-                    setFormData({
-                        ...data,
-                        genre_id: String(data.genre_id || ""),
-                        area_id: String(data.area_id || ""),
-                        budget_id: String(data.budget_id || ""),
-                        approval_status_id: String(data.approval_status_id || ""),
-                    });
-                    setPreviews({
-                        topimage: data.topimage_path,
-                        image1: data.image1_path,
-                        image2: data.image2_path,
-                        image3: data.image3_path
-                    });
-                } else {
-                    alert("データの取得に失敗しました。");
-                    navigate(-1);
-                }
-            } catch (error) {
-                console.error("Fetch Error:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchData();
-    }, [id, API_URL, GET_URL, navigate]);
+    }, [fetchData]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -116,11 +143,12 @@ export default function RestaurantEdit() {
 
         try {
             const token = localStorage.getItem("token");
+            if (!token) return navigate("/login");
+
             const data = new FormData();
 
             // 基本データの追加
             Object.entries(formData).forEach(([key, val]) => {
-                // オブジェクト（リレーションデータ等）を除外して値だけを送る
                 if (typeof val !== 'object' || val === null) {
                     data.append(key, val === null ? "" : val);
                 }
@@ -132,19 +160,19 @@ export default function RestaurantEdit() {
             if (files.image2) data.append("image2", files.image2);
             if (files.image3) data.append("image3", files.image3);
 
-            // --- 送信先URLとステータスの切り替え ---
-            let SUBMIT_URL;
+            // 送信先URL
+            let SUBMIT_URL = isAdminMode 
+                ? `${API_BASE}/admin/restaurants/${id}`
+                : `${API_BASE}/restaurants/${id}`;
+
             if (isAdminMode) {
-                SUBMIT_URL = `${API_URL}/api/admin/restaurants/${id}`;
                 data.set("approval_status_id", formData.approval_status_id);
             } else {
-                SUBMIT_URL = `${API_URL}/api/restaurants/${id}`;
-                data.set("approval_status_id", "3"); // 再申請ステータス
-                data.set("rejection_reason", ""); // 却下理由をクリア
+                data.set("approval_status_id", "3"); // 再申請
+                data.set("rejection_reason", ""); 
             }
             
-            // LaravelのPUT擬似対応
-            data.append("_method", "PUT");
+            data.append("_method", "PUT"); // Laravel擬似PUT
 
             const response = await fetch(SUBMIT_URL, {
                 method: "POST", 
@@ -155,11 +183,14 @@ export default function RestaurantEdit() {
                 body: data
             });
 
+            if (response.status === 401) {
+                alert("認証エラーです。再ログインしてください。");
+                navigate("/login");
+                return;
+            }
+
             if (response.ok) {
-                const successMsg = isAdminMode 
-                    ? "更新が完了しました。" 
-                    : "再申請が完了しました。管理者の承認をお待ちください。";
-                alert(successMsg);
+                alert(isAdminMode ? "更新が完了しました。" : "再申請が完了しました。");
                 navigate(-1);
             } else {
                 const err = await response.json();
@@ -180,7 +211,7 @@ export default function RestaurantEdit() {
             </h2>
 
             <form onSubmit={handleUpdate}>
-                {/* 画像セクション */}
+                {/* トップ画像 */}
                 <div style={inputGroupStyle}>
                     <label style={labelStyle}>トップ画像</label>
                     <div style={imageBoxStyle}>
@@ -189,6 +220,7 @@ export default function RestaurantEdit() {
                     </div>
                 </div>
 
+                {/* サブ画像3枚 */}
                 <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
                     {[1, 2, 3].map(i => (
                         <div key={i} style={{ flex: 1 }}>
@@ -201,7 +233,6 @@ export default function RestaurantEdit() {
                     ))}
                 </div>
 
-                {/* 基本情報 */}
                 <div style={inputGroupStyle}>
                     <label style={labelStyle}>店名</label>
                     <input type="text" name="name" value={formData.name || ""} onChange={handleChange} style={inputStyle} required />
@@ -215,6 +246,18 @@ export default function RestaurantEdit() {
                 <div style={inputGroupStyle}>
                     <label style={labelStyle}>住所</label>
                     <input type="text" name="address" value={formData.address || ""} onChange={handleChange} style={inputStyle} required />
+                </div>
+
+                {/* 緯度経度の追加エリア */}
+                <div style={{ display: "flex", gap: "10px" }}>
+                    <div style={{ ...inputGroupStyle, flex: 1 }}>
+                        <label style={labelStyle}>緯度 (Latitude)</label>
+                        <input type="number" step="any" name="latitude" value={formData.latitude || ""} onChange={handleChange} placeholder="35.6812" style={inputStyle} />
+                    </div>
+                    <div style={{ ...inputGroupStyle, flex: 1 }}>
+                        <label style={labelStyle}>経度 (Longitude)</label>
+                        <input type="number" step="any" name="longitude" value={formData.longitude || ""} onChange={handleChange} placeholder="139.7671" style={inputStyle} />
+                    </div>
                 </div>
 
                 <div style={{ display: "flex", gap: "10px" }}>
@@ -238,7 +281,6 @@ export default function RestaurantEdit() {
                     <input type="text" name="url" value={formData.url || ""} onChange={handleChange} style={inputStyle} />
                 </div>
 
-                {/* セレクトボックス系 */}
                 <div style={{ display: "flex", gap: "10px" }}>
                     <div style={{ ...inputGroupStyle, flex: 1 }}>
                         <label style={labelStyle}>地域</label>
@@ -269,20 +311,6 @@ export default function RestaurantEdit() {
                     <textarea name="comment" value={formData.comment || ""} onChange={handleChange} style={{ ...inputStyle, height: "80px" }} />
                 </div>
 
-                {/* 管理者専用：ステータス編集 */}
-                {isAdminMode && (
-                    <div style={inputGroupStyle}>
-                        <label style={{ ...labelStyle, color: "#007bff" }}>承認ステータス（管理者のみ）</label>
-                        <select name="approval_status_id" value={formData.approval_status_id} onChange={handleChange} style={{ ...inputStyle, borderColor: "#007bff" }}>
-                            <option value="0">未承認</option>
-                            <option value="1">承認済み</option>
-                            <option value="2">却下</option>
-                            <option value="3">再申請</option>
-                        </select>
-                    </div>
-                )}
-
-                {/* ボタン */}
                 <div style={{ marginTop: "30px", display: "flex", gap: "10px" }}>
                     <button type="submit" style={isAdminMode ? adminButtonStyle : userButtonStyle}>
                         {isAdminMode ? "変更内容を保存する" : "修正して再申請"}
@@ -294,7 +322,7 @@ export default function RestaurantEdit() {
     );
 }
 
-// --- Styles ---
+// スタイル定義（変更なし）
 const containerStyle = { maxWidth: "600px", margin: "40px auto", padding: "20px", border: "1px solid #ddd", borderRadius: "8px", backgroundColor: "#fff" };
 const inputGroupStyle = { marginBottom: "15px" };
 const labelStyle = { display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: "0.9em" };

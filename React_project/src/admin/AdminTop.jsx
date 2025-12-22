@@ -1,12 +1,20 @@
-import React, { useState, useEffect, useCallback } from "react"; // useCallbackを追加
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
 import UserManagement from './components/user_mg';
 import EventManagement from './EventManagement.jsx';
-import RestaurantManagement from './RestaurantManagement.jsx'; 
+import RestaurantManagement from './RestaurantManagement.jsx';
 
-// APIエンドポイントの設定
-const EVENT_API_URL = `${process.env.REACT_APP_API_URL}/api/admin/events`;  
-const SHOP_API_URL = `${process.env.REACT_APP_API_URL}/api/admin/restaurants`; 
+/**
+ * URLの重複を防ぐためのベースURL取得
+ */
+const getBaseApiUrl = () => {
+    const envUrl = process.env.REACT_APP_API_URL || "http://localhost:8000";
+    return envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;
+};
+
+const API_BASE = getBaseApiUrl();
+const EVENT_API_URL = `${API_BASE}/admin/events`;
+const SHOP_API_URL = `${API_BASE}/admin/restaurants`;
 
 const badgeStyle = {
     marginLeft: '8px',
@@ -23,16 +31,14 @@ export default function AdminTop() {
     const [eventCount, setEventCount] = useState(0);
     const [shopCount, setShopCount] = useState(0);
 
-    // useCallbackで囲むことで、再レンダリングのたびに関数が作り直されるのを防ぎ、無限ループを止めます
     const fetchCounts = useCallback(async () => {
         try {
-            const token = localStorage.getItem("token"); 
+            const token = localStorage.getItem("token");
             const headers = {
                 "Authorization": `Bearer ${token}`,
                 "Accept": "application/json",
             };
 
-            // イベントと飲食店の件数を同時に取得
             const [eventRes, shopRes] = await Promise.all([
                 fetch(`${EVENT_API_URL}/pending`, { headers }),
                 fetch(`${SHOP_API_URL}/pending`, { headers })
@@ -49,17 +55,16 @@ export default function AdminTop() {
         } catch (error) {
             console.error("承認待ち件数の取得エラー:", error);
         }
-    }, []); // 依存配列は空
+    }, []);
 
     useEffect(() => {
         fetchCounts();
-    }, [fetchCounts]); // fetchCountsを監視
+    }, [fetchCounts]);
 
     return (
         <div style={{ padding: "20px" }}>
             <h1>管理者ページ</h1>
 
-            {/* タブメニュー */}
             <nav style={{ display: "flex", justifyContent: "center", gap: "10px", margin: "20px 0" }}>
                 {[
                     { key: "users", label: "ユーザー管理" },
@@ -85,25 +90,16 @@ export default function AdminTop() {
                 ))}
             </nav>
 
-            {/* 各コンテンツの表示エリア */}
             <div style={{ background: "#fff", borderRadius: "15px", padding: "20px", border: "1px solid #eee" }}>
-                
                 {activeTab === "users" && <UserManagement />}
-                
-                {activeTab === "events" && (
-                    <EventManagement onStatusUpdate={fetchCounts} />
-                )} 
-
-                {activeTab === "restaurants" && (
-                    <RestaurantManagement onStatusUpdate={fetchCounts} />
-                )}
+                {activeTab === "events" && <EventManagement onStatusUpdate={fetchCounts} />}
+                {activeTab === "restaurants" && <RestaurantManagement onStatusUpdate={fetchCounts} />}
                 {activeTab === "site" && <SiteManagement />}
             </div>
         </div>
     );
 }
 
-/* サイト管理用サブコンポーネント */
 function SiteManagement() {
     return (
         <div>
