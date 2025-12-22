@@ -47,7 +47,7 @@ export default function Login(){    //外に持って行ってOKなLoginって�
 
   try {
     //両方の環境で動く書き方らしい
-    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/login`, {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),

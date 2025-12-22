@@ -17,7 +17,7 @@ function UpComingEvents(){
                 //const response = await fetch(`${process.env.REACT_APP_API_URL}/events/upcoming`);
                
                 //ローカルではこれだよ
-                const response = await fetch(`${process.env.REACT_APP_API_URL}/api/events/upcoming`);
+                const response = await fetch(`${process.env.REACT_APP_API_URL}/events/upcoming`);
 
                 // 帰ってきたイベント一覧（JSON形式）をJavaScript形式に変換してdataに入れる
                 const data = await response.json();
