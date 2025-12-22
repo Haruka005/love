@@ -4,70 +4,52 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Genre;
+use App\Models\Area;
+use App\Models\Budget;
 
 class Restaurant extends Model
 {
     use HasFactory;
-    use SoftDeletes;
 
-    // テーブル名の指定
     protected $table = 'm_restaurants';
 
-    // 一括代入を許可するカラム
     protected $fillable = [
         'user_id',
         'name',
         'catchphrase',
-        'tel',
-        'address',
-        'business_hours',
-        'holiday',
-        'url',
         'comment',
-        'genre_id',
+        'url',
         'area_id',
+        'genre_id',
         'budget_id',
         'latitude',
         'longitude',
+        'address',
+        'tel',
         'topimage_path',
         'image1_path',
         'image2_path',
         'image3_path',
-        'approval_status_id',
-        'rejection_reason'
-    ];
+        'business_hours', 
+        'holiday',   
+];
 
-    /**
-     * ジャンルとのリレーション
-     */
+    
+
     public function genre()
     {
-        // genre_id を使って Genre モデル（m_genresテーブル）と紐付けます
         return $this->belongsTo(Genre::class, 'genre_id');
     }
 
-    /**
-     * エリアとのリレーション
-     */
+    // エリアとの関係（1レストランは1エリア）
     public function area()
     {
-        // area_id を使って Area モデル（m_areasテーブル）と紐付けます
         return $this->belongsTo(Area::class, 'area_id');
     }
 
-    /**
-     * 予算とのリレーション
-     */
     public function budget()
     {
-        // budget_id を使って Budget モデル（m_budgetsテーブル）と紐付けます
         return $this->belongsTo(Budget::class, 'budget_id');
-    }
-
-    
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'user_id');
     }
 }

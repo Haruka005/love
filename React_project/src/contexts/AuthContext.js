@@ -24,7 +24,6 @@ export function AuthProvider({ children }) {
     setToken(null);
     localStorage.removeItem("token");
     localStorage.removeItem("userName");
-    localStorage.removeItem("user");
   };
 
   // 初期化処理（リロード時）

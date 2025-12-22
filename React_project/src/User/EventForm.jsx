@@ -69,7 +69,6 @@ function EventForm() {
       return;
     }
 
-    // バリデーション
     const fieldLabels = {
       name: "イベント名",
       catchphrase: "見出し",
@@ -103,35 +102,17 @@ function EventForm() {
       formDataToSend.append(key, value);
     });
 
-    // --- レストラン申請と同じ形式に修正 ---
-    const token = localStorage.getItem("token");
-    const apiUrl = process.env.REACT_APP_API_URL || "http://localhost:8000";
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/store-event-data`, {
+      method: "POST",
+      body: formDataToSend,
+      credentials: "include",
+    });
 
-    try {
-      const response = await fetch(`${apiUrl}/api/store-event-data`, {
-        method: "POST",
-        body: formDataToSend,
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Accept": "application/json",
-          // FormData送信時はContent-Typeを指定しない
-        },
-      });
-
-      if (response.ok) {
-        alert("イベント申請が完了しました！\n管理者による承認後に掲載されます。");
-        navigate("/EventApplicationHistory");
-      } else if (response.status === 401) {
-        alert("セッションが切れました。再度ログインしてください。");
-        navigate("/login");
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("Error details:", errorData);
-        alert("申請に失敗しました。内容を確認してください。");
-      }
-    } catch (error) {
-      console.error("Fetch error:", error);
-      alert("サーバーとの通信に失敗しました。");
+    if (response.ok) {
+      alert("イベント申請が完了しました！\n管理者による承認後に掲載されます。");
+      navigate("/EventApplicationHistory");
+    } else {
+      alert("申請に失敗しました。");
     }
   };
 
@@ -158,81 +139,82 @@ function EventForm() {
 
       <h2 style={{ textAlign: "center" }}>イベント申請</h2>
 
-      {/* 見出し画像エリア */}
-      <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>
-        見出し画像 <span style={{ color: "red" }}>※</span>
-      </label>
-      <div
+      {/* 見出し画像アップロードエリア */}
+<label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>
+  見出し画像 <span style={{ color: "red" }}>※</span>
+</label>
+<div
+  style={{
+    width: "100%",
+    marginBottom: "10px",
+    textAlign: "center",
+    border: "1px solid #ccc",
+    borderRadius: "8px",
+    padding: "10px",
+    backgroundColor: "#f9f9f9",
+  }}
+>
+  {previewUrl ? (
+    <img
+      src={previewUrl}
+      alt="プレビュー"
+      style={{ maxWidth: "100%", height: "auto", borderRadius: "6px" }}
+    />
+  ) : (
+    <span style={{ color: "#666" }}>画像がここに表示されます</span>
+  )}
+
+  <div style={{ marginTop: "10px" }}>
+    {!previewUrl ? (
+      <label
         style={{
-          width: "100%",
-          marginBottom: "10px",
-          textAlign: "center",
-          border: "1px solid #ccc",
-          borderRadius: "8px",
-          padding: "10px",
-          backgroundColor: "#f9f9f9",
+          display: "inline-block",
+          padding: "6px 10px",
+          width: "150px",
+          backgroundColor: "#aaa",
+          color: "white",
+          borderRadius: "5px",
+          cursor: "pointer",
         }}
       >
-        {previewUrl ? (
-          <img
-            src={previewUrl}
-            alt="プレビュー"
-            style={{ maxWidth: "100%", height: "auto", borderRadius: "6px" }}
-          />
-        ) : (
-          <span style={{ color: "#666" }}>画像がここに表示されます</span>
-        )}
-
-        <div style={{ marginTop: "10px" }}>
-          {!previewUrl ? (
-            <label
-              style={{
-                display: "inline-block",
-                padding: "6px 10px",
-                width: "150px",
-                backgroundColor: "#aaa",
-                color: "white",
-                borderRadius: "5px",
-                cursor: "pointer",
-              }}
-            >
-              画像を選択
-              <input type="file" onChange={handleImageUpload} style={{ display: "none" }} />
-            </label>
-          ) : (
-            <div style={{ marginBottom: "20px", marginTop: "10px" }}>
-              <button
-                onClick={handleImageRemove}
-                style={{
-                  padding: "8px 16px",
-                  backgroundColor: "#aaa",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                  marginRight: "10px",
-                }}
-              >
-                削除
-              </button>
-              <label
-                style={{
-                  display: "inline-block",
-                  padding: "8px 16px",
-                  backgroundColor: "#aaa",
-                  color: "white",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                }}
-              >
-                変更
-                <input type="file" onChange={handleImageUpload} style={{ display: "none" }} />
-              </label>
-            </div>
-          )}
-        </div>
+        画像を選択
+        <input type="file" onChange={handleImageUpload} style={{ display: "none" }} />
+      </label>
+    ) : (
+      <div style={{ marginBottom: "20px", marginTop: "10px" }}>
+        <button
+          onClick={handleImageRemove}
+          style={{
+            padding: "8px 16px",
+            backgroundColor: "#aaa",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+            marginRight: "10px",
+          }}
+        >
+          削除
+        </button>
+        <label
+          style={{
+            display: "inline-block",
+            padding: "8px 16px",
+            backgroundColor: "#aaa",
+            color: "white",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          変更
+          <input type="file" onChange={handleImageUpload} style={{ display: "none" }} />
+        </label>
       </div>
+    )}
+  </div>
+</div>
 
+      {/* 注意書き */}
       <div style={{
         backgroundColor: "#fff3cd",
         border: "1px solid #ffeeba",
@@ -249,7 +231,7 @@ function EventForm() {
         画像は<strong>5MB以下</strong>でアップロードしてください
       </div>
 
-      {/* フォーム各項目 */}
+      {/* フォームフィールド */}
       <div style={{ marginBottom: "10px" }}>
         <label>イベント名 <span style={{ color: "red" }}>※</span></label>
         <br />
@@ -300,9 +282,9 @@ function EventForm() {
         />
       </div>
 
-      {[{ label: "場所", name: "location", placeholder: "例：温泉街広場" },
-        { label: "URL", name: "url", placeholder: "例：https://example.com" },
-        { label: "主催者", name: "organizer", placeholder: "例：観光協会" }].map(
+      {[{ label: "場所", name: "location", placeholder: "例：温泉街広場（登別市を連想）" },
+        { label: "URL", name: "url", placeholder: "例：https://onsen-festival.example.com" },
+        { label: "主催者", name: "organizer", placeholder: "例：湯けむり観光協会" }].map(
         (field) => (
           <div key={field.name} style={{ marginBottom: "10px" }}>
             <label>{field.label} <span style={{ color: "red" }}>※</span></label>
@@ -319,7 +301,7 @@ function EventForm() {
         )
       )}
 
-      <div style={{ marginBottom: "10px" }}>
+            <div style={{ marginBottom: "10px" }}>
         <label>予約 <span style={{ color: "red" }}>※</span></label>
         <br />
         <select
@@ -334,6 +316,7 @@ function EventForm() {
         </select>
       </div>
 
+      {/* 詳細（任意） */}
       <div style={{ marginBottom: "10px" }}>
         <label>詳細</label>
         <br />
@@ -342,10 +325,12 @@ function EventForm() {
           value={formData.description}
           onChange={handleChange}
           rows="3"
+          placeholder="例：温泉街全体をライトアップし、鬼火の演出を行います"
           style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
         />
       </div>
 
+      {/* 注意事項（任意） */}
       <div style={{ marginBottom: "20px" }}>
         <label>注意事項</label>
         <br />
@@ -354,10 +339,12 @@ function EventForm() {
           value={formData.notes}
           onChange={handleChange}
           rows="3"
+          placeholder="例：雨天時は中止となります／駐車場は市営をご利用ください"
           style={{ width: "100%", padding: "8px", border: "1px solid #ccc" }}
         />
       </div>
 
+      {/* 申請ボタン */}
       <button
         onClick={handleEventSubmit}
         style={{
