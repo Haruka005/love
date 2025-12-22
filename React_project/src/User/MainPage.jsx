@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
 import GetEvents from "./components/GetEvents";
-import UpComingEvents from "./components/UpComingEvets";
+import UpComingEvents from "./components/UpComingEvents";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import GetRestaurants from "./components/GetRestaurants";

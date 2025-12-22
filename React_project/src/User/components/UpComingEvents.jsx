@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import EventCard from "./EventCard";
 // 正しいスペル (dateFormatter) に修正
-import { DateTime } from "./dateFormatter";
+import { DateTime } from "./dateFormatter.js";
 
 /**
  * 直近のイベントを表示するコンポーネント

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import EventCard from "./EventCard";
 // スペルミスを修正 (dateForatter -> dateFormatter)
-import { DateTime } from "./dateFormatter"; 
+import { DateTime } from "./dateFormatter.js"; 
 import Pagenation from "./Pagenation";
 
 function GetEvents() {
