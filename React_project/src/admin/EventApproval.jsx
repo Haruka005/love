@@ -1,13 +1,10 @@
-// EventApproval.js
+// EventApproval.js（管理者未承認イベント画面）
 
 import React, { useState, useEffect } from "react";
 
 // ステータス更新APIのエンドポイント
-//環境変数に合わせて修正した
 const API_URL = `${process.env.REACT_APP_API_URL}/api/admin/events`;  
 
-
-// onUpdateはAdminTopから渡される、件数再取得用の関数
 export default function EventApproval({ onUpdate }) {
     const [pendingEvents, setPendingEvents] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -17,10 +14,10 @@ export default function EventApproval({ onUpdate }) {
     const fetchPendingEvents = async () => {
         setLoading(true);
         try {
-            const token = localStorage.getItem("token"); // ← 保存済みトークンを取得
-             const response = await fetch(`${API_URL}/pending`, {
+            const token = localStorage.getItem("token");
+            const response = await fetch(`${API_URL}/pending`, {
                 headers: {
-                    "Authorization": `Bearer ${token}`, // ← Bearerトークンを送信
+                    "Authorization": `Bearer ${token}`,
                 },
             });
             
@@ -29,7 +26,6 @@ export default function EventApproval({ onUpdate }) {
                 setPendingEvents(data);
             } else {
                 console.error("承認待ちイベントの取得に失敗しました。ステータス:", response.status);
-                console.error("レスポンス詳細:", await response.text());
                 setPendingEvents([]); 
             }
         } catch (error) {
@@ -40,7 +36,6 @@ export default function EventApproval({ onUpdate }) {
         }
     };
 
-    // 初期ロード時にイベントリストを取得
     useEffect(() => {
         fetchPendingEvents();
     }, []);
@@ -50,164 +45,209 @@ export default function EventApproval({ onUpdate }) {
         let confirmationMessage = `イベントID ${eventId} を「${newStatus === 'approved' ? '承認' : '却下'}」しますか？`;
         let requestBody = { status: newStatus };
         
-        // 却下の場合、理由を入力させる
         if (newStatus === 'rejected') {
             const reason = window.prompt("却下する理由を入力してください（任意）:");
-            if (reason === null) {
-                return; // キャンセルされた場合
-            }
+            if (reason === null) return; 
+            
             requestBody.reason = reason; 
             if (reason.trim() !== '') {
                 confirmationMessage = `イベントID ${eventId} を理由「${reason.substring(0, 20)}...」で却下しますか？`;
             }
         }
 
-        if (!window.confirm(confirmationMessage)) {
-            return;
-        }
+        if (!window.confirm(confirmationMessage)) return;
 
         try {
-            const token = localStorage.getItem("token"); // ← トークン取得
+            const token = localStorage.getItem("token");
             const response = await fetch(`${API_URL}/${eventId}/status`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`, // ← Bearerトークンを送信
+                    'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify(requestBody),
             });
 
             if (response.ok) {
                 alert(`${newStatus === 'approved' ? '承認' : '却下'}が完了しました。`);
-                
                 setPendingEvents(prev => prev.filter(event => event.id !== eventId));
-                
-                if (onUpdate) {
-                    onUpdate(); 
-                }
-
+                if (onUpdate) onUpdate(); 
             } else {
                 const errorData = await response.json();
-                alert(`処理に失敗しました。ステータスコード: ${response.status}\nエラー: ${errorData.message || errorData.error || '不明なエラー'}`);
-                console.error("APIエラー詳細:", errorData);
+                alert(`処理に失敗しました: ${errorData.message || 'エラーが発生しました'}`);
             }
         } catch (error) {
             alert(`ネットワークエラーが発生しました: ${error.message}`);
         }
     };
 
-    if (loading) {
-        return <p>イベント申請データを読み込み中...</p>;
-    }
+    if (loading) return <p style={{ padding: "20px" }}>イベント申請データを読み込み中...</p>;
 
     return (
         <div style={{ padding: "10px" }}>
-            <h3>承認待ちイベント ({pendingEvents.length} 件)</h3>
+            <h3 style={{ marginBottom: "20px", borderBottom: "2px solid #eee", paddingBottom: "10px" }}>
+                承認待ちイベント ({pendingEvents.length} 件)
+            </h3>
             
             {pendingEvents.length === 0 ? (
-                <p style={{ color: "green", fontWeight: "bold" }}>
+                <p style={{ color: "green", fontWeight: "bold", textAlign: "center", marginTop: "30px" }}>
                     現在、承認待ちのイベント申請はありません。
                 </p>
             ) : (
-                pendingEvents.map((event) => (
-                    <div
-                        key={event.id}
-                        style={{
-                            border: "1px solid #ddd",
-                            borderRadius: "8px",
-                            padding: "15px",
-                            marginBottom: "15px",
-                            backgroundColor: "#fff",
-                            boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-                        }}
-                    >
-                        {/* タイトルと詳細切り替え */}
+                pendingEvents.map((event) => {
+                    // 再申請かどうかを判定 (status: 3)
+                    const isResubmitted = Number(event.approval_status_id) === 3;
+
+                    return (
                         <div
-                            onClick={() => setExpandedId(expandedId === event.id ? null : event.id)}
-                            style={{ 
-                                cursor: "pointer", 
-                                fontWeight: "bold", 
-                                fontSize: "18px", 
-                                color: "#333" 
+                            key={event.id}
+                            style={{
+                                border: isResubmitted ? "1px solid #ddd" : "1px solid #ddd",
+                                borderRadius: "8px",
+                                padding: "20px",
+                                marginBottom: "20px",
+                                backgroundColor: isResubmitted ? "#fffaf0" : "#fff", // 再申請は背景を薄いオレンジに
+                                boxShadow: isResubmitted ? "0 4px 12px rgba(0, 0, 0, 0.15)" : "0 2px 4px rgba(0,0,0,0.05)",
+                                transition: "all 0.3s ease"
                             }}
                         >
-                            {event.name || `イベント #${event.id}`} 
-                            <span style={{ float: 'right', color: '#888' }}>
-                                {expandedId === event.id ? '▲ 詳細を閉じる' : '▼ 詳細を見る'}
-                            </span>
-                        </div>
-                        <p style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
-                            申請者ID: {event.user_id} | 申請日時: {new Date(event.created_at).toLocaleString()}
-                        </p>
+                            {/* タイトル行 */}
+                            <div
+                                onClick={() => setExpandedId(expandedId === event.id ? null : event.id)}
+                                style={{ 
+                                    cursor: "pointer", 
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between"
+                                }}
+                            >
+                                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                                    <strong style={{ fontSize: "18px", color: "#333" }}>
+                                        {event.name || `イベント #${event.id}`} 
+                                    </strong>
 
-                        {/* 詳細情報 */}
-                        {expandedId === event.id && (
-                            <div style={{ marginTop: "10px", padding: "10px", borderTop: "1px dashed #eee" }}>
-                                <p><strong>キャッチフレーズ:</strong> {event.catchphrase}</p>
-                                <p><strong>開催期間:</strong> {event.start_date} から {event.end_date}</p>
-                                <p><strong>場所:</strong> {event.location}</p>
-                                <p><strong>予約:</strong> 
-                                    {Number(event.is_free_participation) === 0 ? "要予約" 
-                                    : Number(event.is_free_participation) === 1 ? "自由参加" 
-                                    : "未設定"}
-                                    </p>
-
-                                <p><strong>URL:</strong> <a href={event.url} target="_blank" rel="noopener noreferrer">{event.url}</a></p>
-                                <p><strong>主催者:</strong> {event.organizer}</p>
-                                <p><strong>詳細:</strong> {event.description || '記載なし'}</p>
-                                <p><strong>注意事項:</strong> {event.notes || '記載なし'}</p>
-                                
-                                {event.image_url && (
-                                    <div style={{ marginTop: '10px' }}>
-                                        <strong>見出し画像:</strong>
-                                        <img 
-                                            src={event.image_url} 
-                                            alt="イベント画像" 
-                                            style={{ 
-                                                maxWidth: '100%', 
-                                                maxHeight: '200px', 
-                                                display: 'block', 
-                                                marginTop: '5px',
-                                                borderRadius: '4px'
-                                            }}
-                                        />
-                                    </div>
-                                )}
-
-                                {/* アクションボタン */}
-                                <div style={{ marginTop: "20px", textAlign: "right" }}>
-                                    <button
-                                        onClick={() => handleStatusUpdate(event.id, 'rejected')}
-                                        style={{ 
-                                            padding: "8px 15px", 
-                                            backgroundColor: "#f44336", 
+                                    {/* ステータスラベル */}
+                                    {isResubmitted ? (
+                                        <span style={{ 
+                                            backgroundColor: "#faad14", 
                                             color: "white", 
-                                            border: "none", 
-                                            borderRadius: "5px", 
-                                            marginRight: "10px",
-                                            cursor: "pointer"
-                                        }}
-                                    >
-                                        却下 ❌
-                                    </button>
-                                    <button
-                                        onClick={() => handleStatusUpdate(event.id, 'approved')}
-                                        style={{ 
-                                            padding: "8px 15px", 
-                                            backgroundColor: "#4CAF50", 
+                                            fontSize: "12px", 
+                                            padding: "3px 12px", 
+                                            borderRadius: "12px", 
+                                            fontWeight: "bold",
+                                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+                                        }}>
+                                            再申請
+                                        </span>
+                                    ) : (
+                                        <span style={{ 
+                                            backgroundColor: "#1890ff", 
                                             color: "white", 
-                                            border: "none", 
-                                            borderRadius: "5px",
-                                            cursor: "pointer"
-                                        }}
-                                    >
-                                        承認 ✅
-                                    </button>
+                                            fontSize: "12px", 
+                                            padding: "3px 12px", 
+                                            borderRadius: "12px",
+                                            fontWeight: "bold"
+                                        }}>
+                                            新規申請
+                                        </span>
+                                    )}
                                 </div>
+                                
+                                <span style={{ color: "#666", fontSize: "13px", fontWeight: "bold" }}>
+                                    {expandedId === event.id ? '▲ 詳細を閉じる' : '▼ 詳細を見る'}
+                                </span>
                             </div>
-                        )}
-                    </div>
-                ))
+
+                            <p style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
+                                申請者ID: {event.user_id} | 申請日時: {new Date(event.created_at).toLocaleString()}
+                            </p>
+
+                            {/* 詳細情報エリア */}
+                            {expandedId === event.id && (
+                                <div style={{ marginTop: "15px", padding: "15px", borderTop: "1px solid #eee", backgroundColor: "rgba(255,255,255,0.5)", borderRadius: "5px" }}>
+                                    
+                                    {/* 再申請の場合、前回の却下理由をリマインド表示 */}
+                                    {isResubmitted && event.rejection_reason && (
+                                        <div style={{ backgroundColor: "#fff0f0", padding: "12px", borderRadius: "5px", marginBottom: "15px", border: "1px solid #ffccc7" }}>
+                                            <strong style={{ color: "#cf1322", fontSize: "14px" }}>⚠️ 前回の却下理由：</strong>
+                                            <p style={{ margin: "5px 0 0", color: "#cf1322", fontSize: "14px" }}>{event.rejection_reason}</p>
+                                        </div>
+                                    )}
+
+                                    <div style={{ display: "grid", gridTemplateColumns: "100px 1fr", gap: "8px", fontSize: "14px" }}>
+                                        <strong>見出し:</strong> <span>{event.catchphrase || "未入力"}</span>
+                                        <strong>開催期間:</strong> <span>{event.start_date} ～ {event.end_date}</span>
+                                        <strong>場所:</strong> <span>{event.location}</span>
+                                        <strong>予約区分:</strong> <span>{Number(event.is_free_participation) === 1 ? "自由参加" : "要予約"}</span>
+                                        <strong>主催者:</strong> <span>{event.organizer}</span>
+                                        <strong>URL:</strong> <a href={event.url} target="_blank" rel="noopener noreferrer" style={{ color: "#007bff", wordBreak: "break-all" }}>{event.url}</a>
+                                    </div>
+
+                                    <div style={{ marginTop: "12px" }}>
+                                        <strong>詳細説明:</strong>
+                                        <p style={{ whiteSpace: "pre-wrap", marginTop: "5px", fontSize: "13px", color: "#444" }}>{event.description || '記載なし'}</p>
+                                    </div>
+
+                                    <div style={{ marginTop: "12px" }}>
+                                        <strong>注意事項:</strong>
+                                        <p style={{ whiteSpace: "pre-wrap", marginTop: "5px", fontSize: "13px", color: "#444" }}>{event.notes || '記載なし'}</p>
+                                    </div>
+                                    
+                                    {event.image_url && (
+                                        <div style={{ marginTop: '15px' }}>
+                                            <strong>見出し画像:</strong>
+                                            <img 
+                                                src={event.image_url} 
+                                                alt="イベント画像" 
+                                                style={{ 
+                                                    maxWidth: '100%', 
+                                                    maxHeight: '300px', 
+                                                    display: 'block', 
+                                                    marginTop: '8px',
+                                                    borderRadius: '6px',
+                                                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)"
+                                                }}
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* 操作ボタン */}
+                                    <div style={{ marginTop: "25px", display: "flex", justifyContent: "flex-end", gap: "15px" }}>
+                                        <button
+                                            onClick={() => handleStatusUpdate(event.id, 'rejected')}
+                                            style={{ 
+                                                padding: "10px 25px", 
+                                                backgroundColor: "#fff", 
+                                                color: "#f44336", 
+                                                border: "1px solid #f44336", 
+                                                borderRadius: "6px", 
+                                                cursor: "pointer",
+                                                fontWeight: "bold"
+                                            }}
+                                        >
+                                            却下する
+                                        </button>
+                                        <button
+                                            onClick={() => handleStatusUpdate(event.id, 'approved')}
+                                            style={{ 
+                                                padding: "10px 25px", 
+                                                backgroundColor: "#4CAF50", 
+                                                color: "white", 
+                                                border: "none", 
+                                                borderRadius: "6px",
+                                                cursor: "pointer",
+                                                fontWeight: "bold",
+                                                boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+                                            }}
+                                        >
+                                            承認して公開
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    );
+                })
             )}
         </div>
     );

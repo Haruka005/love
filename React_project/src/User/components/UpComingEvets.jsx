@@ -52,7 +52,7 @@ function UpComingEvents(){
                 id={event.id}
                 name={event.name}
                 catchphrase={event.catchphrase}
-                //image={event.image_path}    
+                image={event.image_path}    
                 start_date={DateTime(event.start_date)}
                 end_date={DateTime(event.end_date)}
                 location={event.location}

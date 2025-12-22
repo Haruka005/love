@@ -11,8 +11,9 @@ use Carbon\Carbon;
 
 class EventController extends Controller
 {
-    //GetEvennts.jsxのカードに表示させるカラムをここで指定してる
-    // 指定された年月のイベントを取得
+    /**
+     * カレンダー表示用：指定された年月の承認済みイベントを取得
+     */
     public function getByMonth($year, $month)
     {
         $startOfMonth = Carbon::create($year, $month, 1)->startOfMonth();
@@ -25,17 +26,15 @@ class EventController extends Controller
         })
         ->orderBy('start_date', 'asc')
         ->get([
-            'id',
-            'name',
-            'catchphrase',
-            'start_date',
-            'end_date',
-            'location',
+            'id', 'name', 'catchphrase', 'start_date', 'end_date', 'location', 'image_path'
         ]);
 
         return response()->json($events);
     }
-    // 今月のイベントを取得
+
+    /**
+     * トップページ用：今月の承認済みイベントを取得
+     */
     public function getUpComingEvent()
     {
         try {
@@ -49,72 +48,49 @@ class EventController extends Controller
                 })
                 ->orderBy('start_date', 'asc')
                 ->get([
-                    'id',
-                    'name',
-                    'catchphrase',
-                    'start_date',
-                    'end_date',
-                    'location',
-                    'image_path' 
+                    'id', 'name', 'catchphrase', 'start_date', 'end_date', 'location', 'image_path' 
                 ]);
             
-            // 成功時は必ず JSON を返す。データがない場合は空の JSON 配列 [] が返る
             return response()->json($events); 
 
-        } catch (\Illuminate\Database\QueryException $e) {
-            // データベース接続やクエリ自体に問題があった場合 (デバッグログ代わり)
-            \Log::error("イベント取得クエリ失敗: " . $e->getMessage());
-            
-            // データの有無にかかわらず、空のデータを返して React のエラーを防ぎます。
-            return response()->json([], 200); 
-
         } catch (\Exception $e) {
-            // その他の PHP エラー（未定義変数など）
-            \Log::error("イベント取得中に予期せぬエラー: " . $e->getMessage());
-            
-            // サーバー内部エラーとして JSON 応答を返します
+            Log::error("イベント取得エラー: " . $e->getMessage());
             return response()->json(['error' => 'イベントデータの取得中にサーバーエラーが発生しました'], 500);
         }
     }
 
-    // イベント詳細取得
+    /**
+     * 詳細・編集画面用：イベント情報を取得
+     * 修正ポイント：where条件を外し、拒否(2)や未承認(0)のデータも取得可能にしました
+     */
     public function show($id)
     {
         try {
+            // IDのみで検索することで、どのステータスのイベントも編集画面に読み込めます
             $event = Event::findOrFail($id);
             return response()->json($event);
+
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => '指定されたイベントが見つかりません。'], 404);
+            return response()->json(['error' => '指定されたイベントは見つかりません。'], 404);
         } catch (\Exception $e) {
             return response()->json(['error' => 'サーバー内部エラーが発生しました。'], 500);
         }
     }
 
-    // ログインユーザーのイベント登録履歴表示
+    /**
+     * マイページ用：ログインユーザーの全イベント履歴を表示
+     */
     public function index(Request $request)
     {
-        \Log::info('index開始', ['user' => $request->user()]);
         try {
             $userId = $request->user()->id;
 
             $events = Event::where('user_id', $userId)
                 ->orderBy('start_date', 'asc')
                 ->get([
-                    'id',
-                    'name',
-                    'catchphrase',
-                    'start_date',
-                    'end_date',
-                    'description',
-                    'location',
-                    'url',
-                    'organizer',
-                    'notes',
-                    'image_path' ,
-                    'approval_status_id',   // ← 承認状態（0=未承認, 1=承認済, 2=拒否）
-                    'rejection_reason'  ,    // ← 拒否理由（管理者メッセージ）
-                    'is_free_participation'
-
+                    'id', 'name', 'catchphrase', 'start_date', 'end_date',
+                    'description', 'location', 'url', 'organizer', 'notes',
+                    'image_path', 'approval_status_id', 'rejection_reason', 'is_free_participation'
                 ]);
 
             return response()->json($events);
@@ -123,11 +99,11 @@ class EventController extends Controller
         }
     }
 
-    // イベント情報を保存（画像含む）
+    /**
+     * 新規登録
+     */
     public function storeEventData(Request $request)
     {
-        Log::info('storeEventData に到達しました', ['user_id' => $request->input('user_id')]);
-
         $userId = $request->input('user_id');
         $user = User::find($userId);
 
@@ -135,28 +111,14 @@ class EventController extends Controller
             return response()->json(['error' => 'ユーザーが見つかりません'], 404);
         }
 
-        // ユーザー画像フォルダ作成
-        $folderPath = "user_images/{$user->id}";
-        if (!$user->has_image_folder) {
-            $created = Storage::disk('public')->makeDirectory($folderPath);
-            if ($created) {
-                $user->has_image_folder = true;
-                $user->save();
-            }
-        }
-
-        // 画像保存
+        // 画像保存処理
         $imagePath = null;
         if ($request->hasFile('image')) {
             $eventFolderPath = "user_images/{$user->id}/events";
-            if (!Storage::disk('public')->exists($eventFolderPath)) {
-                Storage::disk('public')->makeDirectory($eventFolderPath);
-            }
             $imagePath = $request->file('image')->store($eventFolderPath, 'public');
         }
 
-        // イベント情報保存
-        $event = new Event(); // ← EventImage ではなく Event
+        $event = new Event();
         $event->user_id = $user->id;
         $event->name = $request->input('name');
         $event->catchphrase = $request->input('catchphrase');
@@ -169,66 +131,78 @@ class EventController extends Controller
         $event->organizer = $request->input('organizer');
         $event->is_free_participation = (int) $request->input('is_free_participation');
         $event->is_open_enrollment = 1;
-        $event->approval_status_id = 0;
-        $event->rejection_reason = null;
+        $event->approval_status_id = 0; // 新規は「未承認」から開始
 
         if ($imagePath) {
-            $event->image_path = Storage::url($imagePath); // ← image_path に統一
+            $event->image_path = Storage::url($imagePath);
         }
 
         $event->save();
-
         return response()->json(['message' => 'イベント情報を保存しました']);
     }
 
-    // イベント情報を更新(編集)
-    public function update(Request $request, $id)
+    /**
+ * イベント更新（再申請対応）
+ */
+public function update(Request $request, $id)
+{
+    try {
+        $event = Event::findOrFail($id);
+
+        // 基本情報の更新
+        $fields = ['name', 'catchphrase', 'description', 'start_date', 'end_date', 'location', 'url', 'notes', 'organizer'];
+        foreach ($fields as $field) {
+            $event->$field = $request->input($field, $event->$field);
+        }
+        $event->is_free_participation = (int) $request->input('is_free_participation', $event->is_free_participation);
+
+        // --- ここから修正 ---
+        if ($request->has('approval_status_id')) {
+            // 管理者画面からの更新（管理者ツールなど）
+            $event->approval_status_id = (int) $request->input('approval_status_id');
+        } else {
+            // 一般ユーザーが編集保存した場合は、問答無用で「再申請（3）」にする
+            $event->approval_status_id = 3;
+        }
+
+        // 再申請時は、次に管理者が「なぜ却下されたか」を確認できるよう、
+        // rejection_reason（拒否理由）は「消さずに残しておく」のが一般的です。
+        // （Admin側で修正後の内容と比較しやすいため）
+        // もし消したい場合は、$event->rejection_reason = null; をここに入れてください。
+        // --- ここまで修正 ---
+
+        // 画像の差し替え
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store("user_images/{$event->user_id}/events", 'public');
+            $event->image_path = Storage::url($imagePath);
+        }
+
+        $event->save();
+        return response()->json(['message' => 'イベント情報を更新しました', 'event' => $event]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['error' => '指定されたイベントが見つかりません'], 404);
+        } catch (\Exception $e) {
+            Log::error("イベント更新失敗: " . $e->getMessage());
+            return response()->json(['error' => 'イベント更新に失敗しました'], 500);
+        }
+}
+
+    /**
+     * イベント削除
+     */
+    public function destroy(Request $request, $id)
     {
         try {
             $event = Event::findOrFail($id);
 
-            $event->name = $request->input('name', $event->name);
-            $event->catchphrase = $request->input('catchphrase', $event->catchphrase);
-            $event->description = $request->input('description', $event->description);
-            $event->start_date = $request->input('start_date', $event->start_date);
-            $event->end_date = $request->input('end_date', $event->end_date);
-            $event->location = $request->input('location', $event->location);
-            $event->url = $request->input('url', $event->url);
-            $event->notes = $request->input('notes', $event->notes);
-            $event->organizer = $request->input('organizer', $event->organizer);
-            $event->is_free_participation = (int) $request->input('is_free_participation');
-
-            if ($request->hasFile('image')) {
-                $imagePath = $request->file('image')->store("user_images/{$event->user_id}/events", 'public');
-                $event->image_path = Storage::url($imagePath); // ← image_path に統一
+            if ($event->user_id !== $request->user()->id) {
+                return response()->json(['error' => '権限がありません'], 403);
             }
 
-            $event->save();
+            $event->delete();
+            return response()->json(['message' => 'イベントを削除しました']);
 
-            return response()->json(['message' => 'イベント情報を更新しました', 'event' => $event]);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => '指定されたイベントが見つかりません'], 404);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'イベント更新に失敗しました'], 500);
-        }
-    }
-
-    // イベント削除（DBからも削除）
-    public function destroy(Request $request, $id)
-    {
-    try {
-        $event = Event::findOrFail($id);
-
-        // ログインユーザーのイベントか確認（セキュリティ対策）
-        if ($event->user_id !== $request->user()->id) {
-            return response()->json(['error' => '権限がありません'], 403);
-        }
-
-        $event->delete();
-
-        return response()->json(['message' => 'イベントを削除しました']);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => '指定されたイベントが見つかりません'], 404);
         } catch (\Exception $e) {
             return response()->json(['error' => 'イベント削除に失敗しました'], 500);
         }
