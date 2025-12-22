@@ -1,25 +1,28 @@
 import React, { useState, useEffect } from "react";
 import EventCard from "./EventCard";
-import { DateTime } from "./dateForatter";
+// スペルミスを修正 (dateForatter -> dateFormatter)
+import { DateTime } from "./dateFormatter"; 
 import Pagenation from "./Pagenation";
 
-
 function GetEvents() {
-  const now = new Date();   //現在時刻取得しnowに保存
-  const [selectedYear, setSelectedYear] = useState(now.getFullYear());  //初期値現在の年
-  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1); //初期値現在の月
+  const now = new Date();
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
 
-  const [events, setEvents] = useState([]); //取得したイベントを格納する配列。初期値は空
-  const [loading, setLoading] = useState(false); // データ取得中か管理する。初期はfalse
-  const [error, setError] = useState(null);   //エラー状態を管理。初期値はnull
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const yearOptions = [
-  { value: 2025, label: "2025" },
-  { value: 2026, label: "2026" },
+    { value: 2025, label: "2025" },
+    { value: 2026, label: "2026" },
   ];
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
+
+  // .envからベースURLを取得
+  const API_BASE_URL = process.env.REACT_APP_API_URL;
 
   // ページネーション処理
   const indexOfLastEvent = currentPage * itemsPerPage;
@@ -27,45 +30,35 @@ function GetEvents() {
   const currentEvents = events.slice(indexOfFirstEvent, indexOfLastEvent);
   const totalPages = Math.ceil(events.length / itemsPerPage);
 
-
-
   useEffect(() => {
-    //API取得処理
     const fetchEvents = async () => {
-      setLoading(true); // API取得開始。読み込みフラグをtrueに
+      setLoading(true);
       try {
-        //選択した月をURLに渡せるように文字列に変換する
         const monthStr = String(selectedMonth).padStart(2, "0");
 
-        //サーバーからイベント取得
-        const res = await fetch(`http://127.0.0.1:8000/api/events/${selectedYear}/${monthStr}`);
+        // 共通の環境変数を使用してURLを構築
+        const res = await fetch(`${API_BASE_URL}/events/${selectedYear}/${monthStr}`);
 
-        //取得失敗したら例外を投げる
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
-        //JavaScriptの形式に変換
         const data = await res.json();
-        console.log("取得データ:", data);
-
-
-        setEvents(data);//取得したデータをセット
-        setError(null);//成功したのでエラーをnullに
+        setEvents(data);
+        setError(null);
+        setCurrentPage(1); // 条件が変わったら1ページ目に戻す
 
       } catch (err) {
         console.error(err);
         setError("イベント取得に失敗しました");
-        setEvents([]);//イベント配列を空に
+        setEvents([]);
       } finally {
-        //成功失敗に関わらず、データ取得後loadingをfalseに戻す
-        setLoading(false); // API取得終了
+        setLoading(false);
       }
     };
 
-    //定義したfetchEventsを実際に呼び出しデータ取得
-    fetchEvents();
-    
-    //selectedYearまたはselectedMonthが変わるたびに再実行
-  }, [selectedYear, selectedMonth]);
+    if (API_BASE_URL) {
+      fetchEvents();
+    }
+  }, [selectedYear, selectedMonth, API_BASE_URL]);
 
   return (
     <section 
@@ -75,9 +68,9 @@ function GetEvents() {
         marginBottom: "30px", 
         textAlign: "center", 
         backgroundImage: `url("/images/akaoni_background.png")`,
-        backgroundSize: "cover",         // ← 画像をセクション全体にフィット
-        backgroundPosition: "center",    // ← 画像の中心を表示
-        backgroundRepeat: "no-repeat",   // ← 繰り返さない
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
         color: "#333",   
       }}
     >
@@ -121,8 +114,10 @@ function GetEvents() {
           {selectedYear}年 {selectedMonth}月 のイベント
         </h4>
 
-        {/* イベントカード表示 */}
-        {events.length === 0 && !loading ? (
+        {loading && <p>読み込み中です…</p>}
+        {error && <p style={{ color: "red" }}>エラー: {error}</p>}
+
+        {!loading && !error && events.length === 0 ? (
           <p>イベント情報はありません</p>
         ) : (
           <div className="card-list">
@@ -142,16 +137,13 @@ function GetEvents() {
         )}            
       </div>
 
-      {/* データの状態ごとに出し分け */}
-      {loading && <p>読み込み中です…</p>}
-      {error && <p>エラー: {error}</p>}
-
-      <Pagenation
-      totalPages={totalPages}
-      currentPage={currentPage}
-      onPageChange={(page) => setCurrentPage(page)}
-      />
-
+      {totalPages > 1 && (
+        <Pagenation
+          totalPages={totalPages}
+          currentPage={currentPage}
+          onPageChange={(page) => setCurrentPage(page)}
+        />
+      )}
     </section>
   );
 }

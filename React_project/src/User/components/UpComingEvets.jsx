@@ -1,61 +1,89 @@
 import React, { useEffect, useState } from "react";
 import EventCard from "./EventCard";
-import { DateTime } from "./dateForatter";
+// 正しいスペル (dateFormatter) に修正
+import { DateTime } from "./dateFormatter";
 
-{/* 直近のイベント */}
+/**
+ * 直近のイベントを表示するコンポーネント
+ */
+function UpComingEvents() {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-function UpComingEvents(){
-    const [events, setEvents] = useState([]);
-    const [error, setError] = useState(null);
+  // useEffect: コンポーネントがマウントされた時に一度だけデータを取得
+  useEffect(() => {
+    const fetchUpcomingEvents = async () => {
+      try {
+        // .env からベースURLを取得
+        const baseUrl = process.env.REACT_APP_API_URL;
+        
+        // バックエンドにリクエストを送る（Laravel等の標準に合わせて /api を付与）
+        const response = await fetch(`${baseUrl}/events/upcoming`);
 
-    // useEffect = 最初に表示されたとき一度だけデータ取りに行く
-    useEffect(() => {
-        const fetchUpcomingEvents = async () => { // async･･･awaitから結果帰ってくるまで次の処理しないで待つ
-            try {
-               
-                // バックエンドにリクエスト送る
-                //const response = await fetch(`${process.env.REACT_APP_API_URL}/events/upcoming`);
-               
-                //ローカルではこれだよ
-                const response = await fetch(`${process.env.REACT_APP_API_URL}/events/upcoming`);
+        // レスポンスが正常でない場合はエラーを投げる
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-                // 帰ってきたイベント一覧（JSON形式）をJavaScript形式に変換してdataに入れる
-                const data = await response.json();
+        // JSON形式をJavaScriptオブジェクトに変換
+        const data = await response.json();
+        console.log("注目のイベント取得成功:", data);
 
-                console.log("受け取ったデータ:", data); // ← ここに追加！
+        // 取得したデータをステートに保存
+        setEvents(data);
+      } catch (error) {
+        console.error("イベント取得エラー:", error);
+        setError("注目のイベントを取得できませんでした");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-                // 上で宣言したeventsにsetする
-                setEvents(data);
-                console.log("イベント取得成功:", data);
-            } catch(error) {
-                console.error("イベント取得エラー:", error);
-                setError("イベントを取得できませんでした");
-            }
-        };
-        fetchUpcomingEvents();
-    }, []);
-
-    if (error) {
-     return <p style={{ color: "red", padding: "20px" }}>エラー: {error}</p>;
+    // 環境変数が設定されている場合のみ実行
+    if (process.env.REACT_APP_API_URL) {
+      fetchUpcomingEvents();
+    } else {
+      console.error("環境変数 REACT_APP_API_URL が設定されていません。");
+      setLoading(false);
     }
+  }, []);
 
-    return(
-    <section className="container">
-      <h2>直近のイベント</h2>
+  // 読み込み中表示
+  if (loading) {
+    return <p style={{ textAlign: "center", padding: "20px" }}>イベントを読み込み中...</p>;
+  }
+
+  // エラー発生時の表示
+  if (error) {
+    return <p style={{ color: "red", textAlign: "center", padding: "20px" }}>エラー: {error}</p>;
+  }
+
+  return (
+    <section className="container" style={{ padding: "40px 0" }}>
+      <h2 style={{ textAlign: "center", marginBottom: "30px" }}>直近のイベント</h2>
+      
       {events.length === 0 ? (
-        <p>現在予定されているイベントはありません。</p>
+        <p style={{ textAlign: "center" }}>現在予定されているイベントはありません。</p>
       ) : (
-        <div className="card-list">
+        <div className="card-list" style={{ 
+          display: "grid", 
+          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", 
+          gap: "20px",
+          padding: "0 20px"
+        }}>
           {events.map((event) => (
             <EventCard
               key={event.id}
-                id={event.id}
-                name={event.name}
-                catchphrase={event.catchphrase}
-                //image={event.image_path}    
-                start_date={DateTime(event.start_date)}
-                end_date={DateTime(event.end_date)}
-                location={event.location}
+              id={event.id}
+              name={event.name}
+              catchphrase={event.catchphrase}
+              // 画像パスはバックエンドのキー（topimage_pathなど）に合わせて調整してください
+              image={event.topimage_path || event.image_url}
+              // dateFormatter.jsx の DateTime 関数を使用
+              start_date={DateTime(event.start_date)}
+              end_date={DateTime(event.end_date)}
+              location={event.location}
             />
           ))}
         </div>
@@ -65,4 +93,3 @@ function UpComingEvents(){
 }
 
 export default UpComingEvents;
-
