@@ -1,115 +1,179 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import EventCard from "./EventCard";
-// 正しいスペル (dateFormatter) に修正済み
 import { DateTime } from "./dateFormatter.js";
 
-// APIのベースURLを調整（末尾の /api 重複を防止する共通ロジック）
 const getBaseApiUrl = () => {
     const envUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
     return envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;
 };
 
-// 画像表示用のベースURL（/api を含まないサーバーのルートURL）
-const getServerRootUrl = () => {
-    const envUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
-    return envUrl.endsWith("/api") ? envUrl.replace(/\/api$/, "") : envUrl;
-};
-
 const API_BASE = getBaseApiUrl();
-const SERVER_ROOT = getServerRootUrl();
 
-/**
- * 直近のイベントを表示するコンポーネント
- */
 function UpComingEvents() {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    
+    const scrollRef = useRef(null);
+    const [isHovered, setIsHovered] = useState(false);
 
-    // データの取得ロジック
     const fetchUpcomingEvents = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            // API_BASEを使用してリクエスト。Laravel側のルートが /api/events/upcoming を想定
             const response = await fetch(`${API_BASE}/events/upcoming`, {
-                headers: {
-                    "Accept": "application/json"
-                }
+                headers: { "Accept": "application/json" }
             });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
-            // データが配列であることを確認して保存
             setEvents(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error("イベント取得エラー:", error);
-            setError("注目のイベントを取得できませんでした。");
+            setError("イベントを取得できませんでした。");
         } finally {
             setLoading(false);
         }
     }, []);
 
-    // コンポーネントがマウントされた時に一度だけデータを取得
     useEffect(() => {
         fetchUpcomingEvents();
     }, [fetchUpcomingEvents]);
 
-    // 読み込み中表示
-    if (loading) {
-        return <p style={{ textAlign: "center", padding: "40px" }}>イベントを読み込み中...</p>;
-    }
+    useEffect(() => {
+        const scrollContainer = scrollRef.current;
+        if (!scrollContainer || events.length === 0 || isHovered) return;
 
-    // エラー発生時の表示
-    if (error) {
-        return (
-            <div style={{ textAlign: "center", padding: "40px" }}>
-                <p style={{ color: "red" }}>{error}</p>
-                <button onClick={fetchUpcomingEvents} style={{ cursor: "pointer" }}>再試行</button>
-            </div>
-        );
-    }
+        const autoScroll = setInterval(() => {
+            if (scrollContainer) {
+                const maxScrollLeft = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+                if (scrollContainer.scrollLeft >= maxScrollLeft - 1) {
+                    scrollContainer.scrollLeft = 0;
+                } else {
+                    scrollContainer.scrollLeft += 1; 
+                }
+            }
+        }, 30);
+
+        return () => clearInterval(autoScroll);
+    }, [events, isHovered]);
 
     return (
-        <section className="container" style={{ padding: "40px 0" }}>
-            <h2 style={{ textAlign: "center", marginBottom: "30px" }}>直近のイベント</h2>
-            
-            {events.length === 0 ? (
-                <p style={{ textAlign: "center" }}>現在予定されているイベントはありません。</p>
-            ) : (
-                <div className="card-list" style={{ 
-                    display: "grid", 
-                    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", 
-                    gap: "20px",
-                    padding: "0 20px"
-                }}>
-                    {events.map((event) => {
-                        // 画像パスの正規化（相対パスの場合はSERVER_ROOTを付与）
-                        const rawPath = event.topimage_path || event.image_url || "";
-                        const fullImageUrl = rawPath.startsWith('http') 
-                            ? rawPath 
-                            : `${SERVER_ROOT}${rawPath.startsWith('/') ? '' : '/'}${rawPath}`;
+        <section 
+            style={{ 
+                margin: "0",              
+                padding: "40px 0",   
+                textAlign: "center", 
+                backgroundImage: `url("/images/siroback.png")`, 
+                backgroundSize: "auto",      
+                backgroundRepeat: "repeat",  
+                backgroundPosition: "center",
+                color: "#555",
+                fontFamily: '"Zen Maru Gothic", sans-serif'
+            }}
+        >
+            {/* タイトルセクション：画像のデザインを再現 */}
+            <div style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "15px",
+                marginBottom: "30px",
+                paddingBottom: "10px",
+                borderBottom: "3px dotted #ccc" // CSSの共通スタイルに合わせた点線
+            }}>
+                {/* 左側：青鬼（反転） */}
+                <img 
+                    src="/images/aoonitousin.png" 
+                    alt="icon-blue" 
+                    style={{ width: "60px", height: "auto", transform: "scaleX(-1)" }} 
+                />
 
+                <div style={{ textAlign: "left" }}>
+                    <h2 style={{ 
+                        margin: 0, 
+                        fontSize: "2.2rem", // 英語を大きく
+                        fontWeight: "900",
+                        color: "#F93D5D",   // PICK UPと同じピンク系
+                        letterSpacing: "1px",
+                        lineHeight: "1.1",
+                        border: "none",      // デフォルトのh2スタイルを打ち消し
+                        padding: 0
+                    }}>
+                        UPCOMING EVENTS
+                    </h2>
+                    <span style={{ 
+                        fontSize: "0.9rem", 
+                        fontWeight: "700", 
+                        color: "#555",
+                        marginLeft: "2px"
+                    }}>
+                    直近のイベント
+                    </span>
+                </div>
+
+                {/* 右側：赤鬼 */}
+                <img 
+                    src="/akaonitousin.png" 
+                    alt="icon-red" 
+                    style={{ width: "60px", height: "auto" }} 
+                />
+            </div>
+            
+            {loading ? (
+                <div style={{ padding: "40px" }}>
+                    <p>読み込み中...</p>
+                </div>
+            ) : events.length === 0 ? (
+                <p style={{ padding: "20px", backgroundColor: "rgba(255,255,255,0.7)", borderRadius: "8px", display: "inline-block" }}>
+                    現在、予定されているイベントはありません。
+                </p>
+            ) : (
+                <div 
+                    className="horizontal-scroll-container"
+                    ref={scrollRef}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    style={{ 
+                        display: "flex",
+                        gap: "35px",
+                        padding: "20px 40px 40px",
+                        overflowX: "auto",
+                        scrollbarWidth: "none"
+                    }}
+                >
+                    {events.map((event) => {
+                        const imageSrc = event.topimage_path || event.image_path || event.image_url;
                         return (
-                            <EventCard
-                                key={event.id}
-                                id={event.id}
-                                name={event.name}
-                                catchphrase={event.catchphrase}
-                                // 加工したフルURLを渡す
-                                image={fullImageUrl}
-                                // dateFormatter.jsx の DateTime 関数を使用
-                                start_date={DateTime(event.start_date)}
-                                end_date={DateTime(event.end_date)}
-                                location={event.location}
-                            />
+                            <div key={event.id} className="event-card-hover-wrapper">
+                                <EventCard
+                                    id={event.id}
+                                    name={event.name}
+                                    catchphrase={event.catchphrase}
+                                    image={imageSrc}
+                                    start_date={DateTime(event.start_date)}
+                                    end_date={DateTime(event.end_date)}
+                                    location={event.location}
+                                />
+                            </div>
                         );
                     })}
                 </div>
             )}
+
+            <style>{`
+                .horizontal-scroll-container::-webkit-scrollbar {
+                    display: none;
+                }
+                
+                .event-card-hover-wrapper {
+                    flex: 0 0 auto;
+                    width: 320px;
+                    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+                }
+                .event-card-hover-wrapper:hover {
+                    transform: translateY(-12px);
+                }
+            `}</style>
         </section>
     );
 }
