@@ -1,14 +1,13 @@
-// 飲食店詳細画面
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-// APIのベースURLを調整（末尾の /api 重複を防止する共通ロジック）
+// APIのベースURLを調整
 const getBaseApiUrl = () => {
     const envUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
     return envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;
 };
 
-// 画像表示用のベースURL（/api を含まないサーバーのルートURL）
+// 画像表示用のベースURL
 const getServerRootUrl = () => {
     const envUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
     return envUrl.endsWith("/api") ? envUrl.replace(/\/api$/, "") : envUrl;
@@ -18,7 +17,7 @@ const API_BASE = getBaseApiUrl();
 const SERVER_ROOT = getServerRootUrl();
 
 export default function RestaurantDetail() {
-    const { id } = useParams(); // URLからid取得
+    const { id } = useParams(); 
     const navigate = useNavigate();
     const [restaurant, setRestaurant] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -43,6 +42,7 @@ export default function RestaurantDetail() {
             }
 
             const data = await res.json();
+            // コントローラーが $restaurant->all_images を返しているのでそれを使います
             setRestaurant(data);
         } catch (err) {
             console.error("Fetch Error:", err);
@@ -58,7 +58,6 @@ export default function RestaurantDetail() {
 
     if (loading) return <p style={{ padding: "20px" }}>読み込み中...</p>;
 
-    // 404またはデータ不在時の表示
     if (!restaurant) {
         return (
             <div style={{ padding: "20px", textAlign: "center" }}>
@@ -71,15 +70,22 @@ export default function RestaurantDetail() {
     return (
         <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
             <h2>{restaurant.name}</h2>
+            
+            {/* --- 見出しとして catchphrase を追加 --- */}
+            <p style={{ fontSize: "1.2rem", color: "#666", marginTop: "-10px", marginBottom: "20px" }}>
+                {restaurant.catchphrase}
+            </p>
 
-            {/* 画像一覧 */}
-            {restaurant.images && restaurant.images.length > 0 && (
+            {/* コントローラーで定義された all_images を使用 */}
+            {restaurant.all_images && restaurant.all_images.length > 0 && (
                 <div style={{ marginTop: "10px" }}>
-                    {restaurant.images.map((img, index) => {
-                        // 画像パスがフルURL(http〜)でない場合、サーバーのルートURLを付与
-                        const imageUrl = img.startsWith('http') 
-                            ? img 
-                            : `${SERVER_ROOT}${img.startsWith('/') ? '' : '/'}${img}`;
+                    {restaurant.all_images.map((path, index) => {
+                        if (!path) return null;
+
+                        // localhostを物理サーバーIPに置換
+                        const imageUrl = path.startsWith('http') 
+                            ? path.replace(/^http:\/\/[^/]+/, SERVER_ROOT) 
+                            : `${SERVER_ROOT}${path.startsWith('/') ? '' : '/'}${path}`;
                         
                         return (
                             <img
@@ -93,7 +99,6 @@ export default function RestaurantDetail() {
                                     marginBottom: "10px",
                                     display: "block"
                                 }}
-                                // 万が一画像が404エラーになった場合の代替処理
                                 onError={(e) => {
                                     e.target.src = "https://placehold.jp/24/cccccc/ffffff/200x150.png?text=No%20Image";
                                 }}
@@ -102,10 +107,6 @@ export default function RestaurantDetail() {
                     })}
                 </div>
             )}
-
-            <p style={{ fontSize: "18px", marginTop: "10px", fontWeight: "bold" }}>
-                {restaurant.catchphrase}
-            </p>
 
             <div style={{ marginTop: "20px", borderTop: "1px solid #eee", paddingTop: "20px" }}>
                 <h3>店舗情報</h3>

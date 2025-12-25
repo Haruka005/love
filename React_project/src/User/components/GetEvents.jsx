@@ -35,8 +35,8 @@ function GetEvents() {
 
     const indexOfLastEvent = currentPage * itemsPerPage;
     const indexOfFirstEvent = indexOfLastEvent - itemsPerPage;
-    const currentEvents = events.slice(indexOfFirstEvent, indexOfLastEvent);
-    const totalPages = Math.ceil(events.length / itemsPerPage);
+    const currentEvents = Array.isArray(events) ? events.slice(indexOfFirstEvent, indexOfLastEvent) : [];
+    const totalPages = Math.ceil((Array.isArray(events) ? events.length : 0) / itemsPerPage);
 
     const fetchEvents = useCallback(async () => {
         setLoading(true);
@@ -56,8 +56,9 @@ function GetEvents() {
             }
 
             const data = await res.json();
-            setEvents(Array.isArray(data) ? data : []);
-            setCurrentPage(1);
+            const eventsData = Array.isArray(data) ? data : (data.events || []);
+            setEvents(eventsData);
+            setCurrentPage(1); 
         } catch (err) {
             console.error("イベント取得エラー:", err);
             setError("イベント情報の取得に失敗しました。");
@@ -86,7 +87,6 @@ function GetEvents() {
                 fontFamily: '"Zen Maru Gothic", sans-serif'
             }}
         >
-            {/* タイトルセクション */}
             <div style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -103,13 +103,12 @@ function GetEvents() {
                     <h2 style={{ 
                         margin: 0, 
                         fontSize: "2.2rem", 
-                        fontWeight: "900",
+                        fontWeight: "900", 
                         color: "#f51010ff",   
                         letterSpacing: "1px",
                         lineHeight: "1.1",
                         border: "none",      
                         padding: 0,
-                        /* 修正ポイント：広がりを抑え、エッジを強調 */
                         textShadow: `
                             -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff,
                             0 0 8px #fff,
@@ -204,11 +203,15 @@ function GetEvents() {
                 ) : (
                     <div className="card-list">
                         {currentEvents.map((event) => {
-                            const fullImageUrl = event.image_url 
-                                ? (event.image_url.startsWith('http') 
-                                    ? event.image_url 
-                                    : `${SERVER_ROOT}${event.image_url.startsWith('/') ? '' : '/'}${event.image_url}`)
-                                : "/images/no-image.png";
+                            const imagePath = event.image_url || event.image_path || "/images/no-image.png";
+                            let fullImageUrl;
+                            if (imagePath.startsWith('http')) {
+                                fullImageUrl = imagePath;
+                            } else {
+                                const cleanRoot = SERVER_ROOT.endsWith('/') ? SERVER_ROOT.slice(0, -1) : SERVER_ROOT;
+                                const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+                                fullImageUrl = `${cleanRoot}${cleanPath}`;
+                            }
 
                             return (
                                 <EventCard

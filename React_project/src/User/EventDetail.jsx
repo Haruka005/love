@@ -2,23 +2,28 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-// APIのベースURLを調整（末尾の /api 重複を防止する共通ロジック）
+// APIのベースURLを調整
 const getBaseApiUrl = () => {
     const envUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
-    // 末尾が /api で終わっていればそのまま、そうでなければ /api を付与
     return envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;
 };
 
+// 画像表示用のベースURL
+const getServerRootUrl = () => {
+    const envUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+    return envUrl.endsWith("/api") ? envUrl.replace(/\/api$/, "") : envUrl;
+};
+
 const API_BASE = getBaseApiUrl();
+const SERVER_ROOT = getServerRootUrl();
 
 export default function EventDetail() {
-    const { id } = useParams(); // URLからid取得
+    const { id } = useParams(); 
     const navigate = useNavigate();
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
 
     const fetchEvent = useCallback(async () => {
-        // IDが取得できない場合の404回避
         if (!id) {
             setLoading(false);
             return;
@@ -34,7 +39,6 @@ export default function EventDetail() {
             });
 
             if (!res.ok) {
-                // 404エラーなどの場合に例外を投げる
                 throw new Error(`エラーが発生しました: ${res.status}`);
             }
 
@@ -42,7 +46,7 @@ export default function EventDetail() {
             setEvent(data);
         } catch (err) {
             console.error("Fetch Error:", err);
-            setEvent(null); // データが取れなかったことを明示
+            setEvent(null);
         } finally {
             setLoading(false);
         }
@@ -54,7 +58,6 @@ export default function EventDetail() {
 
     if (loading) return <p style={{ padding: "20px" }}>読み込み中...</p>;
 
-    // 404またはデータ不在時の表示
     if (!event) {
         return (
             <div style={{ padding: "20px", textAlign: "center" }}>
@@ -64,15 +67,26 @@ export default function EventDetail() {
         );
     }
 
+    // 画像URLの組み立て（置換ロジック適用）
+    const rawPath = event.image_path || event.topimage_path || event.image_url;
+    const fullImageUrl = rawPath 
+        ? (rawPath.startsWith('http') 
+            ? rawPath.replace(/^http:\/\/[^/]+/, SERVER_ROOT) 
+            : `${SERVER_ROOT}${rawPath.startsWith('/') ? '' : '/'}${rawPath}`)
+        : null;
+
     return (
         <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
             <h2>{event.name}</h2>
 
-            {event.image_path && (
+            {fullImageUrl && (
                 <img
-                    src={event.image_path}
+                    src={fullImageUrl}
                     alt={event.name}
                     style={{ width: "100%", maxWidth: "500px", borderRadius: "8px", marginBottom: "20px" }}
+                    onError={(e) => {
+                        e.target.src = "https://placehold.jp/24/cccccc/ffffff/200x150.png?text=No%20Image";
+                    }}
                 />
             )}
 
