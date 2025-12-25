@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Token;
+use App\Mail\WelcomeMail; //メールの設計図を読み込む
+use Illuminate\Support\Facades\Mail; //メール送信機能を使う
 
 class UserController extends Controller
 {
@@ -40,6 +42,9 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
             'user_status' => 1,
         ]);
+
+        //メールを送信
+        Mail::to($user->email)->send(new WelcomMail($user));
 
         return response()->json([
             'message' => '登録処理は成功しました',
