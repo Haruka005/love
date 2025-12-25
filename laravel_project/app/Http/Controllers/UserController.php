@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Token;
 use App\Mail\WelcomeMail; //メールの設計図を読み込む
 use Illuminate\Support\Facades\Mail; //メール送信機能を使う
+use Illuminate\Support\Facades\URL; //署名付きURL生成
 
 class UserController extends Controller
 {
@@ -36,23 +37,43 @@ class UserController extends Controller
             ], 422);
         }
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'user_status' => 1,
-        ]);
+        \Log::info('バリデーション通過');
 
-        //メールを送信
-        Mail::to($user->email)->send(new WelcomMail($user));
+        try {
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'user_status' => 1,
+            ]);
 
-        return response()->json([
-            'message' => '登録処理は成功しました',
-            'user' => [
-                'name' => $user->name,
-                'email' => $user->email,
-            ]
-        ], 201);
+            \Log::info('ユーザー作成成功: ID ' . $user->id);
+
+            //認証用URLを発行
+            $verificationUrl = URL::temporarySignedRoute(
+                'verification.verify', //api.phpで設定する名前
+                now()->addMinutes(60), //有効期限（60分）
+                [
+                    'id' => $user->id,
+                    'hash' => sha1($user->getEmailForVerification()),
+                ]
+            );
+
+
+            \Log::info('メール送信開始');
+
+            //メールを送信
+            Mail::to($user->email)->send(new WelcomeMail($user, $verificationUrl));
+
+            \Log::info('メール送信命令が正常に完了しました');
+
+        } catch (\Exception $e) {
+            \Log::error('❌ エラー発生！: ' . $e->getMessage());
+            \Log::error('エラーの場所: ' . $e->getFile() . ' の ' . $e->getLine() . '行目');
+            
+            return response()->json(['message' => 'サーバーエラーが発生しました'], 500);
+        }
+        return response()->json(['message' => '登録完了'], 201);
     }
 
     // ログイン

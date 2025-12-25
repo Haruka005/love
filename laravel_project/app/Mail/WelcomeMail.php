@@ -8,20 +8,24 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use App\Models\User;
 
-class TestMail extends Mailable
+class WelcomeMail extends Mailable
 {
     use Queueable, SerializesModels;
 
     public $user;   //ユーザ情報を受け取る変数
+    public $url;
+
     /**
      * Create a new message instance.
      */
 
     //コンストラクタでユーザ情報を受け取る
-    public function __construct(User $user)
+    public function __construct($user, $url)
     {
         $this->user = $user;
+        $this->url = $url;
     }
 
     /**
@@ -45,7 +49,7 @@ class TestMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'email.welcom',
+            view: 'emails.welcome',
         );
     }
 

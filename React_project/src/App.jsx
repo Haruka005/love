@@ -19,7 +19,8 @@ import HistoryList from "./User/HistoryList";
 import EventApplicationHistory from "./User/EventApplicationHistory";
 import EventForm from "./User/EventForm";
 import EventDetail from "./User/EventDetail"; 
-import RestaurantDetail from "./User/RestaurantDetail"; 
+import RestaurantDetail from "./User/RestaurantDetail";
+import VerifiedSuccess from "./User/VerifiedSuccess.jsx"; 
 
 import AdminTop from "./admin/AdminTop";
 
@@ -52,6 +53,9 @@ function App() {
 
         {/* サインアップページ */}
         <Route path="/signup" element={<Signup />} />
+
+        {/* メール認証完了ページ */}
+        <Route path="/VerifiedSuccess" element={<VerifiedSuccess />} />
 
         {/* ログイン完了ページ */}
         <Route path="/login-complete" element={<LoginComplete />} />

@@ -11,13 +11,14 @@ use App\Http\Controllers\AdminEventController;
 use App\Http\Controllers\EventDetailController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminRestaurantController;
+use App\Models\User;
 
 // ==============================
 // 認証不要ルート
 // ==============================
 
 Route::post('/login', [UserController::class, 'login']);
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/register', [UserController::class, 'register']);
 Route::get('/users', [AdminController::class, 'user_all']); 
 
 Route::get('/events/{year}/{month}', [EventController::class, 'getByMonth']);
@@ -97,3 +98,47 @@ Route::middleware(['web', 'check.token'])->get('/test-token', function () {
     return ['message' => 'Token OK'];
 });
 
+//メール認証ルート
+Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
+    // ユーザーをIDで探す
+    $user = User::findOrFail($id);
+
+    // URLのハッシュが正しいかチェック
+    if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+        return response()->json(['message' => '無効な認証リンクです'], 403);
+    }
+
+    // すでに認証済みなら
+    if ($user->hasVerifiedEmail()) {
+        return response()->json(['message' => 'すでに認証済みです']);
+    }
+
+    // 認証完了処理（email_verified_at に現在時刻を保存）
+    $user->markEmailAsVerified();
+
+    // 最後にReact側（フロント）の完了ページへリダイレクト
+    // まだ画面がない場合は、とりあえずメッセージを返す
+    return "メール認証に成功しました！このタブを閉じてログインしてください。";
+    
+})->name('verification.verify')->middleware(['signed']);
+
+// メール認証用エンドポイント
+Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
+    $user = User::findOrFail($id);
+
+    // ハッシュの確認
+    if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+        return response()->json(['message' => '無効な認証リンクです'], 403);
+    }
+
+    // すでに認証済みか確認
+    if ($user->hasVerifiedEmail()) {
+        return response()->json(['message' => 'すでに認証済みです']);
+    }
+
+    // 認証完了処理（email_verified_at を更新）
+    $user->markEmailAsVerified();
+
+    // 認証後にReactの「完了画面」へリダイレクト
+    return redirect('http://localhost:3000/VerifiedSuccess'); 
+})->name('verification.verify')->middleware(['signed']); // signedミドルウェアで改ざん防止

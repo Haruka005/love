@@ -11,8 +11,11 @@
 <body>
     <div class="container">
         <h1>ご登録ありがとうございます！</h1>
-        <p><strong>{{ $user->name }} 様</strong></p>
-        <p>Loveりべつへの新規登録が完了しました。</p>
+        <p>以下のボタンをクリックして、メールアドレスの認証を完了してください。</p>
+        <a href="{{ $url }}" style="background: #f53003; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+            メールアドレスを認証する
+        </a>
+        <p>このリンクの有効期限は60分です。</p>    
     </div>
 </body>
 </html>
