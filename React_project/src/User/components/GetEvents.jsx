@@ -132,7 +132,7 @@ function GetEvents() {
                 </div>
 
                 <img 
-                    src="/akaonitousin.png" 
+                    src="/images/akaonitousin.png" 
                     alt="icon-red" 
                     style={{ 
                         width: "80px", 

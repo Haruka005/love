@@ -113,7 +113,7 @@ function UpComingEvents() {
 
                 {/* 右側：赤鬼 */}
                 <img 
-                    src="/akaonitousin.png" 
+                    src="/images/akaonitousin.png" 
                     alt="icon-red" 
                     style={{ width: "60px", height: "auto" }} 
                 />
