@@ -10,6 +10,10 @@ use App\Models\Token;
 use App\Mail\WelcomeMail; //メールの設計図を読み込む
 use Illuminate\Support\Facades\Mail; //メール送信機能を使う
 use Illuminate\Support\Facades\URL; //署名付きURL生成
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
+use App\Mail\ResetPasswordMail;
 
 class UserController extends Controller
 {
@@ -201,6 +205,60 @@ class UserController extends Controller
             'name' => $user->name,
             'email' => $user->email,
         ], 200);
+    }
+
+    //パスワード再発行
+    public function sendResetLinkEmail(Request $request)
+    {
+        $request->validate(['email' => 'required|email|exists:users,email']);
+
+        $token = Str::random(64); //ランダムなトークンを生成
+
+        //データベースに保存（既存のトークンがあれば削除して新しく作る）
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $request->email],
+            [
+                'email' => $request->email,
+                'token' => Hash::make($token), //ハッシュ化して保存
+                'created_at' => Carbon::now(),
+                'expires_at' => now()->addMinutes(60),
+            ]
+        );
+
+        //React側の再設定ページURLを作る
+        $resetUrl = "http://localhost:3000/password-reset?token=" . $token . "&email=" . $request->email;
+
+        //メールを送信する
+        Mail::to($request->email)->send(new ResetPasswordMail($resetUrl));
+
+        return response()->json(['message' => '再設定メールを送信しました。']);
+    }
+
+    //パスワードを書き換える
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:12|confirmed', //password_confirmationとの一致チェック
+        ]);
+
+        $resetData = DB::table('password_reset_tokens')->where('email', $request->email)->first();
+
+        //トークンの確認
+        if (!$resetData || !Hash::check($request->token, $resetData->token)) {
+            return response()->json(['message' => 'トークンが無効です。'], 400);
+        }
+
+        // パスワード更新
+        $user = User::where('email', $request->email)->first();
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        // 使用済みトークンを削除
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        return response()->json(['message' => 'パスワードを再設定しました。']);
     }
 
 }

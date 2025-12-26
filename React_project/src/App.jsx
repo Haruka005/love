@@ -21,6 +21,8 @@ import EventForm from "./User/EventForm";
 import EventDetail from "./User/EventDetail"; 
 import RestaurantDetail from "./User/RestaurantDetail";
 import VerifiedSuccess from "./User/VerifiedSuccess.jsx"; 
+import ForgotPassword from "./User/ForgotPassword.jsx";
+import ResetPassword from "./User/ResetPassword.jsx";
 
 import AdminTop from "./admin/AdminTop";
 
@@ -62,6 +64,12 @@ function App() {
 
         {/* アカウント作成完了ページ */}
         <Route path="/AccountCreated" element={<AccountCreated />} />
+
+        {/* パスワードをお忘れですかページ */}
+        <Route path="/ForgotPassword" element={<ForgotPassword />} />
+
+        {/* パスワード再設定ページ */}
+        <Route path="/password-reset" element={<ResetPassword />} />
 
         {/* 通報ページ */}
         <Route path="/ReportForm" element={<ReportForm />} />

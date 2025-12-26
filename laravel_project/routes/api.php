@@ -12,6 +12,9 @@ use App\Http\Controllers\EventDetailController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminRestaurantController;
 use App\Models\User;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 // ==============================
 // 認証不要ルート
@@ -100,45 +103,51 @@ Route::middleware(['web', 'check.token'])->get('/test-token', function () {
 
 //メール認証ルート
 Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
-    // ユーザーをIDで探す
+    //ユーザーをIDで探す
     $user = User::findOrFail($id);
 
-    // URLのハッシュが正しいかチェック
+    //URLのハッシュが正しいかチェック
     if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
         return response()->json(['message' => '無効な認証リンクです'], 403);
     }
 
-    // すでに認証済みなら
+    //すでに認証済みなら
     if ($user->hasVerifiedEmail()) {
         return response()->json(['message' => 'すでに認証済みです']);
     }
 
-    // 認証完了処理（email_verified_at に現在時刻を保存）
+    //認証完了処理（email_verified_at に現在時刻を保存）
     $user->markEmailAsVerified();
 
-    // 最後にReact側（フロント）の完了ページへリダイレクト
-    // まだ画面がない場合は、とりあえずメッセージを返す
+    //最後にReact側（フロント）の完了ページへリダイレクト
+    //まだ画面がない場合は、とりあえずメッセージを返す
     return "メール認証に成功しました！このタブを閉じてログインしてください。";
     
 })->name('verification.verify')->middleware(['signed']);
 
-// メール認証用エンドポイント
+//メール認証用エンドポイント
 Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
     $user = User::findOrFail($id);
 
-    // ハッシュの確認
+    //ハッシュの確認
     if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
         return response()->json(['message' => '無効な認証リンクです'], 403);
     }
 
-    // すでに認証済みか確認
+    //すでに認証済みか確認
     if ($user->hasVerifiedEmail()) {
         return response()->json(['message' => 'すでに認証済みです']);
     }
 
-    // 認証完了処理（email_verified_at を更新）
+    //認証完了処理（email_verified_at を更新）
     $user->markEmailAsVerified();
 
-    // 認証後にReactの「完了画面」へリダイレクト
+    //認証後にReactの「完了画面」へリダイレクト
     return redirect('http://localhost:3000/VerifiedSuccess'); 
 })->name('verification.verify')->middleware(['signed']); // signedミドルウェアで改ざん防止
+
+//パスワード再設定用メール送信
+Route::post('/forgot-password', [UserController::class, 'sendResetLinkEmail']);
+
+//実際にパスワードを更新する
+Route::post('/reset-password', [UserController::class, 'resetPassword']);
