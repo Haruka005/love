@@ -38,6 +38,19 @@ function GetEvents() {
     const currentEvents = Array.isArray(events) ? events.slice(indexOfFirstEvent, indexOfLastEvent) : [];
     const totalPages = Math.ceil((Array.isArray(events) ? events.length : 0) / itemsPerPage);
 
+    // --- 詳細から戻った時のスクロール処理 ---
+    useEffect(() => {
+        if (window.location.hash === "#event-list") {
+            const timer = setTimeout(() => {
+                const element = document.getElementById("event-list");
+                if (element) {
+                    element.scrollIntoView({ behavior: "smooth" });
+                }
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, []);
+
     const fetchEvents = useCallback(async () => {
         setLoading(true);
         setError(null);
@@ -74,6 +87,7 @@ function GetEvents() {
 
     return (
         <section 
+            id="event-list" // ← IDを追加
             style={{ 
                 marginTop: "0px",  
                 padding: "40px 0 50px", 

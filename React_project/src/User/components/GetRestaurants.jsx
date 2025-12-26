@@ -9,6 +9,7 @@ import "leaflet/dist/leaflet.css";
 
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
+
 const DefaultIcon = L.icon({
     iconUrl: markerIcon,
     shadowUrl: markerShadow,
@@ -35,10 +36,6 @@ const SERVER_ROOT = getServerRootUrl();
 function RecenterAutomatically({ data }) {
     const map = useMap();
     useEffect(() => {
-        //ジャンル切り替えた時の初期位置を幌別駅にする
-       // map.setView(HOROBETSU_STATION,15);
-
-        //これはフィルタリングしたお店に合わせて動かしたいというやつ
         const validCoords = data.filter(d => d.latitude && d.longitude);
         if (validCoords.length > 0) {
             const bounds = L.latLngBounds(validCoords.map(d => [Number(d.latitude), Number(d.longitude)]));
@@ -46,9 +43,6 @@ function RecenterAutomatically({ data }) {
         } else {
             map.setView(HOROBETSU_STATION, 15);
         }
-        
-
-    //ジャンルが変わるたびに変わるよ　    
     }, [data, map]);
     return null;
 }
@@ -60,7 +54,20 @@ function GetRestaurants() {
     const [error, setError] = useState(null);          
     const [selectedGenre, setSelectedGenre] = useState("すべて"); 
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 5;
+    const itemsPerPage = 4;
+
+    // --- 詳細画面から戻った時に特定の場所にスクロールする処理 ---
+    useEffect(() => {
+        if (window.location.hash === "#restaurant-list") {
+            const timer = setTimeout(() => {
+                const element = document.getElementById("restaurant-list");
+                if (element) {
+                    element.scrollIntoView({ behavior: "smooth" });
+                }
+            }, 100); // 描画待ち
+            return () => clearTimeout(timer);
+        }
+    }, []);
 
     const fetchRestaurants = useCallback(async () => {
         setLoading(true);
@@ -85,8 +92,7 @@ function GetRestaurants() {
         ? restaurants
         : restaurants.filter((shop) =>{
             const dbGenreName = shop.genre?.name || "";
-            //例）DBの和食系の中に、ボタンにある和食という言葉が含まれているか確認(===は完全一致 includeは含まれているかの確認)
-            return dbGenreName.includes(selectedGenre)||selectedGenre.includes(dbGenreName);
+            return dbGenreName.includes(selectedGenre) || selectedGenre.includes(dbGenreName);
         });
 
     const currentRestaurants = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -98,7 +104,7 @@ function GetRestaurants() {
     };
 
     return (
-        <section style={{ 
+        <section id="restaurant-list" style={{ 
             padding: "40px 0 50px", 
             textAlign: "center", 
             backgroundImage: `url("/images/aoonibackgr.png")`, 
@@ -154,18 +160,54 @@ function GetRestaurants() {
             <div style={{ width: "90%", maxWidth: "800px", height: "400px", margin: "0 auto 30px", borderRadius: "15px", overflow: "hidden", border: "5px solid white", boxShadow: "0 4px 15px rgba(0,0,0,0.3)" }}>
                 <MapContainer center={HOROBETSU_STATION} zoom={15} style={{ height: "100%", width: "100%" }}>
                     <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap contributors' />
-                    {filtered.map((shop) => (
-                        shop.latitude && shop.longitude && (
-                            <Marker key={shop.id} position={[Number(shop.latitude), Number(shop.longitude)]}>
-                                <Popup>
-                                    <div style={{ textAlign: "center" }}>
-                                        <strong>{shop.name}</strong><br />
-                                        <button onClick={() => navigate(`/restaurants/${shop.id}`)} style={{ background: "#0036e9", color: "#fff", border: "none", padding: "5px 10px", marginTop: "5px", borderRadius: "5px", cursor: "pointer" }}>詳細を見る</button>
-                                    </div>
-                                </Popup>
-                            </Marker>
-                        )
-                    ))}
+                    {filtered.map((shop) => {
+                        const rawPath = shop.topimage_path || shop.image_url || shop.image_path;
+                        let fullImageUrl = "/images/no-image.png";
+                        if (rawPath) {
+                            fullImageUrl = rawPath.startsWith('http') 
+                                ? rawPath.replace(/^http:\/\/[^/]+/, SERVER_ROOT) 
+                                : `${SERVER_ROOT}${rawPath.startsWith('/') ? '' : '/'}${rawPath}`;
+                        }
+
+                        return (
+                            shop.latitude && shop.longitude && (
+                                <Marker key={shop.id} position={[Number(shop.latitude), Number(shop.longitude)]}>
+                                    <Popup>
+                                        <div style={{ textAlign: "center", width: "160px" }}>
+                                            <img 
+                                                src={fullImageUrl} 
+                                                alt={shop.name} 
+                                                style={{ 
+                                                    width: "100%", 
+                                                    height: "90px", 
+                                                    objectFit: "cover", 
+                                                    borderRadius: "8px",
+                                                    marginBottom: "8px" 
+                                                }} 
+                                            />
+                                            <strong style={{ fontSize: "1rem", display: "block", marginBottom: "5px", color: "#333" }}>
+                                                {shop.name}
+                                            </strong>
+                                            <button 
+                                                onClick={() => navigate(`/restaurants/${shop.id}`)} 
+                                                style={{ 
+                                                    background: "#0036e9", 
+                                                    color: "#fff", 
+                                                    border: "none", 
+                                                    padding: "5px 12px", 
+                                                    borderRadius: "20px", 
+                                                    cursor: "pointer",
+                                                    fontSize: "0.8rem"
+                                                }}
+                                            >
+                                                詳細を見る
+                                            </button>
+                                        </div>
+                                    </Popup>
+                                </Marker>
+                            )
+                        );
+                    })}
                     <RecenterAutomatically data={filtered} />
                 </MapContainer>
             </div>
@@ -174,13 +216,10 @@ function GetRestaurants() {
                 <h4 style={{ color: "#fff", marginBottom: "20px" }}>{selectedGenre} のお店</h4>
                 <div className="card-list" style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "20px" }}>
                     {currentRestaurants.map((shop) => {
-                        // --- プロパティ名を Laravel の topimage_path に合わせ、詳細画面と同じ置換を適用 ---
                         const rawPath = shop.topimage_path || shop.image_url || shop.image_path;
                         let fullImageUrl = "/images/no-image.png";
 
                         if (rawPath) {
-                            // 1. http://localhost... を SERVER_ROOT (IP等) に置換
-                            // 2. 相対パスの場合は SERVER_ROOT を付与
                             fullImageUrl = rawPath.startsWith('http') 
                                 ? rawPath.replace(/^http:\/\/[^/]+/, SERVER_ROOT) 
                                 : `${SERVER_ROOT}${rawPath.startsWith('/') ? '' : '/'}${rawPath}`;

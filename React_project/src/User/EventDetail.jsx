@@ -62,7 +62,7 @@ export default function EventDetail() {
         return (
             <div style={{ padding: "20px", textAlign: "center" }}>
                 <p>ご指定のイベントは見つかりませんでした。</p>
-                <button onClick={() => navigate(-1)}>戻る</button>
+                <button onClick={() => navigate("/#event-list")}>戻る</button>
             </div>
         );
     }
@@ -120,7 +120,7 @@ export default function EventDetail() {
 
             <div style={{ marginTop: "40px", textAlign: "center", display: "flex", gap: "10px", justifyContent: "center" }}>
                 <button 
-                    onClick={() => navigate(-1)}
+                    onClick={() => navigate("/#event-list")}
                     style={{ padding: "10px 20px", cursor: "pointer" }}
                 >
                     戻る

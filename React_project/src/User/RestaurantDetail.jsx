@@ -42,7 +42,6 @@ export default function RestaurantDetail() {
             }
 
             const data = await res.json();
-            // コントローラーが $restaurant->all_images を返しているのでそれを使います
             setRestaurant(data);
         } catch (err) {
             console.error("Fetch Error:", err);
@@ -62,7 +61,8 @@ export default function RestaurantDetail() {
         return (
             <div style={{ padding: "20px", textAlign: "center" }}>
                 <p>ご指定の飲食店は見つかりませんでした。</p>
-                <button onClick={() => navigate(-1)}>戻る</button>
+                {/* トップページへ戻る */}
+                <button onClick={() => navigate("/#restaurant-list")}>戻る</button>
             </div>
         );
     }
@@ -71,7 +71,7 @@ export default function RestaurantDetail() {
         <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
             <h2>{restaurant.name}</h2>
             
-            {/* --- 見出しとして catchphrase を追加 --- */}
+            {/* --- 見出しとして catchphrase を表示 --- */}
             <p style={{ fontSize: "1.2rem", color: "#666", marginTop: "-10px", marginBottom: "20px" }}>
                 {restaurant.catchphrase}
             </p>
@@ -82,7 +82,6 @@ export default function RestaurantDetail() {
                     {restaurant.all_images.map((path, index) => {
                         if (!path) return null;
 
-                        // localhostを物理サーバーIPに置換
                         const imageUrl = path.startsWith('http') 
                             ? path.replace(/^http:\/\/[^/]+/, SERVER_ROOT) 
                             : `${SERVER_ROOT}${path.startsWith('/') ? '' : '/'}${path}`;
@@ -125,7 +124,8 @@ export default function RestaurantDetail() {
 
             <div style={{ marginTop: "30px", textAlign: "center" }}>
                 <button 
-                    onClick={() => navigate(-1)}
+                    /* ファイル名ではなく、App.jsのRoute path="/" に合わせて修正 */
+                    onClick={() => navigate("/#restaurant-list")}
                     style={{ padding: "10px 20px", cursor: "pointer" }}
                 >
                     戻る
