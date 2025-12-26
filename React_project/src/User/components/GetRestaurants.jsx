@@ -35,6 +35,10 @@ const SERVER_ROOT = getServerRootUrl();
 function RecenterAutomatically({ data }) {
     const map = useMap();
     useEffect(() => {
+        //ジャンル切り替えた時の初期位置を幌別駅にする
+       // map.setView(HOROBETSU_STATION,15);
+
+        //これはフィルタリングしたお店に合わせて動かしたいというやつ
         const validCoords = data.filter(d => d.latitude && d.longitude);
         if (validCoords.length > 0) {
             const bounds = L.latLngBounds(validCoords.map(d => [Number(d.latitude), Number(d.longitude)]));
@@ -42,6 +46,9 @@ function RecenterAutomatically({ data }) {
         } else {
             map.setView(HOROBETSU_STATION, 15);
         }
+        
+
+    //ジャンルが変わるたびに変わるよ　    
     }, [data, map]);
     return null;
 }
@@ -76,7 +83,11 @@ function GetRestaurants() {
 
     const filtered = selectedGenre === "すべて"
         ? restaurants
-        : restaurants.filter((shop) => shop.genre?.name === selectedGenre);
+        : restaurants.filter((shop) =>{
+            const dbGenreName = shop.genre?.name || "";
+            //例）DBの和食系の中に、ボタンにある和食という言葉が含まれているか確認(===は完全一致 includeは含まれているかの確認)
+            return dbGenreName.includes(selectedGenre)||selectedGenre.includes(dbGenreName);
+        });
 
     const currentRestaurants = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
     const totalPages = Math.ceil(filtered.length / itemsPerPage);
