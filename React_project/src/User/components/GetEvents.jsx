@@ -38,6 +38,17 @@ function GetEvents() {
     const currentEvents = Array.isArray(events) ? events.slice(indexOfFirstEvent, indexOfLastEvent) : [];
     const totalPages = Math.ceil((Array.isArray(events) ? events.length : 0) / itemsPerPage);
 
+    // --- ページ切り替え時にリストの先頭へスクロールさせる処理 ---
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+        setTimeout(() => {
+            const element = document.getElementById("event-list");
+            if (element) {
+                element.scrollIntoView({ behavior: "smooth" });
+            }
+        }, 10);
+    };
+
     // --- 詳細から戻った時のスクロール処理 ---
     useEffect(() => {
         if (window.location.hash === "#event-list") {
@@ -87,7 +98,7 @@ function GetEvents() {
 
     return (
         <section 
-            id="event-list" // ← IDを追加
+            id="event-list"
             style={{ 
                 marginTop: "0px",  
                 padding: "40px 0 50px", 
@@ -171,7 +182,15 @@ function GetEvents() {
                 </label> 
             </div>
 
-            <div className="button-group">
+            {/* ボタンコンテナ：1行に6個、合計2段 */}
+            <div className="button-group" style={{ 
+                display: "grid",
+                gridTemplateColumns: "repeat(6, 1fr)", 
+                gap: "8px",
+                maxWidth: "800px", 
+                margin: "0 auto",
+                padding: "0 10px"
+            }}>
                 {[...Array(12)].map((_, i) => {
                     const month = i + 1;
                     const isActive = selectedMonth === month;
@@ -183,7 +202,15 @@ function GetEvents() {
                             style={{
                                 backgroundColor: isActive ? "#f51010ff" : "#fff",
                                 color: isActive ? "#fff" : "#555",
-                                fontWeight: isActive ? "bold" : "normal"
+                                fontWeight: isActive ? "bold" : "normal",
+                                padding: "8px 0",
+                                border: `1px solid ${isActive ? "#f51010ff" : "#f93d5d"}`,
+                                borderRadius: "25px",
+                                cursor: "pointer",
+                                fontSize: "0.85rem",
+                                transition: "all 0.3s ease",
+                                boxShadow: isActive ? "0 3px 8px rgba(245, 16, 16, 0.3)" : "none",
+                                width: "100%"
                             }}
                         >
                             {month}月
@@ -248,7 +275,7 @@ function GetEvents() {
                 <Pagenation
                     totalPages={totalPages}
                     currentPage={currentPage}
-                    onPageChange={(page) => setCurrentPage(page)}
+                    onPageChange={handlePageChange}
                 />
             )}
         </section>

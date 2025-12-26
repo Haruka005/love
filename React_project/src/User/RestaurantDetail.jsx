@@ -55,30 +55,68 @@ export default function RestaurantDetail() {
         fetchRestaurant();
     }, [fetchRestaurant]);
 
-    if (loading) return <p style={{ padding: "20px" }}>読み込み中...</p>;
+    if (loading) return <p style={{ padding: "40px", textAlign: "center", fontFamily: '"Zen Maru Gothic", sans-serif' }}>読み込み中...</p>;
 
     if (!restaurant) {
         return (
-            <div style={{ padding: "20px", textAlign: "center" }}>
+            <div style={{ padding: "40px", textAlign: "center", fontFamily: '"Zen Maru Gothic", sans-serif' }}>
                 <p>ご指定の飲食店は見つかりませんでした。</p>
-                {/* トップページへ戻る */}
-                <button onClick={() => navigate("/#restaurant-list")}>戻る</button>
+                <button 
+                    onClick={() => navigate("/#restaurant-list")}
+                    style={{
+                        marginTop: "20px",
+                        padding: "10px 25px",
+                        borderRadius: "25px",
+                        border: "1px solid #f93d5d",
+                        backgroundColor: "#fff",
+                        color: "#f93d5d",
+                        fontWeight: "bold",
+                        cursor: "pointer"
+                    }}
+                >
+                    トップへ戻る
+                </button>
             </div>
         );
     }
 
     return (
-        <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
-            <h2>{restaurant.name}</h2>
+        <div style={{ 
+            padding: "40px 20px", 
+            maxWidth: "900px", 
+            margin: "0 auto", 
+            fontFamily: '"Zen Maru Gothic", sans-serif',
+            color: "#555"
+        }}>
+            <h2 style={{ 
+                fontSize: "2rem", 
+                fontWeight: "700", 
+                color: "#f93d5d", 
+                marginBottom: "5px",
+                textAlign: "center"
+            }}>
+                {restaurant.name}
+            </h2>
             
-            {/* --- 見出しとして catchphrase を表示 --- */}
-            <p style={{ fontSize: "1.2rem", color: "#666", marginTop: "-10px", marginBottom: "20px" }}>
+            <p style={{ 
+                fontSize: "1.1rem", 
+                color: "#888", 
+                textAlign: "center", 
+                marginBottom: "30px",
+                fontWeight: "500"
+            }}>
                 {restaurant.catchphrase}
             </p>
 
-            {/* コントローラーで定義された all_images を使用 */}
+            {/* 画像ギャラリー */}
             {restaurant.all_images && restaurant.all_images.length > 0 && (
-                <div style={{ marginTop: "10px" }}>
+                <div style={{ 
+                    display: "flex", 
+                    flexWrap: "wrap", 
+                    justifyContent: "center", 
+                    gap: "15px", 
+                    marginBottom: "30px" 
+                }}>
                     {restaurant.all_images.map((path, index) => {
                         if (!path) return null;
 
@@ -92,14 +130,16 @@ export default function RestaurantDetail() {
                                 src={imageUrl}
                                 alt={`${restaurant.name} 画像${index + 1}`}
                                 style={{ 
-                                    width: "100%", 
-                                    maxWidth: "500px", 
-                                    borderRadius: "8px", 
-                                    marginBottom: "10px",
-                                    display: "block"
+                                    width: restaurant.all_images.length === 1 ? "100%" : "calc(50% - 8px)", 
+                                    maxWidth: restaurant.all_images.length === 1 ? "600px" : "400px",
+                                    height: "auto",
+                                    aspectRatio: "4/3",
+                                    objectFit: "cover",
+                                    borderRadius: "20px", 
+                                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
                                 }}
                                 onError={(e) => {
-                                    e.target.src = "https://placehold.jp/24/cccccc/ffffff/200x150.png?text=No%20Image";
+                                    e.target.src = "/images/no-image.png";
                                 }}
                             />
                         );
@@ -107,28 +147,79 @@ export default function RestaurantDetail() {
                 </div>
             )}
 
-            <div style={{ marginTop: "20px", borderTop: "1px solid #eee", paddingTop: "20px" }}>
-                <h3>店舗情報</h3>
-                <p><strong>ジャンル：</strong>{restaurant.genre?.name ?? "ジャンル不明"}</p>
-                <p><strong>エリア：</strong>{restaurant.area?.name ?? "エリア不明"}</p>
-                <p><strong>予算：</strong>{restaurant.budget?.name ?? "予算不明"}</p>
-                <p><strong>住所：</strong>{restaurant.address ?? "住所不明"}</p>
-                <p><strong>営業時間：</strong>{restaurant.business_hours ?? "未設定"}</p>
-                <p><strong>定休日：</strong>{restaurant.holiday ?? "未設定"}</p>
+            <div style={{ 
+                backgroundColor: "#fff", 
+                padding: "30px", 
+                borderRadius: "20px", 
+                boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
+                lineHeight: "1.8"
+            }}>
+                <h3 style={{ 
+                    color: "#f93d5d", 
+                    borderBottom: "2px dotted #f93d5d", 
+                    display: "inline-block",
+                    marginBottom: "20px",
+                    paddingBottom: "5px"
+                }}>
+                    店舗情報
+                </h3>
+                
+                <div style={{ display: "grid", gap: "10px" }}>
+                    <p><strong>ジャンル：</strong>{restaurant.genre?.name ?? "ジャンル不明"}</p>
+                    <p><strong>エリア：</strong>{restaurant.area?.name ?? "エリア不明"}</p>
+                    <p><strong>予算：</strong>{restaurant.budget?.name ?? "予算不明"}</p>
+                    <p><strong>住所：</strong>{restaurant.address ?? "住所不明"}</p>
+                    <p><strong>営業時間：</strong>{restaurant.business_hours ?? "未設定"}</p>
+                    <p><strong>定休日：</strong>{restaurant.holiday ?? "未設定"}</p>
+                </div>
+
+                <div style={{ marginTop: "30px" }}>
+                    <h3 style={{ 
+                        color: "#f93d5d", 
+                        borderBottom: "2px dotted #f93d5d", 
+                        display: "inline-block",
+                        marginBottom: "15px",
+                        paddingBottom: "5px"
+                    }}>
+                        お店からのコメント
+                    </h3>
+                    <p style={{ 
+                        whiteSpace: "pre-wrap", 
+                        backgroundColor: "#fefefe", 
+                        padding: "15px", 
+                        borderRadius: "12px",
+                        border: "1px solid #eee" 
+                    }}>
+                        {restaurant.comment ?? "コメントはありません"}
+                    </p>
+                </div>
             </div>
 
-            <div style={{ marginTop: "20px" }}>
-                <h3>コメント</h3>
-                <p style={{ whiteSpace: "pre-wrap" }}>{restaurant.comment ?? "コメントはありません"}</p>
-            </div>
-
-            <div style={{ marginTop: "30px", textAlign: "center" }}>
+            <div style={{ marginTop: "40px", textAlign: "center" }}>
                 <button 
-                    /* ファイル名ではなく、App.jsのRoute path="/" に合わせて修正 */
                     onClick={() => navigate("/#restaurant-list")}
-                    style={{ padding: "10px 20px", cursor: "pointer" }}
+                    style={{ 
+                        padding: "12px 40px", 
+                        cursor: "pointer",
+                        borderRadius: "30px",
+                        border: "1px solid #f93d5d",
+                        backgroundColor: "#fff",
+                        color: "#f93d5d",
+                        fontSize: "1rem",
+                        fontWeight: "700",
+                        transition: "all 0.3s ease",
+                        boxShadow: "0 4px 10px rgba(249, 61, 93, 0.1)"
+                    }}
+                    onMouseOver={(e) => {
+                        e.currentTarget.style.backgroundColor = "#f93d5d";
+                        e.currentTarget.style.color = "#fff";
+                    }}
+                    onMouseOut={(e) => {
+                        e.currentTarget.style.backgroundColor = "#fff";
+                        e.currentTarget.style.color = "#f93d5d";
+                    }}
                 >
-                    戻る
+                    一覧へ戻る
                 </button>
             </div>
         </div>
