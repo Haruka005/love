@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 // 画像をインポート
@@ -14,6 +14,15 @@ import SiteDescription from "./components/SiteDescription";
 
 export default function MainPage() {
   const [selectedGenre, setSelectedGenre] = useState("洋食");
+
+  // --- ページ読み込み時に最上部（HeroSlider）へスクロールする処理 ---
+  useEffect(() => {
+    // ブラウザのスクロール位置復元を無効化し、強制的にトップへ移動
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+    window.scrollTo(0, 0);
+  }, []);
 
   const scrollToTop = () => {
     window.scrollTo({ 

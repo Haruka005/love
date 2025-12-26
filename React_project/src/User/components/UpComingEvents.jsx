@@ -7,7 +7,13 @@ const getBaseApiUrl = () => {
     return envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;
 };
 
+const getServerRootUrl = () => {
+    const envUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+    return envUrl.endsWith("/api") ? envUrl.replace(/\/api$/, "") : envUrl;
+};
+
 const API_BASE = getBaseApiUrl();
+const SERVER_ROOT = getServerRootUrl();
 
 function UpComingEvents() {
     const [events, setEvents] = useState([]);
@@ -71,7 +77,6 @@ function UpComingEvents() {
                 fontFamily: '"Zen Maru Gothic", sans-serif'
             }}
         >
-            {/* タイトルセクション：画像のデザインを再現 */}
             <div style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -79,9 +84,8 @@ function UpComingEvents() {
                 gap: "15px",
                 marginBottom: "30px",
                 paddingBottom: "10px",
-                borderBottom: "3px dotted #ccc" // CSSの共通スタイルに合わせた点線
+                borderBottom: "3px dotted #ccc"
             }}>
-                {/* 左側：青鬼（反転） */}
                 <img 
                     src="/images/aoonitousin.png" 
                     alt="icon-blue" 
@@ -91,12 +95,12 @@ function UpComingEvents() {
                 <div style={{ textAlign: "left" }}>
                     <h2 style={{ 
                         margin: 0, 
-                        fontSize: "2.2rem", // 英語を大きく
+                        fontSize: "2.2rem", 
                         fontWeight: "900",
-                        color: "#F93D5D",   // PICK UPと同じピンク系
+                        color: "#F93D5D",   
                         letterSpacing: "1px",
                         lineHeight: "1.1",
-                        border: "none",      // デフォルトのh2スタイルを打ち消し
+                        border: "none",      
                         padding: 0
                     }}>
                         UPCOMING EVENTS
@@ -107,11 +111,10 @@ function UpComingEvents() {
                         color: "#555",
                         marginLeft: "2px"
                     }}>
-                    直近のイベント
+                        直近のイベント
                     </span>
                 </div>
 
-                {/* 右側：赤鬼 */}
                 <img 
                     src="/akaonitousin.png" 
                     alt="icon-red" 
@@ -142,14 +145,25 @@ function UpComingEvents() {
                     }}
                 >
                     {events.map((event) => {
-                        const imageSrc = event.topimage_path || event.image_path || event.image_url;
+                        const rawPath = event.topimage_path || event.image_path || event.image_url;
+                        let fullImageUrl;
+                        if (!rawPath) {
+                            fullImageUrl = "/images/no-image.png";
+                        } else if (rawPath.startsWith('http')) {
+                            fullImageUrl = rawPath;
+                        } else {
+                            const cleanRoot = SERVER_ROOT.endsWith('/') ? SERVER_ROOT.slice(0, -1) : SERVER_ROOT;
+                            const cleanPath = rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
+                            fullImageUrl = `${cleanRoot}${cleanPath}`;
+                        }
+
                         return (
                             <div key={event.id} className="event-card-hover-wrapper">
                                 <EventCard
                                     id={event.id}
                                     name={event.name}
                                     catchphrase={event.catchphrase}
-                                    image={imageSrc}
+                                    image={fullImageUrl}
                                     start_date={DateTime(event.start_date)}
                                     end_date={DateTime(event.end_date)}
                                     location={event.location}

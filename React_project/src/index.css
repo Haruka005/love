@@ -1,4 +1,3 @@
-
 /* -----------------------
    ベーススタイル
 ------------------------*/
@@ -10,6 +9,7 @@
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&display=swap');
+
 body {
   font-family: "Zen Maru Gothic", "Helvetica", "Arial", sans-serif;
   background-color: #fff;
@@ -24,28 +24,29 @@ body {
 ------------------------*/
 .container {
   margin-bottom: 50px;
-  overflow: visible;   /* 内容がはみ出る場合は隠す */
+  overflow: visible;
   text-align: center;
 }
 
 /* -----------------------
    見出しやタイトル
 ------------------------*/
-h1{
-  font-family: "Zen Maru Gothic",sans-serif;
-  color: #F93D5D; 
+h1 {
+  font-family: "Zen Maru Gothic", sans-serif;
+  color: #F93D5D;
   font-weight: 700;
   font-size: 2.5rem;
   text-align: center;
   margin-bottom: 1rem;
 }
 
+/* 修正ポイント：黒い点線を削除しました */
 h2 {
-  text-align: center;        /* 文字を中央揃え */
-  font-weight: 1000;    /* 文字の太さ */
+  text-align: center;
+  font-weight: 1000;
   font-size: 1.50rem;
-  border-bottom: 3px dotted #000;  /* 下線 */
-  padding-bottom: 10px;      /* 下線と文字の間隔 */
+  border-bottom: none; /* 黒い点線を完全に無効化 */
+  padding-bottom: 10px;
 }
 
 /* -----------------------
@@ -53,14 +54,14 @@ h2 {
 ------------------------*/
 .form-container {
   display: flex;
-  justify-content: center; /* 横中央寄せ */
+  justify-content: center;
   padding: 30px 0;
 }
 
 .form-container form {
-  width: 80%;        /* 画面幅の80% */
-  max-width: 500px;  /* 最大500pxまで広がる */
-  min-width: 300px;  /* 最小300pxまで縮む */
+  width: 80%;
+  max-width: 500px;
+  min-width: 300px;
   background-color: #fff;
   padding: 30px;
   border-radius: 12px;
@@ -81,18 +82,16 @@ h2 {
   border-color: #f93d5d;
 }
 
-/* パスワード欄 */
 .password-field {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-/* パスワード表示切替ボタン */
 .form-container button[type="button"] {
   width: 50px;
   height: 45px;
-  align-self: flex-end; /* 入力欄の右側に配置 */
+  align-self: flex-end;
   padding: 8px 12px;
   font-size: 14px;
   border-radius: 8px;
@@ -106,13 +105,11 @@ h2 {
   background-color: #f93d5d;
 }
 
-/* 登録ボタン */
 .form-container button[type="submit"] {
   width: 100%;
-  padding: 12px ;
+  padding: 12px;
   font-size: 16px;
   border-radius: 8px;
-  border: none;
   border: 1px solid #f93d5d;
   background-color: #fff;
   color: #f93d5d;
@@ -126,14 +123,12 @@ h2 {
   color: #fff;
 }
 
-
 /* -----------------------
    ボタン
 ------------------------*/
 button {
   background-color: #ffffff;
   font-family: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
-  border: none;
   border-radius: 20px;
   color: #555;
   padding: 8px 18px;
@@ -150,29 +145,30 @@ button:hover {
   transform: translateY(-2px);
 }
 
-.button-group{
+.button-group {
   display: flex;
-  flex-wrap: wrap;         /* 折り返しあり */
-  justify-content: center; /* 中央寄せ */
-  gap: 8px;                /* ボタン間の余白 */
-  margin-bottom: 20px;     /* 下の余白 */
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
 }
 
 /* -----------------------
-   タブボタン専用（上書き）
+   タブボタン専用
 ------------------------*/
 .tab-button {
   margin: 0 5px;
 }
 
 .tab-button.active {
-  background-color: #f93d5d; /* 選択中は淡いピンク */
+  background-color: #f93d5d;
   color: #ffffff;
   font-weight: bold;
   box-shadow: 0 3px 8px rgba(249, 61, 93, 0.2);
 }
+
 /* -----------------------
-   カードデザイン（共通）
+   カードデザイン
 ------------------------*/
 .card {
   background-color: #fff;
@@ -181,14 +177,14 @@ button:hover {
   transition: all 0.3s ease;
   overflow: hidden;
   width: 280px;
-  max-width: 90%;     /* ← 画面幅が狭いときの対策 */
+  max-width: 90%;
 }
 
-.card-list{
+.card-list {
   display: flex;
-  flex-direction: column; /* 縦並び */
-  align-items: center;    /* 中央寄せ */
-  gap: 20px;              /* カードの間隔 */
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
   width: 100%;
   margin-top: 20px;
 }
@@ -219,45 +215,43 @@ button:hover {
   font-size: 0.95rem;
 }
 
-
 /* -----------------------
    セレクトボックス
 ------------------------*/
 .selectbox {
-    display: inline-flex;
-    align-items: center;
-    position: relative;
+  display: inline-flex;
+  align-items: center;
+  position: relative;
 }
 
 .selectbox::after {
-    position: absolute;
-    right: 15px;
-    width: 10px;
-    height: 7px;
-    background-color: #ff5d7d;
-    clip-path: polygon(0 0, 100% 0, 50% 100%);
-    content: '';
-    pointer-events: none;
+  position: absolute;
+  right: 15px;
+  width: 10px;
+  height: 7px;
+  background-color: #ff5d7d;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  content: '';
+  pointer-events: none;
 }
 
 .selectbox select {
-    appearance: none;
-    min-width: 230px;
-    height: 2.8em;
-    padding: .4em calc(.8em + 30px) .4em .8em;
-    border: 1px solid #f93d5d;
-    border-radius: 25px;
-    background-color: #fff;
-    color: #f93d5d;
-    font-size: 1em;
-    font-weight: bold;
-    cursor: pointer;
+  appearance: none;
+  min-width: 230px;
+  height: 2.8em;
+  padding: .4em calc(.8em + 30px) .4em .8em;
+  border: 1px solid #f93d5d;
+  border-radius: 25px;
+  background-color: #fff;
+  color: #f93d5d;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
 }
 
 /* -----------------------
-  ボックス
+   モーダル・ボックス
 ------------------------*/
-/* モーダル全体の暗い背景（中央配置） */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -269,10 +263,9 @@ button:hover {
   justify-content: center;
   align-items: center;
   animation: fadeIn 0.3s ease;
-  z-index: 999; /* 一番上に表示 */
+  z-index: 999;
 }
 
-/* 中央の白いボックス */
 .modal-box {
   background-color: #fff;
   padding: 20px;
@@ -284,24 +277,12 @@ button:hover {
   animation: scaleIn 0.3s ease;
 }
 
-/* フェードイン（背景のアニメ） */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-/* ふわっと拡大して出るアニメ */
 @keyframes scaleIn {
-  from {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }

@@ -21,24 +21,7 @@ class RestaurantController extends Controller
             
             $restaurants = Restaurant::where('user_id', $userId)
                 ->orderBy('created_at', 'desc')
-                ->get([
-                    'id', 
-                    'user_id', 
-                    'name', 
-                    'catchphrase', 
-                    'tel', 
-                    'address', 
-                    'url', 
-                    'comment', 
-                    'business_hours', 
-                    'holiday', 
-                    'genre_id', 
-                    'area_id', 
-                    'budget_id', 
-                    'topimage_path', 
-                    'approval_status_id', 
-                    'rejection_reason'
-                ]);
+                ->get();
 
             return response()->json($restaurants);
         } catch (\Exception $e) {
@@ -49,118 +32,91 @@ class RestaurantController extends Controller
     // --- 店舗登録処理 ---
     public function storeRestaurantData(Request $request)
     {
-        Log::info('storeRestaurantData に到達しました', ['user_id' => $request->input('user_id')]);
+        Log::info('店舗登録申請開始', ['user_id' => $request->input('user_id')]);
 
-        $validatedData = $request->validate([
-            // 画像は配列として受け取るため、*.を使用
-            'topimages.*' => 'required|image|max:5120', // 5120KB = 5MB
-            'images.*' => 'nullable|image|max:5120', // 5MB
-            
-            // その他の必須フィールドのバリデーション
+        // 1. バリデーション
+        $request->validate([
+            'topimages.*' => 'required|image|max:5120',
+            'images.*' => 'nullable|image|max:5120',
             'name' => 'required|string|max:255',
             'catchphrase' => 'required|string|max:255',
             'tel' => 'required|string',
             'address' => 'required|string',
-            'area_id' => 'required',
-            'genre_id' => 'required',
-            'budget_id' => 'required',
-            'business_hours' => 'required',
-            'holiday' => 'required',
-            'topimage' => 'required|image|max:5120', 
+            'area_id' => 'required|integer',
+            'genre_id' => 'required|integer',
+            'budget_id' => 'required|integer',
+            'business_hours' => 'required|string',
+            'holiday' => 'required|string',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
+        try {
+            $user = User::findOrFail($request->user_id);
+            $restaurant = new Restaurant();
 
-        $user = User::find($request->user_id);
-        if (!$user) return response()->json(['error' => 'User not found'], 404);
+            // 2. 基本情報のセット
+            $restaurant->user_id = $user->id;
+            $restaurant->name = $request->name;
+            $restaurant->catchphrase = $request->catchphrase;
+            $restaurant->tel = $request->tel;
+            $restaurant->address = $request->address;
+            $restaurant->url = $request->url;
+            $restaurant->comment = $request->comment;
+            $restaurant->business_hours = $request->business_hours;
+            $restaurant->holiday = $request->holiday;
+            $restaurant->genre_id = (int)$request->genre_id;
+            $restaurant->area_id = (int)$request->area_id;
+            $restaurant->budget_id = (int)$request->budget_id;
+            
+            // 座標（フロントの初期値に合わせて幌別駅）
+            $restaurant->latitude = $request->latitude ?: 42.4123;
+            $restaurant->longitude = $request->longitude ?: 141.2063;
+            
+            // ステータス（0: 承認待ち）
+            $restaurant->approval_status_id = 0;
 
-        $restaurant = new Restaurant();
-        $restaurant->user_id = $user->id;
-        $restaurant->name = $request->name;
-        $restaurant->catchphrase = $request->catchphrase;
-        $restaurant->tel = $request->tel;
-        $restaurant->address = $request->address;
-        $restaurant->url = $request->url;
-        $restaurant->comment = $request->comment;
-        $restaurant->business_hours = $request->business_hours;
-        $restaurant->holiday = $request->holiday;
-        $restaurant->genre_id = (int)$request->genre_id;
-        $restaurant->area_id = (int)$request->area_id;
-        $restaurant->budget_id = (int)$request->budget_id;
-        $restaurant->latitude = $request->latitude ?: 42.4123;
-        $restaurant->longitude = $request->longitude ?: 141.2063;
-        
-        $restaurant->approval_status_id = 0;
-        $restaurant->rejection_reason = null;
+            // 3. 画像の保存処理
+            $basePath = "user_images/{$user->id}/restaurants";
 
-        $basePath = "user_images/{$user->id}/restaurants";
-
-        if ($request->hasFile('topimage')) {
-            $path = $request->file('topimage')->store($basePath, 'public');
-            $restaurant->topimage_path = Storage::url($path);
-        }
-
-        for ($i = 1; $i <= 3; $i++) {
-            $key = "image{$i}";
-            if ($request->hasFile($key)) {
-                $path = $request->file($key)->store($basePath, 'public');
-                $col = "image{$i}_path";
-                $restaurant->$col = Storage::url($path);
+            // TOP画像 (React側は topimages[] 配列で送ってくる)
+            if ($request->hasFile('topimages')) {
+                $topFile = $request->file('topimages')[0];
+                $path = $topFile->store($basePath . "/top", 'public');
+                $restaurant->topimage_path = Storage::url($path);
             }
-        }
 
-        $restaurant = new Restaurant();
-        $restaurant->user_id = $user->id;
-
-        // TOP画像
-        if ($request->hasFile('topimages')) {
-            $topImagePath = $request->file('topimages')[0]->store("user_images/{$user->id}/restaurants/top", 'public');
-            $restaurant->topimage_path = Storage::url($topImagePath);
-        } else {
-            return response()->json(['error' => 'TOP画像は必須です'], 422);
-        }
-
-        // 詳細画像
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $index => $image) {
-                if ($index < 3 && $image) {
-                    $path = $image->store("user_images/{$user->id}/restaurants/detail", 'public');
-                    $restaurant->{'image'.($index + 1).'_path'} = Storage::url($path);
+            // サブ画像 (React側は images[] 配列で送ってくる)
+            if ($request->hasFile('images')) {
+                $subImages = $request->file('images');
+                foreach ($subImages as $index => $image) {
+                    if ($index < 3 && $image) {
+                        $path = $image->store($basePath . "/detail", 'public');
+                        $col = "image" . ($index + 1) . "_path";
+                        $restaurant->$col = Storage::url($path);
+                    }
                 }
             }
+
+            $restaurant->save();
+
+            return response()->json(['message' => '店舗情報を送信しました。管理者による承認をお待ちください。'], 201);
+
+        } catch (\Exception $e) {
+            Log::error('店舗登録エラー: ' . $e->getMessage());
+            return response()->json(['error' => 'サーバーエラーが発生しました'], 500);
         }
-
-        // 入力情報
-        $restaurant->name = $request->input('name');
-        $restaurant->catchphrase = $request->input('catchphrase');
-        $restaurant->url = $request->input('url');
-        $restaurant->address = $request->input('address');
-        $restaurant->latitude = $request->input('latitude') ?: 42.4123;
-        $restaurant->longitude = $request->input('longitude') ?: 141.2063;
-        $restaurant->comment = $request->input('comment');
-        $restaurant->budget_id = $request->input('budget_id');
-        $restaurant->area_id = $request->input('area_id');
-        $restaurant->genre_id = $request->input('genre_id'); 
-        $restaurant->tel = $request->input('tel');
-        $restaurant->business_hours = $request->input('business_hours');
-        $restaurant->holiday = $request->input('holiday');
-
-
-
-        $restaurant->save();
-
-        return response()->json(['message' => 'レストラン情報を保存しました']);
     }
 
-    // --- 店舗情報の更新 (一般ユーザー用：再申請対応) ---
+    // --- 店舗情報の更新 (一般ユーザー用：再申請) ---
     public function update(Request $request, $id)
     {
         try {
             $restaurant = Restaurant::findOrFail($id);
 
-            // 基本情報の更新
+            // 権限チェック
+            if ($restaurant->user_id !== $request->user()->id && !$request->user()->is_admin) {
+                return response()->json(['error' => '編集権限がありません'], 403);
+            }
+
             $restaurant->name = $request->input('name', $restaurant->name);
             $restaurant->catchphrase = $request->input('catchphrase', $restaurant->catchphrase);
             $restaurant->tel = $request->input('tel', $restaurant->tel);
@@ -173,38 +129,33 @@ class RestaurantController extends Controller
             $restaurant->area_id = (int)$request->input('area_id', $restaurant->area_id);
             $restaurant->budget_id = (int)$request->input('budget_id', $restaurant->budget_id);
 
-            // --- ステータス制御ロジック ---
-            if ($request->has('from_admin') && $request->from_admin == "true") {
-                // 管理者モードからのリクエストなら、送られてきたステータスをそのまま使う
+            // ステータス制御
+            if ($request->from_admin === "true") {
                 $restaurant->approval_status_id = (int)$request->input('approval_status_id');
             } else {
-                // 一般ユーザーの編集（再申請）なら、強制的に「3」にする
-                $restaurant->approval_status_id = 3;
+                $restaurant->approval_status_id = 3; // 3: 再申請中
             }
 
-            // 新規申請(0)または再申請(3)の場合は、過去の拒否理由をクリア
-            // ※ここで未定義だった $newStatus を $restaurant->approval_status_id に修正しました
             if (in_array($restaurant->approval_status_id, [0, 3])) {
                 $restaurant->rejection_reason = null;
             }
 
-            // 画像の更新
+            // 画像の更新（個別ファイルとして topimage, image1, image2, image3 が来る場合を想定）
             $basePath = "user_images/{$restaurant->user_id}/restaurants";
             if ($request->hasFile('topimage')) {
                 $path = $request->file('topimage')->store($basePath, 'public');
                 $restaurant->topimage_path = Storage::url($path);
             }
             for ($i = 1; $i <= 3; $i++) {
-                $key = "image{$i}";
-                if ($request->hasFile($key)) {
-                    $path = $request->file($key)->store($basePath, 'public');
+                if ($request->hasFile("image{$i}")) {
+                    $path = $request->file("image{$i}")->store($basePath, 'public');
                     $col = "image{$i}_path";
                     $restaurant->$col = Storage::url($path);
                 }
             }
 
             $restaurant->save();
-            return response()->json(['message' => '店舗情報を更新（再申請）しました', 'restaurant' => $restaurant]);
+            return response()->json(['message' => '店舗情報を更新しました', 'restaurant' => $restaurant]);
 
         } catch (\Exception $e) {
             Log::error("店舗更新失敗: " . $e->getMessage());
@@ -217,13 +168,10 @@ class RestaurantController extends Controller
     {
         try {
             $restaurant = Restaurant::findOrFail($id);
-
-            if ($restaurant->user_id !== $request->user()->id) {
+            if ($restaurant->user_id !== $request->user()->id && !$request->user()->is_admin) {
                 return response()->json(['error' => '権限がありません'], 403);
             }
-
             $restaurant->delete();
-
             return response()->json(['message' => '店舗情報を削除しました']);
         } catch (\Exception $e) {
             return response()->json(['error' => '店舗削除に失敗しました'], 500);
@@ -235,7 +183,6 @@ class RestaurantController extends Controller
     {
         try {
             $restaurant = Restaurant::with(['genre', 'area', 'budget'])->findOrFail($id);
-            
             $images = array_filter([
                 $restaurant->topimage_path,
                 $restaurant->image1_path,
@@ -243,7 +190,6 @@ class RestaurantController extends Controller
                 $restaurant->image3_path
             ]);
             $restaurant->all_images = array_values($images); 
-            
             return response()->json($restaurant);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Not found'], 404);
