@@ -14,10 +14,21 @@ class AdminAuthController extends Controller
             'password' => ['required'],
         ]);
 
-        if (Auth::guard('admin')->attempt($credentials)) {
+        // 通常のユーザー認証
+        if (Auth::attempt($credentials)) {
+            $user = Auth::user();
+
+            // 管理者かどうかチェック
+            if ($user->role === 'admin') {
+                return response()->json([
+                    'message' => 'admin login success'
+                ], 200);
+            }
+
+            // 管理者じゃない場合
             return response()->json([
-                'message' => 'admin login success'
-            ], 200);
+                'message' => 'not admin'
+            ], 403);
         }
 
         return response()->json([

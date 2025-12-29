@@ -5,7 +5,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
 
-use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\AdminController;
@@ -14,6 +13,8 @@ use App\Http\Controllers\EventDetailController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminRestaurantController;
 use App\Models\User;
+use App\Http\Controllers\AdminAuthController;
+
 
 // ==============================
 // 認証不要ルート
@@ -22,6 +23,8 @@ use App\Models\User;
 Route::post('/login', [UserController::class, 'login']);
 Route::post('/register', [UserController::class, 'register']);
 Route::get('/users', [AdminController::class, 'user_all']); 
+Route::post('/admin/login', [AdminAuthController::class, 'login']);
+
 
 Route::get('/events/{year}/{month}', [EventController::class, 'getByMonth']);
 Route::get('/events/upcoming', [EventController::class, 'getUpComingEvent']);

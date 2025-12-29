@@ -24,7 +24,7 @@ import RestaurantDetail from "./User/RestaurantDetail";
 import VerifiedSuccess from "./User/VerifiedSuccess.jsx"; 
 
 // ▼ 管理者用ページ
-import AdminLogin from "./admin/components/AdminLogin";
+import AdminLogin from "./admin/AdminLogin.jsx";
 import AdminTop from "./admin/AdminTop";
 
 import RestaurantForm from './User/RestaurantForm';
@@ -101,6 +101,9 @@ function App() {
         {/*管理者TOP*/}
         <Route path="/AdminTop" element={<AdminTop />} />
 
+        {/*管理者ログイン*/}
+        <Route path="/Adminlogin" element={<AdminLogin />} />
+
         {/* 【管理者用】イベント編集画面のルートを追加 */}
         <Route path="/EventEdit/:id" element={<EventEdit />} />
 
@@ -109,6 +112,7 @@ function App() {
 
         {/*飲食店編集画面 */}
        <Route path="/RestaurantEdit/:id" element={<RestaurantEdit />} />
+
 
       </Routes>    
      </BrowserRouter>
