@@ -36,7 +36,7 @@ export default function MapView({ address }) {
 
    const fetchCoordinates = async () => {
   try {
-    const res = await fetch(`http://localhost:8000/api/geocode?q=${encodeURIComponent(address)}`);
+    const res = await fetch(`/api/geocode?q=${encodeURIComponent(address)}`);
     const text = await res.text();
 
     try {

@@ -1,54 +1,146 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EventController;
-use App\Http\Controllers\EventImageController;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminEventController;
 use App\Http\Controllers\EventDetailController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\AdminRestaurantController;
+use App\Models\User;
 
-Route::post('/admin/login', [AdminAuthController::class, 'login']);
-
+// ==============================
 // 認証不要ルート
+// ==============================
 
-Route::get('/events/{year}/{month}', [EventController::class, 'getByMonth']); 
-Route::get('/events/upcoming',[EventController::class, 'getUpComingEvent']);
-Route::get('/events/{id}',[EventController::class,'show']);
-Route::get('/restaurants',[RestaurantController::class, 'getRestaurant']);
-Route::get('/restaurants/{id}',[RestaurantController::class, 'show']);
-Route::post('/upload-event-image', [EventImageController::class, 'uploadEventImage']);
-
-Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
+Route::post('/register', [UserController::class, 'register']);
+Route::get('/users', [AdminController::class, 'user_all']); 
+
+Route::get('/events/{year}/{month}', [EventController::class, 'getByMonth']);
+Route::get('/events/upcoming', [EventController::class, 'getUpComingEvent']);
+Route::get('/events/{id}', [EventController::class, 'show']);
+
+Route::get('/restaurants', [RestaurantController::class, 'getRestaurant']);
+Route::get('/restaurants/{id}', [RestaurantController::class, 'show']);
+
+Route::get('/m_areas', [RestaurantController::class, 'getAreas']);
+Route::get('/m_budgets', [RestaurantController::class, 'getBudgets']);
+Route::get('/m_genres', [RestaurantController::class, 'getGenres']);
 
 Route::get('/geocode', function (Request $request) {
     $address = $request->query('q');
     if (!$address || strlen($address) < 3) {
         return response()->json(['error' => '住所が不正です'], 400);
     }
-    $response = Http::withOptions(['verify' => false])->get('https://nominatim.openstreetmap.org/search', [
+    $response = Http::withOptions([
+        'verify' => false,
+        'headers' => ['User-Agent' => 'NoboribetsuMapApp/1.0 (love@example.com)']
+    ])->get('https://nominatim.openstreetmap.org/search', [
         'format' => 'json',
         'q' => $address,
+        'limit' => 1,
     ]);
-    return $response->json();
+    return response()->json($response->json() ?: []);
 });
 
-Route::post('/store-event-data', [EventImageController::class, 'storeEventData']);
+/// ==============================
+// 認証必須ルート (Bearerトークン)
+// ==============================
+Route::middleware(['check.token'])->group(function () {
 
-// 認証必須ルート
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/me', fn(Request $request) => response()->json($request->user()));
-    Route::post('/upload-event-image', [EventImageController::class, 'uploadEventImage']);
+    Route::get('/me', [UserController::class, 'me']); 
     Route::post('/store-restaurant-data', [RestaurantController::class, 'storeRestaurantData']);
+    Route::post('/store-event-data', [EventController::class, 'storeEventData']);
+
+    Route::post('/logout', function (Request $request) {
+        if ($request->user()) {
+            $request->user()->tokens()->delete();
+        }
+        return response()->json(['message' => 'Logged out'], 200);
+    });
+
+    // --- 管理者イベントAPI ---
+    Route::get('/admin/events/pending', [AdminEventController::class, 'getPendingEvents']); 
+    Route::get('/admin/events/approved', [AdminEventController::class, 'getApprovedEvents']);
+    Route::get('/admin/events/{id}', [AdminEventController::class, 'show']);
+    Route::put('/admin/events/{id}', [AdminEventController::class, 'update']);
+    Route::post('/admin/events/{id}/status', [AdminEventController::class, 'updateEventStatus']);
+    Route::get('/admin/events/approved', [AdminEventController::class, 'getApprovedEvents']);
+
+    // --- 管理者飲食店API ---
+    Route::get('/admin/restaurants/pending', [AdminRestaurantController::class, 'getPendingShops']);
+    Route::get('/admin/restaurants/approved', [AdminRestaurantController::class, 'getApprovedShops']);
+    Route::get('/admin/restaurants/{id}', [AdminRestaurantController::class, 'show']);
+    
+    Route::put('/admin/restaurants/{id}', [AdminRestaurantController::class, 'update']);
+    Route::post('/admin/restaurants/{id}/status', [AdminRestaurantController::class, 'updateStatus']);
+
+    // --- 一般ユーザー用 ---
+    Route::get('/events', [EventController::class, 'index']);
+    Route::put('/events/{id}', [EventController::class, 'update']);
+    Route::delete('/events/{id}', [EventController::class, 'destroy']); 
+
+    Route::get('/api_restaurants_history', [RestaurantController::class, 'index']);
+    Route::put('/restaurants/{id}', [RestaurantController::class, 'update']);
+    Route::delete('/restaurants/{id}', [RestaurantController::class, 'destroy']);
 });
 
-// バージョン付きルート（例：v1）
 Route::prefix('v1')->group(function () {
     Route::post('/store-event-detail', [EventDetailController::class, 'store']);
 });
+
+Route::middleware(['web', 'check.token'])->get('/test-token', function () {
+    return ['message' => 'Token OK'];
+});
+
+//メール認証ルート
+Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
+    // ユーザーをIDで探す
+    $user = User::findOrFail($id);
+
+    // URLのハッシュが正しいかチェック
+    if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+        return response()->json(['message' => '無効な認証リンクです'], 403);
+    }
+
+    // すでに認証済みなら
+    if ($user->hasVerifiedEmail()) {
+        return response()->json(['message' => 'すでに認証済みです']);
+    }
+
+    // 認証完了処理（email_verified_at に現在時刻を保存）
+    $user->markEmailAsVerified();
+
+    // 最後にReact側（フロント）の完了ページへリダイレクト
+    // まだ画面がない場合は、とりあえずメッセージを返す
+    return "メール認証に成功しました！このタブを閉じてログインしてください。";
+    
+})->name('verification.verify')->middleware(['signed']);
+
+// メール認証用エンドポイント
+Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
+    $user = User::findOrFail($id);
+
+    // ハッシュの確認
+    if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+        return response()->json(['message' => '無効な認証リンクです'], 403);
+    }
+
+    // すでに認証済みか確認
+    if ($user->hasVerifiedEmail()) {
+        return response()->json(['message' => 'すでに認証済みです']);
+    }
+
+    // 認証完了処理（email_verified_at を更新）
+    $user->markEmailAsVerified();
+
+    // 認証後にReactの「完了画面」へリダイレクト
+    return redirect('http://localhost:3000/VerifiedSuccess'); 
+})->name('verification.verify')->middleware(['signed']); // signedミドルウェアで改ざん防止

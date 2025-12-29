@@ -1,242 +1,382 @@
-//イベント申請フォーム
-//今後拡張として、複数画像対応、画像削除、画像を再アップロードする
-import React, { useState, useContext } from "react";
+// src/User/EventForm.jsx
+import React, { useState, useContext, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../User/AuthContext";
+import { AuthContext } from "../contexts/AuthContext.js";
 
+const MAX_SIZE_MB = 5;
+const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
 
-function EventForm() {
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    catchphrase: "",
-    start_date: "",
-    end_date: "",
-    location: "",
-    is_free_participation: "",
-    url: "",
-    organizer: "",
-    description: "",
-    notes: "",
-  });
-
-  const [imageFile, setImageFile] = useState(null);
-  const navigate = useNavigate();
-  //const [previewUrl, setPreviewUrl] = useState(null);
-const { currentUser, isLoggedIn, login, logout } = useContext(AuthContext);
-
-  const handleImageUpload = async (e) => {
-   const file = e.target.files[0];
-    if (!file) return;
-    setImageFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleEventSubmit = async () => {
-    if (!currentUser?.id) {
-      alert("ログインしてください");
-      navigate("/login");
-      return;
-    }
-
-  const formDataToSend = new FormData();
-  formDataToSend.append("user_id", currentUser.id);
-  formDataToSend.append("image", imageFile);
-  Object.entries(formData).forEach(([key, value]) => {
-    formDataToSend.append(key, value);
-  });
-
-  //nullで送信されるのを防ぐため
-  const requiredFields = [
-      { key: "name", label: "タイトル" },
-      { key: "catchphrase", label: "見出し" },
-      { key: "start_date", label: "開始日" },
-      { key: "end_date", label: "終了日" },
-  ];
-    for(const field of requiredFields){
-      if(!formData[field.key]){
-        alert('${field.label}を入力してください');
-        return;
-      }
-    }
-
-  const response =await fetch("http://localhost:8000/api/store-event-data", {
-    method: "POST",
-    body: formDataToSend,
-    credentials: "include",
-  });
-
-  //↑でresponseに入れた答えを使用しif文(boolean型)
-  if (response.ok) {
-  alert("イベント申請が完了しました！");
-  navigate("/Mypage");
-  } else {
-  alert("申請に失敗しました。");
-  }
+// APIのベースURLを調整（末尾の /api 重複を防止する共通ロジック）
+const getBaseApiUrl = () => {
+    const envUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
+    return envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;
 };
 
-  return (
-    <div style={{
-      position: "relative",
-      padding: "20px",
-      fontFamily: "sans-serif",
-      maxWidth: "500px",
-      margin: "0 auto",
-    }}>
-      <button
-        onClick={() => navigate("/MyPage")}
-        style={{
-          position: "absolute",
-          top: "10px",
-          left: "10px",
-          backgroundColor: "#eee",
-          color: "#333",
-          border: "none",
-          borderRadius: "50%",
-          width: "40px",
-          height: "40px",
-           fontSize: "20px",
-          cursor: "pointer",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-          zIndex: 1000,
-        }}
-      >
-        ✕
-      </button>
+const API_BASE = getBaseApiUrl();
 
-      <h2 style={{ textAlign: "center", marginTop: "0" }}>イベント申請</h2>
+function EventForm() {
+    const [previewUrl, setPreviewUrl] = useState(null);
+    const [formData, setFormData] = useState({
+        name: "",
+        catchphrase: "",
+        start_date: "",
+        end_date: "",
+        location: "",
+        is_free_participation: "",
+        url: "",
+        organizer: "",
+        description: "",
+        notes: "",
+    });
 
-      <div style={{
-        width: "100%",
-        height: "150px",
-        backgroundColor: "#ddd",
-        borderRadius: "6px",
-        marginBottom: "10px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "#666",
-      }}>
-         {previewUrl ? (
-          <img
-            src={previewUrl}
-            alt="プレビュー"
-            style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "cover" }}
-          />
-        ) : (
-         <span>見出し画像（仮）</span>
-        )}
-      </div>
+    const [imageFile, setImageFile] = useState(null);
+    const navigate = useNavigate();
 
-      <input
-        type="file"
-        onChange={handleImageUpload}
-        style={{ display: "block", margin: "0 auto 20px" }}
-      />
-      
-      {/*入力欄*/}
-      {[
-        { label: "タイトル", name: "name" },
-        { label: "見出し", name: "catchphrase" },
-        { label: "開始日", name: "start_date" },
-        { label: "終了日", name: "end_date" },
-        { label: "場所", name: "location" },
-        { label: "URL", name: "url" },
-        { label: "主催者", name: "organizer" },
-      ].map((field) => (
-        <div key={field.name} style={{ marginBottom: "10px" }}>
-          <label>{field.label}</label><br />
-          <input
-            type="text"
-            name={field.name}
-            value={formData[field.name]}
-            onChange={handleChange}
-            style={{
-              width: "100%",
-              padding: "8px",
-              borderRadius: "4px",
-              border: "1px solid #ccc",
-            }}
-          />
+    const context = useContext(AuthContext);
+    
+    // AuthContextのチェック
+    if (!context) {
+        return <p style={{ padding: "20px", textAlign: "center" }}>ログイン情報が取得できません。ログインしてください。</p>;
+    }
+    const { user } = context;
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > MAX_SIZE_BYTES) {
+            alert(`ファイルサイズが大きすぎます。${MAX_SIZE_MB}MB以下の画像を選択してください。`);
+            e.target.value = "";
+            return;
+        }
+
+        setImageFile(file);
+        setPreviewUrl(URL.createObjectURL(file));
+    };
+
+    const handleImageRemove = () => {
+        setImageFile(null);
+        setPreviewUrl(null);
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    const handleEventSubmit = async () => {
+        if (!user?.id) {
+            alert("ログインしてください");
+            navigate("/login");
+            return;
+        }
+
+        if (!imageFile) {
+            alert("見出し画像を設定してください。");
+            return;
+        }
+
+        // 必須バリデーション
+        const fieldLabels = {
+            name: "イベント名",
+            catchphrase: "見出し",
+            start_date: "開始日",
+            end_date: "終了日",
+            location: "場所",
+            url: "URL",
+            organizer: "主催者",
+            is_free_participation: "予約",
+        };
+
+        for (const [key, label] of Object.entries(fieldLabels)) {
+            if (!formData[key] || String(formData[key]).trim() === "") {
+                alert(`${label}を入力してください。\n該当しない場合は「なし」と記入してください。`);
+                return;
+            }
+        }
+
+        const start = new Date(formData.start_date);
+        const end = new Date(formData.end_date);
+        if (start >= end) {
+            alert("終了日は開始日より後に設定してください。");
+            return;
+        }
+
+        const formDataToSend = new FormData();
+        formDataToSend.append("user_id", user.id);
+        formDataToSend.append("image", imageFile);
+
+        Object.entries(formData).forEach(([key, value]) => {
+            formDataToSend.append(key, value);
+        });
+
+        const token = localStorage.getItem("token");
+
+        try {
+            // 修正ポイント: 共通の API_BASE を使用して 404 を回避
+            const response = await fetch(`${API_BASE}/store-event-data`, {
+                method: "POST",
+                body: formDataToSend,
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Accept": "application/json",
+                    // FormDataを送信するため Content-Type は指定しない（ブラウザが自動設定）
+                },
+            });
+
+            if (response.ok) {
+                alert("イベント申請が完了しました！\n管理者による承認後に掲載されます。");
+                navigate("/EventApplicationHistory");
+            } else if (response.status === 401) {
+                alert("セッションが切れました。再度ログインしてください。");
+                navigate("/login");
+            } else if (response.status === 404) {
+                alert("送信先のURLが見つかりませんでした(404)。管理者に連絡してください。");
+            } else {
+                const errorData = await response.json().catch(() => ({}));
+                console.error("Error details:", errorData);
+                alert(`申請に失敗しました: ${errorData.message || "内容を確認してください。"}`);
+            }
+        } catch (error) {
+            console.error("Fetch error:", error);
+            alert("サーバーとの通信に失敗しました。ネットワーク状況を確認してください。");
+        }
+    };
+
+    return (
+        <div style={{ position: "relative", padding: "20px", maxWidth: "500px", margin: "0 auto" }}>
+            {/* 閉じるボタン */}
+            <button
+                onClick={() => navigate("/MyPage")}
+                style={{
+                    position: "absolute",
+                    top: "10px",
+                    left: "10px",
+                    backgroundColor: "#eee",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: "40px",
+                    height: "40px",
+                    fontSize: "20px",
+                    cursor: "pointer",
+                }}
+            >
+                ✕
+            </button>
+
+            <h2 style={{ textAlign: "center" }}>イベント申請</h2>
+
+            {/* 見出し画像エリア */}
+            <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>
+                見出し画像 <span style={{ color: "red" }}>※</span>
+            </label>
+            <div
+                style={{
+                    width: "100%",
+                    marginBottom: "10px",
+                    textAlign: "center",
+                    border: "1px solid #ccc",
+                    borderRadius: "8px",
+                    padding: "10px",
+                    backgroundColor: "#f9f9f9",
+                }}
+            >
+                {previewUrl ? (
+                    <img
+                        src={previewUrl}
+                        alt="プレビュー"
+                        style={{ maxWidth: "100%", height: "auto", borderRadius: "6px" }}
+                    />
+                ) : (
+                    <span style={{ color: "#666" }}>画像がここに表示されます</span>
+                )}
+
+                <div style={{ marginTop: "10px" }}>
+                    {!previewUrl ? (
+                        <label
+                            style={{
+                                display: "inline-block",
+                                padding: "6px 10px",
+                                width: "150px",
+                                backgroundColor: "#aaa",
+                                color: "white",
+                                borderRadius: "5px",
+                                cursor: "pointer",
+                            }}
+                        >
+                            画像を選択
+                            <input type="file" onChange={handleImageUpload} style={{ display: "none" }} />
+                        </label>
+                    ) : (
+                        <div style={{ marginBottom: "20px", marginTop: "10px" }}>
+                            <button
+                                onClick={handleImageRemove}
+                                style={{
+                                    padding: "8px 16px",
+                                    backgroundColor: "#aaa",
+                                    color: "white",
+                                    border: "none",
+                                    borderRadius: "5px",
+                                    cursor: "pointer",
+                                    marginRight: "10px",
+                                }}
+                            >
+                                削除
+                            </button>
+                            <label
+                                style={{
+                                    display: "inline-block",
+                                    padding: "8px 16px",
+                                    backgroundColor: "#aaa",
+                                    color: "white",
+                                    borderRadius: "5px",
+                                    cursor: "pointer",
+                                }}
+                            >
+                                変更
+                                <input type="file" onChange={handleImageUpload} style={{ display: "none" }} />
+                            </label>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <div style={{
+                backgroundColor: "#fff3cd",
+                border: "1px solid #ffeeba",
+                color: "#856404",
+                padding: "10px",
+                borderRadius: "5px",
+                marginBottom: "20px",
+                fontSize: "0.9rem",
+                lineHeight: "1.5"
+            }}>
+                <strong>【入力について】</strong><br/>
+                <span style={{color: "red"}}>※</span> がついている項目は必須です。<br/>
+                該当しない場合は「なし」と記入してください。<br/>
+                画像は<strong>5MB以下</strong>でアップロードしてください
+            </div>
+
+            <div style={{ marginBottom: "10px" }}>
+                <label>イベント名 <span style={{ color: "red" }}>※</span></label>
+                <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="例：鬼火祭り2025"
+                    style={{ width: "100%", padding: "8px", border: "1px solid #ccc", boxSizing: "border-box" }}
+                />
+            </div>
+
+            <div style={{ marginBottom: "10px" }}>
+                <label>見出し <span style={{ color: "red" }}>※</span></label>
+                <input
+                    type="text"
+                    name="catchphrase"
+                    value={formData.catchphrase}
+                    onChange={handleChange}
+                    placeholder="例：湯けむりに包まれる幻想の夜"
+                    style={{ width: "100%", padding: "8px", border: "1px solid #ccc", boxSizing: "border-box" }}
+                />
+            </div>
+
+            <div style={{ marginBottom: "10px" }}>
+                <label>開始日 <span style={{ color: "red" }}>※</span></label>
+                <input
+                    type="datetime-local"
+                    name="start_date"
+                    value={formData.start_date}
+                    onChange={handleChange}
+                    style={{ width: "100%", padding: "8px", border: "1px solid #ccc", boxSizing: "border-box" }}
+                />
+            </div>
+
+            <div style={{ marginBottom: "10px" }}>
+                <label>終了日 <span style={{ color: "red" }}>※</span></label>
+                <input
+                    type="datetime-local"
+                    name="end_date"
+                    value={formData.end_date}
+                    onChange={handleChange}
+                    style={{ width: "100%", padding: "8px", border: "1px solid #ccc", boxSizing: "border-box" }}
+                />
+            </div>
+
+            {[{ label: "場所", name: "location", placeholder: "例：温泉街広場" },
+              { label: "URL", name: "url", placeholder: "例：https://example.com" },
+              { label: "主催者", name: "organizer", placeholder: "例：観光協会" }].map(
+                (field) => (
+                    <div key={field.name} style={{ marginBottom: "10px" }}>
+                        <label>{field.label} <span style={{ color: "red" }}>※</span></label>
+                        <input
+                            type="text"
+                            name={field.name}
+                            value={formData[field.name]}
+                            onChange={handleChange}
+                            placeholder={field.placeholder}
+                            style={{ width: "100%", padding: "8px", border: "1px solid #ccc", boxSizing: "border-box" }}
+                        />
+                    </div>
+                )
+            )}
+
+            <div style={{ marginBottom: "10px" }}>
+                <label>予約 <span style={{ color: "red" }}>※</span></label>
+                <select
+                    name="is_free_participation"
+                    value={formData.is_free_participation}
+                    onChange={handleChange}
+                    style={{ width: "100%", padding: "8px", border: "1px solid #ccc", boxSizing: "border-box" }}
+                >
+                    <option value="">選択してください</option>
+                    <option value="0">要予約</option>
+                    <option value="1">自由参加</option>
+                </select>
+            </div>
+
+            <div style={{ marginBottom: "10px" }}>
+                <label>詳細</label>
+                <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    rows="3"
+                    style={{ width: "100%", padding: "8px", border: "1px solid #ccc", boxSizing: "border-box" }}
+                />
+            </div>
+
+            <div style={{ marginBottom: "20px" }}>
+                <label>注意事項</label>
+                <textarea
+                    name="notes"
+                    value={formData.notes}
+                    onChange={handleChange}
+                    rows="3"
+                    style={{ width: "100%", padding: "8px", border: "1px solid #ccc", boxSizing: "border-box" }}
+                />
+            </div>
+
+            <button
+                onClick={handleEventSubmit}
+                style={{
+                    width: "100%",
+                    padding: "12px",
+                    backgroundColor: "#a1a5a1ff",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontWeight: "bold"
+                }}
+            >
+                申請する
+            </button>
         </div>
-      ))}
-
-      <div style={{ marginBottom: "10px" }}>
-        <label>予約</label><br />
-        <select
-          name="is_free_participation"
-          value={formData.is_free_participation}
-          onChange={handleChange}
-          style={{
-              width: "100%",
-            padding: "8px",
-            borderRadius: "4px",
-            border: "1px solid #ccc",
-          }}
-        >
-          <option value="">選択してください</option>
-          <option value="要予約">要予約</option>
-          <option value="自由参加">自由参加</option>
-        </select>
-      </div>
-
-      <div style={{ marginBottom: "10px" }}>
-        <label>詳細</label><br />
-        <textarea
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          rows="3"
-          style={{
-            width: "100%",
-            padding: "8px",
-            borderRadius: "4px",
-            border: "1px solid #ccc",
-          }}
-        />
-      </div>
-
-      <div style={{ marginBottom: "20px" }}>
-        <label>注意事項</label><br />
-        <textarea
-          name="notes"
-          value={formData.notes}
-          onChange={handleChange}
-          rows="3"
-          style={{
-            width: "100%",
-            padding: "8px",
-            borderRadius: "4px",
-            border: "1px solid #ccc",
-          }}
-        />
-      </div>
-
-      <button
-        onClick={handleEventSubmit}
-        style={{
-          width: "100%",
-          padding: "12px",
-          backgroundColor: "#a1a5a1ff",
-          color: "white",
-          border: "none",
-          borderRadius: "6px",
-          fontSize: "16px",
-          cursor: "pointer",
-        }}
-      >
-        申請する
-      </button>
-    </div>
-  );
+    );
 }
 
 export default EventForm;

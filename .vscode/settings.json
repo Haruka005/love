@@ -25,9 +25,9 @@
             "server": "localhost",
             "port": 3306,
             "driver": "MySQL",
-            "name": "local_love_db",
-            "database": "mysql",
-            "username": "root"
+            "name": "Local_love_db",
+            "username": "root",
+            "database": "mysql"
         }
     ]
 }
