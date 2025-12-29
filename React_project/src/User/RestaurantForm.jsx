@@ -140,7 +140,7 @@ function RestaurantForm() {
             }
         });
 
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("usertoken");
         try {
             const response = await fetch(`${API_BASE}/store-restaurant-data`, {
                 method: "POST",

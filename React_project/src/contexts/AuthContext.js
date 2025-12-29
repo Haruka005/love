@@ -3,67 +3,78 @@ import { createContext, useContext, useState, useEffect } from "react";
 export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null);       // 一般ユーザー
+  const [admin, setAdmin] = useState(null);     // 管理者
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ログイン処理
+  // 一般ユーザーログイン
   const login = (userData, jwtToken) => {
     setUser(userData);
     setToken(jwtToken);
-    localStorage.setItem("token", jwtToken);
+    localStorage.setItem("usertoken", jwtToken);
     localStorage.setItem("user", JSON.stringify(userData));
   };
 
-  // ログアウト処理
+  // 管理者ログイン
+  const adminLogin = (adminData, jwtToken) => {
+    setAdmin(adminData);
+    setToken(jwtToken);
+    localStorage.setItem("admintoken", jwtToken);
+    localStorage.setItem("admin", JSON.stringify(adminData));
+  };
+
+  // 一般ユーザーログアウト
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem("token");
+    localStorage.removeItem("usertoken");
     localStorage.removeItem("user");
   };
 
-  // 初期化処理
+  // 管理者ログアウト
+  const adminLogout = () => {
+    setAdmin(null);
+    setToken(null);
+    localStorage.removeItem("admintoken");
+    localStorage.removeItem("admin");
+  };
+
+  // 初期化処理（ユーザー or 管理者）
   useEffect(() => {
-    const savedToken = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
+    const savedAdmin = localStorage.getItem("admin");
+    const savedUserToken = localStorage.getItem("usertoken");
+    const savedAdminToken = localStorage.getItem("admintoken");
 
-    if (savedToken) {
-      setToken(savedToken);
-      if (savedUser) {
-        setUser(JSON.parse(savedUser));
-      }
-
-      // 最新情報の取得
-      const fetchUser = async () => {
-        try {
-          const res = await fetch(`${process.env.REACT_APP_API_URL}/me`, {
-            method: "GET",
-            headers: { Authorization: `Bearer ${savedToken}` },
-          });
-          if (res.ok) {
-            const data = await res.json();
-            localStorage.setItem("user", JSON.stringify(data));
-            setUser(data);
-          } else {
-            logout(); // トークンが無効ならログアウト
-          }
-        } catch (error) {
-          console.error("ユーザー情報取得エラー:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchUser();
-    } else {
-      setLoading(false);
+    if (savedUserToken && savedUser) {
+      setUser(JSON.parse(savedUser));
+      setToken(savedUserToken);
     }
+
+    if (savedAdminToken && savedAdmin) {
+      setAdmin(JSON.parse(savedAdmin));
+      setToken(savedAdminToken);
+    }
+
+    setLoading(false);
   }, []);
 
-  const isLoggedIn = !!user;
-
   return (
-    <AuthContext.Provider value={{ user, token, isLoggedIn, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        admin,
+        token,
+        login,
+        adminLogin,
+        logout,
+        adminLogout,
+        loading,
+        isLoggedIn: !!user,
+        isAdminLoggedIn: !!admin,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

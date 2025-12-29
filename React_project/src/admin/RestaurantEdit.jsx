@@ -17,6 +17,7 @@ export default function RestaurantEdit() {
     const { user } = useContext(AuthContext);
 
     const [loading, setLoading] = useState(true);
+
     // 管理者モードの判定
     const isAdminMode = location.state?.fromAdmin === true;
 
@@ -48,24 +49,30 @@ export default function RestaurantEdit() {
     const [files, setFiles] = useState({ topimage: null, image1: null, image2: null, image3: null });
 
     // 取得用URL
-    const GET_URL = isAdminMode 
+    const GET_URL = isAdminMode
         ? `${API_BASE}/admin/restaurants/${id}`
         : `${API_BASE}/restaurants/${id}`;
 
     const fetchData = useCallback(async () => {
-        const token = localStorage.getItem("token");
+        const token = isAdminMode
+            ? localStorage.getItem("adminToken")
+            : localStorage.getItem("userToken");
+
         if (!token) {
-            navigate("/login");
+            if (isAdminMode) {
+                navigate("/admin/login");
+            } else {
+                navigate("/login");
+            }
             return;
         }
 
         try {
-            const headers = { 
+            const headers = {
                 "Authorization": `Bearer ${token}`,
                 "Accept": "application/json"
             };
 
-            // マスタデータと店舗詳細を同時に取得
             const [areasRes, budgetsRes, genresRes, shopRes] = await Promise.all([
                 fetch(`${API_BASE}/m_areas`, { headers }),
                 fetch(`${API_BASE}/m_budgets`, { headers }),
@@ -73,15 +80,20 @@ export default function RestaurantEdit() {
                 fetch(GET_URL, { headers })
             ]);
 
-            // 401エラー（認証切れ）のチェック
+            // 401 チェック
             if ([areasRes, budgetsRes, genresRes, shopRes].some(res => res.status === 401)) {
                 alert("セッションが切れました。再ログインしてください。");
-                localStorage.removeItem("token");
-                navigate("/login");
+
+                if (isAdminMode) {
+                    localStorage.removeItem("adminToken");
+                    navigate("/admin/login");
+                } else {
+                    localStorage.removeItem("userToken");
+                    navigate("/login");
+                }
                 return;
             }
 
-            // マスタデータのセット
             if (areasRes.ok) setAreaOptions(await areasRes.json());
             if (budgetsRes.ok) setBudgetOptions(await budgetsRes.json());
             if (genresRes.ok) setGenreOptions(await genresRes.json());
@@ -134,58 +146,72 @@ export default function RestaurantEdit() {
 
     const handleUpdate = async (e) => {
         e.preventDefault();
-        
-        const confirmMsg = isAdminMode 
-            ? "管理者権限で内容を更新しますか？" 
+
+        const confirmMsg = isAdminMode
+            ? "管理者権限で内容を更新しますか？"
             : "内容を修正して再申請しますか？\n（※承認されるまで公開している場合は一時的に非公開となります）";
-            
+
         if (!window.confirm(confirmMsg)) return;
 
         try {
-            const token = localStorage.getItem("token");
-            if (!token) return navigate("/login");
+            const token = isAdminMode
+                ? localStorage.getItem("adminToken")
+                : localStorage.getItem("userToken");
+
+            if (!token) {
+                if (isAdminMode) {
+                    navigate("/admin/login");
+                } else {
+                    navigate("/login");
+                }
+                return;
+            }
 
             const data = new FormData();
 
-            // 基本データの追加
             Object.entries(formData).forEach(([key, val]) => {
                 if (typeof val !== 'object' || val === null) {
                     data.append(key, val === null ? "" : val);
                 }
             });
 
-            // 新規画像があれば追加
             if (files.topimage) data.append("topimage", files.topimage);
             if (files.image1) data.append("image1", files.image1);
             if (files.image2) data.append("image2", files.image2);
             if (files.image3) data.append("image3", files.image3);
 
-            // 送信先URL
-            let SUBMIT_URL = isAdminMode 
+            let SUBMIT_URL = isAdminMode
                 ? `${API_BASE}/admin/restaurants/${id}`
                 : `${API_BASE}/restaurants/${id}`;
 
             if (isAdminMode) {
                 data.set("approval_status_id", formData.approval_status_id);
             } else {
-                data.set("approval_status_id", "3"); // 再申請
-                data.set("rejection_reason", ""); 
+                data.set("approval_status_id", "3");
+                data.set("rejection_reason", "");
             }
-            
-            data.append("_method", "PUT"); // Laravel擬似PUT
+
+            data.append("_method", "PUT");
 
             const response = await fetch(SUBMIT_URL, {
-                method: "POST", 
-                headers: { 
-                    "Authorization": `Bearer ${token}`, 
-                    "Accept": "application/json" 
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Accept": "application/json"
                 },
                 body: data
             });
 
             if (response.status === 401) {
                 alert("認証エラーです。再ログインしてください。");
-                navigate("/login");
+
+                if (isAdminMode) {
+                    localStorage.removeItem("adminToken");
+                    navigate("/admin/login");
+                } else {
+                    localStorage.removeItem("userToken");
+                    navigate("/login");
+                }
                 return;
             }
 

@@ -66,7 +66,7 @@ export default function Login() {    // 外に持って行ってOKなLoginって
 
       if (response.ok) {
         // トークンをlocalstorageに保存
-        localStorage.setItem('token', data.token);
+        localStorage.setItem('usertoken', data.token);
 
         // AuthContextの状態を更新
         login({

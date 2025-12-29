@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Token;
 
 class AdminAuthController extends Controller
 {
@@ -19,16 +20,31 @@ class AdminAuthController extends Controller
             $user = Auth::user();
 
             // 管理者かどうかチェック
-            if ($user->role === 'admin') {
+            if ($user->role !== 'admin') {
                 return response()->json([
-                    'message' => 'admin login success'
-                ], 200);
+                    'message' => 'あなたは管理者ではありません'
+                ], 403);
             }
 
-            // 管理者じゃない場合
+            //  ユーザーと同じ独自トークン方式でトークン発行
+            $token = bin2hex(random_bytes(32));
+
+            Token::create([
+                'user_id' => $user->id,
+                'token' => $token,
+                'token_expires_at' => now()->addHour(1),
+                'last_used_at' => now(),
+            ]);
+
             return response()->json([
-                'message' => 'not admin'
-            ], 403);
+                'message' => 'admin login success',
+                'token' => $token,
+                'admin' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ]
+            ], 200);
         }
 
         return response()->json([
