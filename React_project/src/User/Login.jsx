@@ -126,6 +126,20 @@ export default function Login() {    // 外に持って行ってOKなLoginって
           ログイン
         </button>
 
+        <div style={{ marginTop: '15px', textAlign: 'center' }}>
+          <span 
+            onClick={() => navigate('/ForgotPassword')}
+            style={{
+              fontSize: '0.85rem',
+              color: '#666',
+              cursor: 'pointer',
+              textDecoration: 'underline'
+            }}
+          >
+            パスワードをお忘れですか？
+          </span>
+        </div>
+
         <div style={buttonWrapperStyle}>
           <button
             type="button"

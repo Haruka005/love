@@ -1,17 +1,18 @@
 <?php
 
-use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
 
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminEventController;
-use App\Http\Controllers\EventDetailController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminRestaurantController;
+use App\Http\Controllers\EventDetailController;
 use App\Models\User;
 use App\Http\Controllers\AdminAuthController;
 
@@ -105,45 +106,37 @@ Route::middleware(['web', 'check.token'])->get('/test-token', function () {
 
 //メール認証ルート
 Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
-    // ユーザーをIDで探す
+    //ユーザーをIDで探す
     $user = User::findOrFail($id);
 
-    // URLのハッシュが正しいかチェック
+    //URLのハッシュが正しいかチェック
     if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
         return response()->json(['message' => '無効な認証リンクです'], 403);
     }
 
-    // すでに認証済みなら
+    //すでに認証済みなら
     if ($user->hasVerifiedEmail()) {
         return response()->json(['message' => 'すでに認証済みです']);
     }
 
-    // 認証完了処理（email_verified_at に現在時刻を保存）
+    //認証完了処理（email_verified_at に現在時刻を保存）
     $user->markEmailAsVerified();
 
-    // 最後にReact側（フロント）の完了ページへリダイレクト
-    // まだ画面がない場合は、とりあえずメッセージを返す
+    //最後にReact側（フロント）の完了ページへリダイレクト
+    //まだ画面がない場合は、とりあえずメッセージを返す
     return "メール認証に成功しました！このタブを閉じてログインしてください。";
     
 })->name('verification.verify')->middleware(['signed']);
 
-// メール認証用エンドポイント
-Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
-    $user = User::findOrFail($id);
 
-    // ハッシュの確認
-    if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
-        return response()->json(['message' => '無効な認証リンクです'], 403);
-    }
+//パスワード再設定
+//申請
+Route::post('/forgot-password', [UserController::class, 'sendResetLinkEmail']);
+//確定
+Route::post('/reset-password', [UserController::class, 'resetPassword']);
 
-    // すでに認証済みか確認
-    if ($user->hasVerifiedEmail()) {
-        return response()->json(['message' => 'すでに認証済みです']);
-    }
-
-    // 認証完了処理（email_verified_at を更新）
-    $user->markEmailAsVerified();
-
-    // 認証後にReactの「完了画面」へリダイレクト
-    return redirect('http://localhost:3000/VerifiedSuccess'); 
-})->name('verification.verify')->middleware(['signed']); // signedミドルウェアで改ざん防止
+//メールアドレス変更
+//申請
+Route::post('/email-change-request', [UserController::class, 'requestChange'])->middleware('check.token');
+//確定
+Route::get('/email-change/confirm', [UserController::class, 'confirmChange']);

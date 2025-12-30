@@ -13,7 +13,6 @@ import LoginComplete from "./User/LoginComplete";
 import AccountCreated from "./User/AccountCreated";
 import ReportForm from "./User/ReportForm";
 import MyPage from "./User/MyPage";
-import ResetPass from "./User/reset-pass";
 import VisitList from "./User/VisitList";
 import FavoritesList from "./User/FavoritesList";
 import HistoryList from "./User/HistoryList";
@@ -22,6 +21,11 @@ import EventForm from "./User/EventForm";
 import EventDetail from "./User/EventDetail"; 
 import RestaurantDetail from "./User/RestaurantDetail";
 import VerifiedSuccess from "./User/VerifiedSuccess.jsx"; 
+import ForgotPassword from "./User/ForgotPassword.jsx";
+import ResetPassword from "./User/ResetPassword.jsx";
+import EmailChangeForm from "./User/EmailChangeForm.jsx";
+import EmailChangeConfirm from "./User/EmailChangeConfirm.jsx";
+import EmailChangeSuccess from "./User/EmailChangeSuccess.jsx";
 
 // ▼ 管理者用ページ
 import AdminLogin from "./admin/AdminLogin.jsx";
@@ -38,6 +42,7 @@ import RestaurantEdit from "./admin/RestaurantEdit";
 
 //管理者用店登録
 import RestaurantApproval from "./admin/RestaurantApproval.jsx";
+
 
 
 function App() {
@@ -65,6 +70,21 @@ function App() {
         {/* アカウント作成完了ページ */}
         <Route path="/AccountCreated" element={<AccountCreated />} />
 
+        {/* パスワードをお忘れですかページ */}
+        <Route path="/ForgotPassword" element={<ForgotPassword />} />
+
+        {/* パスワード再設定ページ */}
+        <Route path="/password-reset" element={<ResetPassword />} />
+
+        {/* メールアドレス変更ページ */}
+        <Route path="/EmailChangeForm" element={<EmailChangeForm />} />
+
+        {/* メールアドレス変更確定ページ */}
+        <Route path="/EmailChangeConfirm" element={<EmailChangeConfirm />} />
+
+        {/* メールアドレス変更認証完了ページ */}
+        <Route path="/email-change-success" element={<EmailChangeSuccess />} />
+
         {/* 通報ページ */}
         <Route path="/ReportForm" element={<ReportForm />} />
 
@@ -77,9 +97,6 @@ function App() {
         {/* イベント詳細 */}
         <Route path="/events/:id" element={<EventDetail />} />
 
-        {/*パスワード再設定ページ*/}
-        <Route path="/reset-pass" element={<ResetPass/>}/>
-
         {/*来店一覧*/}
         <Route path="/VisitList" element={<VisitList />} />
 
@@ -89,10 +106,10 @@ function App() {
         {/*閲覧履歴一覧*/}
         <Route path="/HistoryList" element={<HistoryList />} />
 
-       {/*イベント親戚確認 */}
+        {/*イベント親戚確認 */}
         <Route path="/EventApplicationHistory" element={<EventApplicationHistory />} />
 
-       {/*イベント新規登録 */}
+        {/*イベント新規登録 */}
         <Route path="/EventForm" element={<EventForm />} />
 
         {/*イベント新規登録 */}
