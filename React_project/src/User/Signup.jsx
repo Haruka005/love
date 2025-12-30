@@ -31,7 +31,7 @@ export default function Signup(){
         if(!/[0-9]/.test(password)){
             setError("半角数字（0～9）を入れてくださいい");
             return;}
-        if(!/[!@&?]/.test(password)){
+        if(!/[@#!%*+=_?-]/.test(password)){
             setError("記号（@#!%*+=_-?）を入れてください");
             return;}
         if(password !== confi_pass){

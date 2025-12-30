@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use App\Mail\ResetPasswordMail;
+use App\Mail\ChangeEmailMail;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -44,35 +46,35 @@ class UserController extends Controller
         \Log::info('バリデーション通過');
 
         try {
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'user_status' => 1,
-            ]);
+            return DB::transaction(function () use ($request) {
+                $user = User::create([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'password' => Hash::make($request->password),
+                    'user_status' => 1,
+                ]);
 
-            \Log::info('ユーザー作成成功: ID ' . $user->id);
+                \Log::info('ユーザー作成成功: ID ' . $user->id);
 
-            //認証用URLを発行
-            $verificationUrl = URL::temporarySignedRoute(
-                'verification.verify', //api.phpで設定する名前
-                now()->addMinutes(60), //有効期限（60分）
-                [
-                    'id' => $user->id,
-                    'hash' => sha1($user->getEmailForVerification()),
-                ]
-            );
+                //認証用URLを発行
+                $verificationUrl = URL::temporarySignedRoute(
+                    'verification.verify', //api.phpで設定する名前
+                    now()->addMinutes(60), //有効期限（60分）
+                    [
+                        'id' => $user->id,
+                        'hash' => sha1($user->getEmailForVerification()),
+                    ]
+                );
 
+                \Log::info('メール送信開始');
 
-            \Log::info('メール送信開始');
+                //メールを送信
+                Mail::to($user->email)->send(new WelcomeMail($user, $verificationUrl));
 
-            //メールを送信
-            Mail::to($user->email)->send(new WelcomeMail($user, $verificationUrl));
-
-            \Log::info('メール送信命令が正常に完了しました');
-
+                \Log::info('メール送信命令が正常に完了しました');
+            });
         } catch (\Exception $e) {
-            \Log::error('❌ エラー発生！: ' . $e->getMessage());
+            \Log::error('エラー発生: ' . $e->getMessage());
             \Log::error('エラーの場所: ' . $e->getFile() . ' の ' . $e->getLine() . '行目');
             
             return response()->json(['message' => 'サーバーエラーが発生しました'], 500);
@@ -259,6 +261,73 @@ class UserController extends Controller
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
         return response()->json(['message' => 'パスワードを再設定しました。']);
+    }
+
+    //メールアドレス変更
+    public function requestChange(Request $request)
+    {
+        $user = Auth::user();
+
+        //入力値のチェック
+        $request->validate([
+            'new_email' => 'required|email|unique:users,email',
+            'password' => 'required',
+        ]);
+
+        // パスワード照合
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json(['error' => 'Password mismatch'], 401);
+        }
+
+        //古いトークン削除
+        DB::table('t_email_change_requests')->where('user_id', $user->id)->delete();
+
+        //トークンの生成と保存
+        $token = Str::random(64);
+        
+        DB::table('t_email_change_requests')->insert([
+            'user_id' => $user->id,
+            'new_email' => $request->new_email,
+            'token' => $token,
+            'created_at' => now(),
+            'expires_at' => now()->addHours(24), //24時間有効
+        ]);
+
+        $link = url("/api/email-change/confirm?token={$token}");
+
+        Mail::to($request->new_email)->send(new ChangeEmailMail($link));
+        
+        return response()->json([
+            'message' => '確認メールを送信しました',
+        ]);
+    }
+
+    //アドレス変更メールクリックしたとき
+    public function confirmChange(Request $request)
+    {
+        $token = $request->query('token');
+
+        //トークンをDBで照合
+        $requestData = DB::table('t_email_change_requests')
+            ->where('token', $token)
+            ->where('expires_at', '>', now())
+            ->first();
+
+        if (!$requestData) {
+            return response()->json(['message' => 'トークンが無効か、期限切れです'], 400);
+        }
+
+        //ユーザーテーブルのアドレスを更新
+        $user = User::find($requestData->user_id);
+        if ($user) {
+            $user->email = $requestData->new_email;
+            $user->save();
+        }
+
+        //使い終わったリクエストデータを削除
+        DB::table('t_email_change_requests')->where('token', $token)->delete();
+
+        return redirect('http://localhost:3000/email-change-success');
     }
 
 }

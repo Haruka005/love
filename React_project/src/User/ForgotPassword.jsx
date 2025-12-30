@@ -76,11 +76,11 @@ const styles = {
     form: { width: '100%', maxWidth: '400px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px', textAlign: 'center' },
     subtext: { fontSize: '14px', color: '#666', marginBottom: '20px', lineHeight: '1.5' },
     inputGroup: { marginBottom: '20px', textAlign: 'left' },
-    button: { width: '100%', padding: '10px', backgroundColor: '#f53003', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' },
+    button: { width: '100%', padding: '10px', backgroundColor: '#F93D5D', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' },
     success: { color: 'green', backgroundColor: '#e6fffa', padding: '10px', borderRadius: '4px', marginBottom: '10px' },
     error: { color: 'red', backgroundColor: '#fff5f5', padding: '10px', borderRadius: '4px', marginBottom: '10px' },
     footer: { marginTop: '20px' },
-    link: { fontSize: '14px', color: '#f53003', textDecoration: 'none' }
+    link: { fontSize: '14px', color: '#F93D5D', textDecoration: 'none' }
 };
 
 export default ForgotPassword;

@@ -94,7 +94,7 @@ export default function MyPage() {
     lineHeight: 1, 
   };
   
-  // return の中に、このコンポーネントが画面に表示する内容を書く
+  //returnの中に、このコンポーネントが画面に表示する内容を書く
   //ログイン済みならマイページ表示
   return (
     <div style={{ maxWidth: "400px", margin: "0 auto", textAlign: "center", fontFamily: "sans-serif" }}>
@@ -111,8 +111,8 @@ export default function MyPage() {
         <div style={gridStyle}>
          {/* <button  onClick={() => navigate("/VisitList")}>来店一覧</button>*/}
          {/* <button  onClick={() => navigate("/FavoritesList")}>お気に入り一覧</button>*/}
-          <button  onClick={() => navigate("/reset-pass")}>アカウント編集</button>
-          <button  onClick={() => navigate("/HistoryList")}>閲覧履歴一覧</button>
+          <button  onClick={() => navigate("/ForgotPassword")}>パスワード変更</button>
+          <button  onClick={() => navigate("/EmailChangeForm")}>メールアドレス変更</button>
           <button  onClick={() => navigate("/EventApplicationHistory")}>登録・申請確認</button>
           <button  onClick={() => navigate("/EventForm")}>イベント申請新規登録</button>
           <button  onClick={() => navigate("/RestaurantForm")}>店登録</button>

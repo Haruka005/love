@@ -21,7 +21,28 @@ const ResetPassword = () => {
         setError('');
         setMessage('');
 
-        //一致チェック
+        //条件チェック
+       if (password.length < 12) {
+            setError("パスワードは12文字以上にしてください");
+            return;
+        }
+        if (!/[A-Z]/.test(password)) {
+            setError("大文字（A～Z）を入れてください");
+            return;
+        }
+        if (!/[a-z]/.test(password)) {
+            setError("小文字（a～z）を入れてください");
+            return;
+        }
+        if (!/[0-9]/.test(password)) {
+            setError("半角数字（0～9）を入れてください");
+            return;
+        }
+        // 記号のチェック（!@&? 以外も含む一般的な記号の正規表現にしています）
+        if (!/[@#!%*+=_?-]/.test(password)) {
+            setError("記号（@#!%*+=_-?）を入れてください");
+            return;
+        }
         if (password !== passwordConfirmation) {
             setError('パスワードが一致しません');
             return;
