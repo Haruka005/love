@@ -24,7 +24,7 @@ export default function EventApproval({ onUpdate }) {
     const fetchPendingEvents = async () => {
         setLoading(true);
         try {
-            const token = localStorage.getItem("token");
+            const token = localStorage.getItem("admintoken");
             // API_URL は既に /api/admin/events なので、後ろに /pending を付与
             const response = await fetch(`${API_URL}/pending`, {
                 method: "GET",
@@ -72,7 +72,7 @@ export default function EventApproval({ onUpdate }) {
         if (!window.confirm(confirmationMessage)) return;
 
         try {
-            const token = localStorage.getItem("token");
+            const token = localStorage.getItem("admintoken");
             const response = await fetch(`${API_URL}/${eventId}/status`, {
                 method: 'POST',
                 headers: {

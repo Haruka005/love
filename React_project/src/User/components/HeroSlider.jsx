@@ -10,31 +10,45 @@ function HeroSlider(){
 
     useEffect(() => {
         const timer = setInterval(() => {
-        //セットされた秒数ごとに処理を繰り返す setInterval()はJS標準のタイマー機能
             setCurrentIndex((prevIndex) =>
-            //画像番号を更新
                 prevIndex === images.length - 1 ? 0 : prevIndex + 1
-                //最後まで行ったら0に戻る
             );
-        }, 5000); // ← 5秒ごとに切り替え
+        }, 5000); 
         return () => clearInterval(timer);
-        //タイマーを止める処理　これがないと裏で動き続けるからメモリ食う
-    },[]);
+    }, [images.length]);
 
   return (
-    <div className="hero-slider">
+    <div className="hero-slider" style={{ 
+        position: "relative", 
+        width: "100%", 
+        height: "60vh", // ← ここで高さを指定（画面の高さの60%分）
+        overflow: "hidden",
+        backgroundColor: "#eee" 
+    }}>
 
         {/* 画像切り替え */}
         {images.map((img, index) => (
             <div
-            key={index}
-            className={`slide ${index === currentIndex ? "active" : ""}`}
-            style={{ backgroundImage: `url(${img})` }}
+                key={index}
+                className={`slide ${index === currentIndex ? "active" : ""}`}
+                style={{ 
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    backgroundImage: `url(${img})`,
+                    backgroundSize: "cover",      // 画像を枠いっぱいに広げる
+                    backgroundPosition: "center", // 真ん中を中心に表示
+                    opacity: index === currentIndex ? 1 : 0, // 重なりを制御
+                    transition: "opacity 1s ease-in-out",    // ふわっと切り替える
+                    zIndex: index === currentIndex ? 1 : 0
+                }}
             ></div>
         ))}
 
-        {/* テキスト 
-        <div className="hero-text">
+        {/* テキストが必要な場合はここを解除 */}
+        {/* <div className="hero-text" style={{ position: "absolute", zIndex: 10 }}>
             <h1>Welcome to Loveりべつ</h1>
             <p>登別の魅力を再発見！</p>
         </div>

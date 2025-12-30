@@ -52,7 +52,7 @@ function EventList({ status, title, onStatusUpdate }) {
     const fetchEvents = useCallback(async () => {
         setLoading(true);
         try {
-            const token = localStorage.getItem("token"); 
+            const token = localStorage.getItem("admintoken"); 
             // 修正: statusパラメータもURLに含める
             const url = `${API_URL}/approved?year_month=${selectedYearMonth}&status=${status}`;
             
@@ -83,7 +83,7 @@ function EventList({ status, title, onStatusUpdate }) {
         if (!window.confirm(msg)) return;
         
         try {
-            const token = localStorage.getItem("token");
+            const token = localStorage.getItem("admintoken");
             const res = await fetch(`${API_URL}/${id}/status`, {
                 method: "POST", 
                 headers: {

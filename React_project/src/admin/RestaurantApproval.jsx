@@ -20,7 +20,7 @@ function RestaurantApproval({ onUpdate }) {
     const fetchPendingShops = async () => {
         setLoading(true);
         try {
-            const token = localStorage.getItem("token");
+            const token = localStorage.getItem("admintoken");
             const response = await fetch(`${API_URL}/pending`, {
                 headers: { 
                     "Authorization": `Bearer ${token}`,
@@ -49,7 +49,7 @@ function RestaurantApproval({ onUpdate }) {
         if (!window.confirm(`この店舗を${statusId === 1 ? '承認' : '却下'}しますか？`)) return;
 
         try {
-            const token = localStorage.getItem("token");
+            const token = localStorage.getItem("admintoken");
             const response = await fetch(`${API_URL}/${shopId}/status`, {
                 method: 'POST',
                 headers: { 
@@ -159,7 +159,7 @@ function RestaurantList({ status, title, onStatusUpdate }) {
     const fetchShops = async () => {
         setLoading(true);
         try {
-            const token = localStorage.getItem("token");
+            const token = localStorage.getItem("admintoken");
             const url = `${API_URL}/approved?year_month=${selectedYearMonth}&status=${status}`;
             const response = await fetch(url, { 
                 headers: { 
@@ -176,7 +176,7 @@ function RestaurantList({ status, title, onStatusUpdate }) {
         e.stopPropagation();
         if (!window.confirm("状態を変更しますか？")) return;
         try {
-            const token = localStorage.getItem("token");
+            const token = localStorage.getItem("admintoken");
             const res = await fetch(`${API_URL}/${id}/status`, {
                 method: "POST",
                 headers: { 

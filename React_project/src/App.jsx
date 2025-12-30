@@ -1,10 +1,11 @@
 // src/App.js
 
+import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import "./App.css";
 
-// 各ページコンポーネントをインポート
+// ▼ 一般ユーザー用ページ
 import MainPage from "./User/MainPage";
 import Login from "./User/Login";
 import Signup from "./User/Signup";
@@ -13,8 +14,8 @@ import AccountCreated from "./User/AccountCreated";
 import ReportForm from "./User/ReportForm";
 import MyPage from "./User/MyPage";
 import VisitList from "./User/VisitList";
-import FavoritesList from "./User/FavoritesList"; 
-import HistoryList from "./User/HistoryList"; 
+import FavoritesList from "./User/FavoritesList";
+import HistoryList from "./User/HistoryList";
 import EventApplicationHistory from "./User/EventApplicationHistory";
 import EventForm from "./User/EventForm";
 import EventDetail from "./User/EventDetail"; 
@@ -26,6 +27,8 @@ import EmailChangeForm from "./User/EmailChangeForm.jsx";
 import EmailChangeConfirm from "./User/EmailChangeConfirm.jsx";
 import EmailChangeSuccess from "./User/EmailChangeSuccess.jsx";
 
+// ▼ 管理者用ページ
+import AdminLogin from "./admin/AdminLogin.jsx";
 import AdminTop from "./admin/AdminTop";
 
 import RestaurantForm from './User/RestaurantForm';
@@ -45,7 +48,6 @@ import RestaurantApproval from "./admin/RestaurantApproval.jsx";
 function App() {
 
   return (
-    //ReactのContext APIを使って「ログインユーザー情報（currentUser）」をアプリ全体に共有するための仕組みらしい
     <AuthProvider>
     <BrowserRouter>
 
@@ -116,6 +118,9 @@ function App() {
         {/*管理者TOP*/}
         <Route path="/AdminTop" element={<AdminTop />} />
 
+        {/*管理者ログイン*/}
+        <Route path="/Adminlogin" element={<AdminLogin />} />
+
         {/* 【管理者用】イベント編集画面のルートを追加 */}
         <Route path="/EventEdit/:id" element={<EventEdit />} />
 
@@ -125,6 +130,7 @@ function App() {
         {/*飲食店編集画面 */}
        <Route path="/RestaurantEdit/:id" element={<RestaurantEdit />} />
 
+
       </Routes>    
      </BrowserRouter>
      </AuthProvider>
@@ -132,3 +138,4 @@ function App() {
 }
 
 export default App;
+

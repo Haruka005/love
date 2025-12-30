@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from "../contexts/AuthContext.js";   // ← 追加
 import UserManagement from './components/user_mg';
 import EventManagement from './EventManagement.jsx';
 import RestaurantManagement from './RestaurantManagement.jsx';
@@ -27,13 +28,16 @@ const badgeStyle = {
 };
 
 export default function AdminTop() {
+    const navigate = useNavigate();
+    const { admin } = useAuth();   // ← 追加（今ログイン中の管理者を取得）
+
     const [activeTab, setActiveTab] = useState("users");
     const [eventCount, setEventCount] = useState(0);
     const [shopCount, setShopCount] = useState(0);
 
     const fetchCounts = useCallback(async () => {
         try {
-            const token = localStorage.getItem("token");
+            const token = localStorage.getItem("admintoken");
             const headers = {
                 "Authorization": `Bearer ${token}`,
                 "Accept": "application/json",
@@ -64,6 +68,13 @@ export default function AdminTop() {
     return (
         <div style={{ padding: "20px" }}>
             <h1>管理者ページ</h1>
+
+            {/* ★ ここに管理者名を表示 ★ */}
+            {admin && (
+                <p style={{ fontWeight: "bold", marginBottom: "20px", fontSize: "16px" }}>
+                    {admin.name} がログイン中
+                </p>
+            )}
 
             <nav style={{ display: "flex", justifyContent: "center", gap: "10px", margin: "20px 0" }}>
                 {[

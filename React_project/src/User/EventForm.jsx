@@ -113,7 +113,7 @@ function EventForm() {
             formDataToSend.append(key, value);
         });
 
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("usertoken");
 
         try {
             // 修正ポイント: 共通の API_BASE を使用して 404 を回避

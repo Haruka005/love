@@ -15,7 +15,7 @@ function UserManagement() {
     const [users, setUsers] = useState([]);
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("admintoken");
         fetch(`${API_BASE}/users`, {
             headers: {
                 "Authorization": `Bearer ${token}`,

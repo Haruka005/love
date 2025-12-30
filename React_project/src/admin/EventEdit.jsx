@@ -43,7 +43,10 @@ export default function EventEdit() {
         : `${API_BASE}/events/${id}`;
 
     const fetchEvent = useCallback(async () => {
-        const token = localStorage.getItem("token");
+        const token = isAdminMode
+         ? localStorage.getItem("adminToken")
+         : localStorage.getItem("userToken");
+
         
         // 認証チェック：トークンがない場合は即リダイレクト
         if (!token) {
@@ -61,12 +64,19 @@ export default function EventEdit() {
             });
 
             // 認証チェック：トークンが無効（401）な場合
-            if (response.status === 401) {
+           if (response.status === 401) {
                 alert("ログインの有効期限が切れました。再度ログインしてください。");
-                localStorage.removeItem("token");
-                navigate("/login");
+
+                if (isAdminMode) {
+                    localStorage.removeItem("adminToken");
+                    navigate("/admin/login");
+                } else {
+                    localStorage.removeItem("userToken");
+                    navigate("/login");
+                }
                 return;
             }
+
 
             if (response.ok) {
                 const data = await response.json();
@@ -116,11 +126,19 @@ export default function EventEdit() {
         if (!window.confirm(confirmMsg)) return;
 
         try {
-            const token = localStorage.getItem("token");
+           const token = isAdminMode
+                ? localStorage.getItem("adminToken")
+                : localStorage.getItem("userToken");
+            
             if (!token) {
-                navigate("/login");
+                if (isAdminMode) {
+                    navigate("/admin/login");
+                } else {
+                    navigate("/login");
+                }
                 return;
             }
+
 
             const data = new FormData();
             

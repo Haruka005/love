@@ -14,7 +14,7 @@ export default function MyPage() {
   const [showConfirm, setShowConfirm] = useState(false); // 確認ボックス表示フラグ
   const [loginOut, setLoginOut] = useState(false);   // ログアウト中フラグ
 
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("usertoken");
 
   useEffect(()=> {
     if(!isLoggedIn && !loginOut && !loading){
@@ -52,7 +52,7 @@ export default function MyPage() {
         },
       });
 
-      localStorage.removeItem("token");
+      localStorage.removeItem("usertoken");
       logout();//フロント側のユーザー情報削除
       console.log("ログアウト成功");
     }catch(err){

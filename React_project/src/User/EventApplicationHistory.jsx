@@ -47,7 +47,7 @@ export default function EventApplicationHistory() {
 
   // --- 2. 申請履歴データの取得 ---
   const fetchAllData = useCallback(async () => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("usertoken");
     if (!token) {
       navigate("/login");
       return;
@@ -67,7 +67,7 @@ export default function EventApplicationHistory() {
 
       if (eventRes.status === 401 || restaurantRes.status === 401) {
         alert("セッションが切れました。再度ログインしてください。");
-        localStorage.removeItem("token");
+        localStorage.removeItem("usertoken");
         navigate("/login");
         return;
       }
@@ -115,7 +115,7 @@ export default function EventApplicationHistory() {
   const handleAction = async (item) => {
     if (!window.confirm("本当に削除しますか？")) return;
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("usertoken");
       const url = `${API_BASE}/${activeType === "events" ? "events" : "restaurants"}/${item.id}`;
       const res = await fetch(url, {
         method: "DELETE",

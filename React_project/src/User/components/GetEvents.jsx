@@ -35,8 +35,32 @@ function GetEvents() {
 
     const indexOfLastEvent = currentPage * itemsPerPage;
     const indexOfFirstEvent = indexOfLastEvent - itemsPerPage;
-    const currentEvents = events.slice(indexOfFirstEvent, indexOfLastEvent);
-    const totalPages = Math.ceil(events.length / itemsPerPage);
+    const currentEvents = Array.isArray(events) ? events.slice(indexOfFirstEvent, indexOfLastEvent) : [];
+    const totalPages = Math.ceil((Array.isArray(events) ? events.length : 0) / itemsPerPage);
+
+    // --- ページ切り替え時にリストの先頭へスクロールさせる処理 ---
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+        setTimeout(() => {
+            const element = document.getElementById("event-list");
+            if (element) {
+                element.scrollIntoView({ behavior: "smooth" });
+            }
+        }, 10);
+    };
+
+    // --- 詳細から戻った時のスクロール処理 ---
+    useEffect(() => {
+        if (window.location.hash === "#event-list") {
+            const timer = setTimeout(() => {
+                const element = document.getElementById("event-list");
+                if (element) {
+                    element.scrollIntoView({ behavior: "smooth" });
+                }
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, []);
 
     const fetchEvents = useCallback(async () => {
         setLoading(true);
@@ -56,8 +80,9 @@ function GetEvents() {
             }
 
             const data = await res.json();
-            setEvents(Array.isArray(data) ? data : []);
-            setCurrentPage(1);
+            const eventsData = Array.isArray(data) ? data : (data.events || []);
+            setEvents(eventsData);
+            setCurrentPage(1); 
         } catch (err) {
             console.error("イベント取得エラー:", err);
             setError("イベント情報の取得に失敗しました。");
@@ -73,6 +98,7 @@ function GetEvents() {
 
     return (
         <section 
+            id="event-list"
             style={{ 
                 marginTop: "0px",  
                 padding: "40px 0 50px", 
@@ -86,7 +112,6 @@ function GetEvents() {
                 fontFamily: '"Zen Maru Gothic", sans-serif'
             }}
         >
-            {/* タイトルセクション */}
             <div style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -103,13 +128,12 @@ function GetEvents() {
                     <h2 style={{ 
                         margin: 0, 
                         fontSize: "2.2rem", 
-                        fontWeight: "900",
+                        fontWeight: "900", 
                         color: "#f51010ff",   
                         letterSpacing: "1px",
                         lineHeight: "1.1",
                         border: "none",      
                         padding: 0,
-                        /* 修正ポイント：広がりを抑え、エッジを強調 */
                         textShadow: `
                             -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff,
                             0 0 8px #fff,
@@ -132,7 +156,7 @@ function GetEvents() {
                 </div>
 
                 <img 
-                    src="/akaonitousin.png" 
+                    src="/images/akaonitousin.png" 
                     alt="icon-red" 
                     style={{ 
                         width: "80px", 
@@ -158,7 +182,15 @@ function GetEvents() {
                 </label> 
             </div>
 
-            <div className="button-group">
+            {/* ボタンコンテナ：1行に6個、合計2段 */}
+            <div className="button-group" style={{ 
+                display: "grid",
+                gridTemplateColumns: "repeat(6, 1fr)", 
+                gap: "8px",
+                maxWidth: "800px", 
+                margin: "0 auto",
+                padding: "0 10px"
+            }}>
                 {[...Array(12)].map((_, i) => {
                     const month = i + 1;
                     const isActive = selectedMonth === month;
@@ -170,7 +202,15 @@ function GetEvents() {
                             style={{
                                 backgroundColor: isActive ? "#f51010ff" : "#fff",
                                 color: isActive ? "#fff" : "#555",
-                                fontWeight: isActive ? "bold" : "normal"
+                                fontWeight: isActive ? "bold" : "normal",
+                                padding: "8px 0",
+                                border: `1px solid ${isActive ? "#f51010ff" : "#f93d5d"}`,
+                                borderRadius: "25px",
+                                cursor: "pointer",
+                                fontSize: "0.85rem",
+                                transition: "all 0.3s ease",
+                                boxShadow: isActive ? "0 3px 8px rgba(245, 16, 16, 0.3)" : "none",
+                                width: "100%"
                             }}
                         >
                             {month}月
@@ -204,11 +244,15 @@ function GetEvents() {
                 ) : (
                     <div className="card-list">
                         {currentEvents.map((event) => {
-                            const fullImageUrl = event.image_url 
-                                ? (event.image_url.startsWith('http') 
-                                    ? event.image_url 
-                                    : `${SERVER_ROOT}${event.image_url.startsWith('/') ? '' : '/'}${event.image_url}`)
-                                : "/images/no-image.png";
+                            const imagePath = event.image_url || event.image_path || "/images/no-image.png";
+                            let fullImageUrl;
+                            if (imagePath.startsWith('http')) {
+                                fullImageUrl = imagePath;
+                            } else {
+                                const cleanRoot = SERVER_ROOT.endsWith('/') ? SERVER_ROOT.slice(0, -1) : SERVER_ROOT;
+                                const cleanPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+                                fullImageUrl = `${cleanRoot}${cleanPath}`;
+                            }
 
                             return (
                                 <EventCard
@@ -231,7 +275,7 @@ function GetEvents() {
                 <Pagenation
                     totalPages={totalPages}
                     currentPage={currentPage}
-                    onPageChange={(page) => setCurrentPage(page)}
+                    onPageChange={handlePageChange}
                 />
             )}
         </section>
