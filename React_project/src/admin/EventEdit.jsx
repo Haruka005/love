@@ -37,21 +37,24 @@ export default function EventEdit() {
     const [previewUrl, setPreviewUrl] = useState(null);
     const [imageFile, setImageFile] = useState(null);
 
-    // 修正ポイント：API_BASEを使用してURLの重複を防ぐ
+    // 取得用URL
     const GET_URL = isAdminMode 
         ? `${API_BASE}/admin/events/${id}`
         : `${API_BASE}/events/${id}`;
 
     const fetchEvent = useCallback(async () => {
         const token = isAdminMode
-         ? localStorage.getItem("adminToken")
-         : localStorage.getItem("userToken");
+         ? localStorage.getItem("admintoken")
+         : localStorage.getItem("usertoken");
 
-        
         // 認証チェック：トークンがない場合は即リダイレクト
         if (!token) {
             console.error("トークンがありません。");
-            navigate("/login");
+            if (isAdminMode) {
+                navigate("/admin/login");
+            } else {
+                navigate("/login");
+            }
             return;
         }
 
@@ -64,19 +67,18 @@ export default function EventEdit() {
             });
 
             // 認証チェック：トークンが無効（401）な場合
-           if (response.status === 401) {
+            if (response.status === 401) {
                 alert("ログインの有効期限が切れました。再度ログインしてください。");
 
                 if (isAdminMode) {
-                    localStorage.removeItem("adminToken");
+                    localStorage.removeItem("admintoken");
                     navigate("/admin/login");
                 } else {
-                    localStorage.removeItem("userToken");
+                    localStorage.removeItem("usertoken");
                     navigate("/login");
                 }
                 return;
             }
-
 
             if (response.ok) {
                 const data = await response.json();
@@ -97,7 +99,7 @@ export default function EventEdit() {
         } finally {
             setLoading(false);
         }
-    }, [id, GET_URL, navigate]);
+    }, [id, GET_URL, navigate, isAdminMode]);
 
     useEffect(() => {
         fetchEvent();
@@ -127,8 +129,8 @@ export default function EventEdit() {
 
         try {
            const token = isAdminMode
-                ? localStorage.getItem("adminToken")
-                : localStorage.getItem("userToken");
+                ? localStorage.getItem("admintoken")
+                : localStorage.getItem("usertoken");
             
             if (!token) {
                 if (isAdminMode) {
@@ -138,7 +140,6 @@ export default function EventEdit() {
                 }
                 return;
             }
-
 
             const data = new FormData();
             
@@ -178,7 +179,13 @@ export default function EventEdit() {
 
             if (response.status === 401) {
                 alert("認証エラーです。再ログインしてください。");
-                navigate("/login");
+                if (isAdminMode) {
+                    localStorage.removeItem("admintoken");
+                    navigate("/admin/login");
+                } else {
+                    localStorage.removeItem("usertoken");
+                    navigate("/login");
+                }
                 return;
             }
 

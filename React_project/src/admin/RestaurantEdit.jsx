@@ -55,8 +55,8 @@ export default function RestaurantEdit() {
 
     const fetchData = useCallback(async () => {
         const token = isAdminMode
-            ? localStorage.getItem("adminToken")
-            : localStorage.getItem("userToken");
+            ? localStorage.getItem("admintoken")
+            : localStorage.getItem("usertoken");
 
         if (!token) {
             if (isAdminMode) {
@@ -85,10 +85,10 @@ export default function RestaurantEdit() {
                 alert("セッションが切れました。再ログインしてください。");
 
                 if (isAdminMode) {
-                    localStorage.removeItem("adminToken");
+                    localStorage.removeItem("admintoken");
                     navigate("/admin/login");
                 } else {
-                    localStorage.removeItem("userToken");
+                    localStorage.removeItem("usertoken");
                     navigate("/login");
                 }
                 return;
@@ -125,7 +125,7 @@ export default function RestaurantEdit() {
         } finally {
             setLoading(false);
         }
-    }, [GET_URL, navigate]);
+    }, [GET_URL, navigate, isAdminMode]);
 
     useEffect(() => {
         fetchData();
@@ -155,8 +155,8 @@ export default function RestaurantEdit() {
 
         try {
             const token = isAdminMode
-                ? localStorage.getItem("adminToken")
-                : localStorage.getItem("userToken");
+                ? localStorage.getItem("admintoken")
+                : localStorage.getItem("usertoken");
 
             if (!token) {
                 if (isAdminMode) {
@@ -206,10 +206,10 @@ export default function RestaurantEdit() {
                 alert("認証エラーです。再ログインしてください。");
 
                 if (isAdminMode) {
-                    localStorage.removeItem("adminToken");
+                    localStorage.removeItem("admintoken");
                     navigate("/admin/login");
                 } else {
-                    localStorage.removeItem("userToken");
+                    localStorage.removeItem("usertoken");
                     navigate("/login");
                 }
                 return;

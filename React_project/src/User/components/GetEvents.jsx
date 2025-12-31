@@ -16,7 +16,8 @@ const getServerRootUrl = () => {
 const API_BASE = getBaseApiUrl();
 const SERVER_ROOT = getServerRootUrl();
 
-function GetEvents() {
+// 修正：引数に onRecordClick を追加
+function GetEvents({ onRecordClick }) {
     const now = new Date();
     const [selectedYear, setSelectedYear] = useState(now.getFullYear());
     const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
@@ -182,7 +183,6 @@ function GetEvents() {
                 </label> 
             </div>
 
-            {/* ボタンコンテナ：1行に6個、合計2段 */}
             <div className="button-group" style={{ 
                 display: "grid",
                 gridTemplateColumns: "repeat(6, 1fr)", 
@@ -255,16 +255,18 @@ function GetEvents() {
                             }
 
                             return (
-                                <EventCard
-                                    key={event.id}
-                                    id={event.id}
-                                    name={event.name}
-                                    catchphrase={event.catchphrase}
-                                    image={fullImageUrl}
-                                    start_date={DateTime(event.start_date)}
-                                    end_date={DateTime(event.end_date)}
-                                    location={event.location}
-                                />
+                                // 修正：onClick を仕込む
+                                <div key={event.id} onClick={() => onRecordClick && onRecordClick(event.id)} style={{ cursor: "pointer" }}>
+                                    <EventCard
+                                        id={event.id}
+                                        name={event.name}
+                                        catchphrase={event.catchphrase}
+                                        image={fullImageUrl}
+                                        start_date={DateTime(event.start_date)}
+                                        end_date={DateTime(event.end_date)}
+                                        location={event.location}
+                                    />
+                                </div>
                             );
                         })}
                     </div>

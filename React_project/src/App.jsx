@@ -1,7 +1,5 @@
-// src/App.js
-
-import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import React, { useEffect } from "react";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import "./App.css";
 
@@ -39,84 +37,125 @@ import RestaurantEdit from "./admin/RestaurantEdit";
 //管理者用店登録
 import RestaurantApproval from "./admin/RestaurantApproval.jsx";
 
+/**
+ * アクセス解析用の記録コンポーネント
+ * Routerの内側で現在の場所(location)を監視するために独立させています
+ */
+function AnalyticsTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const logAccess = async () => {
+      try {
+        // APIのベースURL（AdminTop等で定義しているものと同じ）
+        const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000/api";
+        
+        // ユーザー用または管理者用トークンの取得
+        const token = localStorage.getItem("token") || localStorage.getItem("admintoken");
+
+        await fetch(`${API_BASE}/log-access`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": token ? `Bearer ${token}` : ""
+          },
+          body: JSON.stringify({
+            url: location.pathname // 現在表示しているURLパスを送る
+          }),
+        });
+      } catch (error) {
+        console.error("アクセスログ送信エラー:", error);
+      }
+    };
+
+    logAccess();
+  }, [location]);
+
+  return null; // 画面には何も表示しません
+}
 
 function App() {
 
   return (
     <AuthProvider>
-    <BrowserRouter>
+      <BrowserRouter>
+        {/* URLの変更を監視してLaravelに送るコンポーネントを配置 */}
+        <AnalyticsTracker />
 
-      <Routes>
-        {/* トップページ */}
-        <Route path="/" element={<MainPage />} />
+        <Routes>
+          {/* トップページ */}
+          <Route path="/" element={<MainPage />} />
 
-        {/* ログインページ */}
-        <Route path="/login" element={<Login />} />
+          {/* ログインページ */}
+          <Route path="/login" element={<Login />} />
 
-        {/* サインアップページ */}
-        <Route path="/signup" element={<Signup />} />
+          {/* サインアップページ */}
+          <Route path="/signup" element={<Signup />} />
 
-        {/* メール認証完了ページ */}
-        <Route path="/VerifiedSuccess" element={<VerifiedSuccess />} />
+          {/* メール認証完了ページ */}
+          <Route path="/VerifiedSuccess" element={<VerifiedSuccess />} />
 
-        {/* ログイン完了ページ */}
-        <Route path="/login-complete" element={<LoginComplete />} />
+          {/* ログイン完了ページ */}
+          <Route path="/login-complete" element={<LoginComplete />} />
 
-        {/* アカウント作成完了ページ */}
-        <Route path="/AccountCreated" element={<AccountCreated />} />
+          {/* アカウント作成完了ページ */}
+          <Route path="/AccountCreated" element={<AccountCreated />} />
 
-        {/* 通報ページ */}
-        <Route path="/ReportForm" element={<ReportForm />} />
+          {/* 通報ページ */}
+          <Route path="/ReportForm" element={<ReportForm />} />
 
-        {/* マイページ */}
-        <Route path="/MyPage" element={<MyPage />} />
+          {/* マイページ */}
+          <Route path="/MyPage" element={<MyPage />} />
 
-        {/* 飲食店詳細 */}
-        <Route path="/restaurants/:id" element={<RestaurantDetail />} />
+          {/* 飲食店詳細 */}
+          <Route path="/restaurants/:id" element={<RestaurantDetail />} />
 
-        {/* イベント詳細 */}
-        <Route path="/events/:id" element={<EventDetail />} />
+          {/* イベント詳細 */}
+          <Route path="/events/:id" element={<EventDetail />} />
 
-        {/*パスワード再設定ページ*/}
-        <Route path="/reset-pass" element={<ResetPass/>}/>
+          {/*パスワード再設定ページ*/}
+          <Route path="/reset-pass" element={<ResetPass/>}/>
 
-        {/*来店一覧*/}
-        <Route path="/VisitList" element={<VisitList />} />
+          {/*来店一覧*/}
+          <Route path="/VisitList" element={<VisitList />} />
 
-        {/* お気に入り一覧ページ */}
-        <Route path="/FavoritesList" element={<FavoritesList />} />
-        
-        {/*閲覧履歴一覧*/}
-        <Route path="/HistoryList" element={<HistoryList />} />
+          {/* お気に入り一覧ページ */}
+          <Route path="/FavoritesList" element={<FavoritesList />} />
+          
+          {/*閲覧履歴一覧*/}
+          <Route path="/HistoryList" element={<HistoryList />} />
 
-       {/*イベント親戚確認 */}
-        <Route path="/EventApplicationHistory" element={<EventApplicationHistory />} />
+          {/*イベント親戚確認 */}
+          <Route path="/EventApplicationHistory" element={<EventApplicationHistory />} />
 
-       {/*イベント新規登録 */}
-        <Route path="/EventForm" element={<EventForm />} />
+          {/*イベント新規登録 */}
+          <Route path="/EventForm" element={<EventForm />} />
 
-        {/*イベント新規登録 */}
-        <Route path="/RestaurantForm" element={<RestaurantForm />} />
+          {/*イベント新規登録 */}
+          <Route path="/RestaurantForm" element={<RestaurantForm />} />
 
-        {/*管理者TOP*/}
-        <Route path="/AdminTop" element={<AdminTop />} />
+          {/*管理者TOP*/}
+          <Route path="/AdminTop" element={<AdminTop />} />
 
-        {/*管理者ログイン*/}
-        <Route path="/Adminlogin" element={<AdminLogin />} />
+          {/*管理者ログイン*/}
+          <Route path="/Adminlogin" element={<AdminLogin />} />
 
-        {/* 【管理者用】イベント編集画面のルートを追加 */}
-        <Route path="/EventEdit/:id" element={<EventEdit />} />
+          {/* 【管理者用】イベント編集画面のルートを追加 */}
+          <Route path="/EventEdit/:id" element={<EventEdit />} />
 
-        {/*管理者用　店舗申請承認画面 */}
-        <Route path="/RestaurantApproval" element={<RestaurantApproval />} />
+          {/*管理者用　店舗申請承認画面 */}
+          <Route path="/RestaurantApproval" element={<RestaurantApproval />} />
 
-        {/*飲食店編集画面 */}
-       <Route path="/RestaurantEdit/:id" element={<RestaurantEdit />} />
+          {/*飲食店編集画面 */}
+          <Route path="/RestaurantEdit/:id" element={<RestaurantEdit />} />
 
+          {/* 修正後（小文字に合わせる） */}
+          <Route path="/admin/login" element={<AdminLogin />} />
 
-      </Routes>    
-     </BrowserRouter>
-     </AuthProvider>
+        </Routes>    
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 

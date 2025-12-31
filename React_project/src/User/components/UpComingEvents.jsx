@@ -15,7 +15,8 @@ const getServerRootUrl = () => {
 const API_BASE = getBaseApiUrl();
 const SERVER_ROOT = getServerRootUrl();
 
-function UpComingEvents() {
+// 修正：引数に onRecordClick を追加
+function UpComingEvents({ onRecordClick }) {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -158,7 +159,12 @@ function UpComingEvents() {
                         }
 
                         return (
-                            <div key={event.id} className="event-card-hover-wrapper">
+                            // 修正：onClick に onRecordClick を仕込む
+                            <div 
+                                key={event.id} 
+                                className="event-card-hover-wrapper"
+                                onClick={() => onRecordClick && onRecordClick(event.id)}
+                            >
                                 <EventCard
                                     id={event.id}
                                     name={event.name}
@@ -183,6 +189,7 @@ function UpComingEvents() {
                     flex: 0 0 auto;
                     width: 320px;
                     transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+                    cursor: pointer;
                 }
                 .event-card-hover-wrapper:hover {
                     transform: translateY(-12px);
