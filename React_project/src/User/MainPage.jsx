@@ -31,6 +31,25 @@ export default function MainPage() {
     });
   };
 
+  // --- 追加：クリック計測関数 ---
+  const recordClick = async (type, id) => {
+    try {
+      const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000/api";
+      const logUrl = `/${type}s/${id}`; 
+
+      await fetch(`${API_BASE}/analytics/store`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({ url: logUrl }),
+      });
+    } catch (err) {
+      console.error("Click logging error:", err);
+    }
+  };
+
   return (
     <div className="main-background" style={{ backgroundColor: "#fff", overflowX: "hidden" }}>
       {/* ヘッダー */}
@@ -50,15 +69,18 @@ export default function MainPage() {
         </div>
 
         <div style={{ marginTop: "-1px", lineHeight: "normal" }}>
-          <UpComingEvents />
+          {/* 修正：onRecordClick を追加 */}
+          <UpComingEvents onRecordClick={(id) => recordClick("event", id)} />
         </div>
 
         <div style={{ marginTop: "-1px", lineHeight: "normal" }}>
-          <GetEvents />
+          {/* 修正：onRecordClick を追加 */}
+          <GetEvents onRecordClick={(id) => recordClick("event", id)} />
         </div>
 
         <div style={{ marginTop: "-1px", lineHeight: "normal" }}>
-          <GetRestaurants />
+          {/* 修正：onRecordClick を追加 */}
+          <GetRestaurants onRecordClick={(id) => recordClick("restaurant", id)} />
         </div>
 
         {/* 会員機能 */}

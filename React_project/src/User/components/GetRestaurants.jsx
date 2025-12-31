@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import RestaurantCard from "./RestaurantCard";
 import Pagenation from "./Pagenation";
-import { useNavigate, useLocation } from "react-router-dom"; // useLocationを追加
+import { useNavigate, useLocation } from "react-router-dom"; 
 
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
@@ -64,28 +64,27 @@ function RecenterAutomatically({ data }) {
     return null;
 }
 
-function GetRestaurants() {
+// 修正：引数に onRecordClick を追加
+function GetRestaurants({ onRecordClick }) {
     const navigate = useNavigate();
-    const location = useLocation(); // 現在のURL情報を取得
+    const location = useLocation(); 
     const [restaurants, setRestaurants] = useState([]); 
     const [loading, setLoading] = useState(true);      
     const [selectedGenre, setSelectedGenre] = useState("すべて"); 
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 4;
     
-    // --- 修正: 詳細から戻った時、およびハッシュがある時のスクロール処理 ---
     useEffect(() => {
-        // location.hash (#restaurant-list) がある場合、または戻ってきた時
         if (location.hash === "#restaurant-list" || window.location.hash === "#restaurant-list") {
             const timer = setTimeout(() => {
                 const element = document.getElementById("restaurant-list");
                 if (element) {
                     element.scrollIntoView({ behavior: "smooth" });
                 }
-            }, 300); // 描画待ちのため少し長めに設定
+            }, 300); 
             return () => clearTimeout(timer);
         }
-    }, [location]); // locationが変わるたびにチェック
+    }, [location]); 
 
     const fetchRestaurants = useCallback(async () => {
         setLoading(true);
@@ -120,7 +119,6 @@ function GetRestaurants() {
             : `${SERVER_ROOT}${rawPath.startsWith('/') ? '' : '/'}${rawPath}`;
     };
 
-    // ページ変更時も上部にスクロール
     const handlePageChange = (page) => {
         setCurrentPage(page);
         const element = document.getElementById("restaurant-list");
@@ -273,7 +271,14 @@ function GetRestaurants() {
                                         <div style={{ textAlign: "center", width: "160px" }}>
                                             <img src={fullImageUrl} alt={shop.name} style={{ width: "100%", height: "90px", objectFit: "cover", borderRadius: "8px" }} />
                                             <p style={{ margin: "8px 0", fontWeight: "bold" }}>{shop.name}</p>
-                                            <button onClick={() => navigate(`/restaurants/${shop.id}`)} style={{ background: "#0036e9", color: "#fff", border: "none", padding: "5px 15px", borderRadius: "15px", cursor: "pointer" }}>
+                                            {/* 修正：詳細クリック時に計測 */}
+                                            <button 
+                                                onClick={() => {
+                                                    onRecordClick && onRecordClick(shop.id);
+                                                    navigate(`/restaurants/${shop.id}`);
+                                                }} 
+                                                style={{ background: "#0036e9", color: "#fff", border: "none", padding: "5px 15px", borderRadius: "15px", cursor: "pointer" }}
+                                            >
                                                 詳細
                                             </button>
                                         </div>
@@ -301,14 +306,16 @@ function GetRestaurants() {
             <div style={{ padding: "0 20px" }}>
                 <div className="card-list" style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "25px" }}>
                     {currentRestaurants.map((shop) => (
-                        <RestaurantCard 
-                            key={shop.id} 
-                            {...shop} 
-                            area={shop.area?.name} 
-                            genre={shop.genre?.name} 
-                            budget={shop.budget?.name} 
-                            image={getFullImageUrl(shop)} 
-                        />
+                        // 修正：カードクリック時に計測
+                        <div key={shop.id} onClick={() => onRecordClick && onRecordClick(shop.id)} style={{ cursor: "pointer" }}>
+                            <RestaurantCard 
+                                {...shop} 
+                                area={shop.area?.name} 
+                                genre={shop.genre?.name} 
+                                budget={shop.budget?.name} 
+                                image={getFullImageUrl(shop)} 
+                            />
+                        </div>
                     ))}
                 </div>
             </div>

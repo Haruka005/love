@@ -15,7 +15,7 @@ use App\Http\Controllers\AdminRestaurantController;
 use App\Http\Controllers\EventDetailController;
 use App\Models\User;
 use App\Http\Controllers\AdminAuthController;
-
+use App\Http\Controllers\AnalyticsController;
 
 // ==============================
 // 認証不要ルート
@@ -25,6 +25,9 @@ Route::post('/login', [UserController::class, 'login']);
 Route::post('/register', [UserController::class, 'register']);
 Route::get('/users', [AdminController::class, 'user_all']); 
 Route::post('/admin/login', [AdminAuthController::class, 'login']);
+
+// 追加：アクセス記録用エンドポイント（誰でもアクセス可能）
+Route::post('/log-access', [AnalyticsController::class, 'storeAccess']);
 
 
 Route::get('/events/{year}/{month}', [EventController::class, 'getByMonth']);
@@ -85,6 +88,9 @@ Route::middleware(['check.token'])->group(function () {
     
     Route::put('/admin/restaurants/{id}', [AdminRestaurantController::class, 'update']);
     Route::post('/admin/restaurants/{id}/status', [AdminRestaurantController::class, 'updateStatus']);
+
+    // 追加：管理者用アクセス解析サマリーAPI
+    Route::get('/admin/analytics-summary', [AnalyticsController::class, 'getSummary']);
 
     // --- 一般ユーザー用 ---
     Route::get('/events', [EventController::class, 'index']);
