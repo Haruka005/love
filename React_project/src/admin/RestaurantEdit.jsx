@@ -56,7 +56,7 @@ export default function RestaurantEdit() {
     const fetchData = useCallback(async () => {
         const token = isAdminMode
             ? localStorage.getItem("adminToken")
-            : localStorage.getItem("userToken");
+            : localStorage.getItem("usertoken");
 
         if (!token) {
             if (isAdminMode) {
@@ -88,7 +88,7 @@ export default function RestaurantEdit() {
                     localStorage.removeItem("adminToken");
                     navigate("/admin/login");
                 } else {
-                    localStorage.removeItem("userToken");
+                    localStorage.removeItem("usertoken");
                     navigate("/login");
                 }
                 return;
@@ -149,14 +149,14 @@ export default function RestaurantEdit() {
 
         const confirmMsg = isAdminMode
             ? "管理者権限で内容を更新しますか？"
-            : "内容を修正して再申請しますか？\n（※承認されるまで公開している場合は一時的に非公開となります）";
+            : "内容を修正して再申請しますか？\n（※メール認証完了後、管理者からの承認で掲載されます。）";
 
         if (!window.confirm(confirmMsg)) return;
 
         try {
             const token = isAdminMode
                 ? localStorage.getItem("adminToken")
-                : localStorage.getItem("userToken");
+                : localStorage.getItem("usertoken");
 
             if (!token) {
                 if (isAdminMode) {

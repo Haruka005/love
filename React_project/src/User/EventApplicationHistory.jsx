@@ -101,9 +101,12 @@ export default function EventApplicationHistory() {
   const currentList = dataList[activeType] || [];
   const filteredItems = currentList.filter(item => {
     const status = Number(item.approval_status_id);
-    if (activeTab === "pending") return status === 0 || status === 3;
-    if (activeTab === "approved") return status === 1;
-    if (activeTab === "rejected") return status === 2;
+    //未承認タブ: メール認証待ち(0) または 管理者審査待ち(1)
+    if (activeTab === "pending") return status === 0 || status === 1;
+    //承認済みタブ: 公開中(2)
+    if (activeTab === "approved") return status === 2;
+    //却下タブ: 却下(3)
+    if (activeTab === "rejected") return status === 3;
     return true;
   });
 
@@ -169,8 +172,8 @@ export default function EventApplicationHistory() {
                 <div>
                   <strong style={{ fontSize: "1.1em" }}>{item.name}</strong>
                   {activeTab === "pending" && (
-                    <span style={{ fontSize: "0.75em", marginLeft: "10px", padding: "2px 8px", borderRadius: "10px", backgroundColor: statusId === 3 ? "#faad14" : "#1890ff", color: "white" }}>
-                      {statusId === 3 ? "再申請中" : "確認中"}
+                    <span style={{ fontSize: "0.75em", marginLeft: "10px", padding: "2px 8px", borderRadius: "10px", backgroundColor: statusId === 0 ? "#faad14" : "#1890ff", color: "white" }}>
+                      {statusId === 0 ? "メール認証待ち" : "審査待ち"}
                     </span>
                   )}
                   <div style={{ fontSize: "0.8em", color: "#888", marginTop: "4px" }}>
@@ -234,7 +237,7 @@ export default function EventApplicationHistory() {
                   </div>
 
                   {/* 修正依頼 */}
-                  {statusId === 2 && item.rejection_reason && (
+                  {statusId === 3 && item.rejection_reason && (
                     <div style={rejectionBoxStyle}><strong>⚠️ 修正依頼:</strong><br/>{item.rejection_reason}</div>
                   )}
 

@@ -5,11 +5,14 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use App\Models\User;
 use App\Models\Restaurant;
 use App\Models\Genre;
 use App\Models\Area;
 use App\Models\Budget;
+use App\Mail\RestaurantApplicationMail;
 
 class RestaurantController extends Controller
 {
@@ -34,7 +37,7 @@ class RestaurantController extends Controller
     {
         Log::info('店舗登録申請開始', ['user_id' => $request->input('user_id')]);
 
-        // 1. バリデーション
+        //バリデーション
         $request->validate([
             'topimages.*' => 'required|image|max:5120',
             'images.*' => 'nullable|image|max:5120',
@@ -53,7 +56,7 @@ class RestaurantController extends Controller
             $user = User::findOrFail($request->user_id);
             $restaurant = new Restaurant();
 
-            // 2. 基本情報のセット
+            //基本情報のセット
             $restaurant->user_id = $user->id;
             $restaurant->name = $request->name;
             $restaurant->catchphrase = $request->catchphrase;
@@ -66,6 +69,10 @@ class RestaurantController extends Controller
             $restaurant->genre_id = (int)$request->genre_id;
             $restaurant->area_id = (int)$request->area_id;
             $restaurant->budget_id = (int)$request->budget_id;
+
+            //ステータス0（認証待ち）とトークン発行
+            $restaurant->approval_status_id = 0;
+            $restaurant->confirmation_token = Str::random(64);
             
             // 座標（フロントの初期値に合わせて幌別駅）
             $restaurant->latitude = $request->latitude ?: 42.4123;
@@ -74,7 +81,7 @@ class RestaurantController extends Controller
             // ステータス（0: 承認待ち）
             $restaurant->approval_status_id = 0;
 
-            // 3. 画像の保存処理
+            //画像の保存処理
             $basePath = "user_images/{$user->id}/restaurants";
 
             // TOP画像 (React側は topimages[] 配列で送ってくる)
@@ -97,6 +104,10 @@ class RestaurantController extends Controller
             }
 
             $restaurant->save();
+
+            //認証メール送信
+            $confirmationUrl = url("/api/restaurant-request/confirm?token=" . $restaurant->confirmation_token);
+            Mail::to($user->email)->send(new RestaurantApplicationMail($confirmationUrl, $restaurant->name));
 
             return response()->json(['message' => '店舗情報を送信しました。管理者による承認をお待ちください。'], 201);
 
@@ -133,7 +144,10 @@ class RestaurantController extends Controller
             if ($request->from_admin === "true") {
                 $restaurant->approval_status_id = (int)$request->input('approval_status_id');
             } else {
-                $restaurant->approval_status_id = 3; // 3: 再申請中
+                $restaurant->approval_status_id = 0;
+                $restaurant->confirmation_token = Str::random(64);
+                $restaurant->rejection_reason = null; //以前の却下理由をクリア
+                $isReapplication = true;
             }
 
             if (in_array($restaurant->approval_status_id, [0, 3])) {
@@ -155,6 +169,14 @@ class RestaurantController extends Controller
             }
 
             $restaurant->save();
+
+            //メール送信
+           if ($needsEmail) {
+                $user = $request->user();
+                $confirmationUrl = url("/api/restaurant-request/confirm?token=" . $restaurant->confirmation_token);
+                Mail::to($user->email)->send(new RestaurantApplicationMail($confirmationUrl, $restaurant->name));
+            }
+
             return response()->json(['message' => '店舗情報を更新しました', 'restaurant' => $restaurant]);
 
         } catch (\Exception $e) {
@@ -162,6 +184,26 @@ class RestaurantController extends Controller
             return response()->json(['error' => '店舗更新に失敗しました'], 500);
         }
     }
+
+    //メール認証完了メソッド
+    public function confirmRestaurant(Request $request)
+    {
+        $token = $request->query('token');
+        $restaurant = Restaurant::where('confirmation_token', $token)->first();
+
+        if (!$restaurant) {
+            return response()->json(['error' => '無効なトークンです'], 400);
+        }
+
+        //ステータスを 1（審査待ち）に更新
+        $restaurant->approval_status_id = 1;
+        $restaurant->confirmation_token = null;
+        $restaurant->save();
+
+        //認証後のリダイレクト先（ReactのURL）
+        return redirect('http://localhost:3000/RestaurantApplicationHistory?verified=true');
+    }
+
 
     // --- 店舗削除 (論理削除) ---
     public function destroy(Request $request, $id)
@@ -201,7 +243,7 @@ class RestaurantController extends Controller
     {
         try {
             $restaurants = Restaurant::with(['genre', 'area', 'budget'])
-                ->where('approval_status_id', 1) 
+                ->where('approval_status_id', 2) 
                 ->get();
             return response()->json($restaurants);
         } catch (\Exception $e) {

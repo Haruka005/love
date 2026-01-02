@@ -45,7 +45,7 @@ export default function EventEdit() {
     const fetchEvent = useCallback(async () => {
         const token = isAdminMode
          ? localStorage.getItem("adminToken")
-         : localStorage.getItem("userToken");
+         : localStorage.getItem("usertoken");
 
         
         // 認証チェック：トークンがない場合は即リダイレクト
@@ -71,7 +71,7 @@ export default function EventEdit() {
                     localStorage.removeItem("adminToken");
                     navigate("/admin/login");
                 } else {
-                    localStorage.removeItem("userToken");
+                    localStorage.removeItem("usertoken");
                     navigate("/login");
                 }
                 return;
@@ -119,16 +119,21 @@ export default function EventEdit() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
+        // デバッグ用：何が起きているかコンソールに表示
+        console.log("--- 送信チェック開始 ---");
+        console.log("usertokenの内容:", localStorage.getItem("usertoken"));
+        console.log("isAdminModeの状態:", isAdminMode);
+
         const confirmMsg = isAdminMode 
             ? "管理者権限で内容を更新しますか？" 
-            : "内容を修正して再申請しますか？\n（※承認されるまで公開している場合は一時的に非公開となります）";
+            : "内容を修正して再申請しますか？\n（※メール認証完了後、管理者からの承認で掲載されます。）";
             
         if (!window.confirm(confirmMsg)) return;
 
         try {
            const token = isAdminMode
                 ? localStorage.getItem("adminToken")
-                : localStorage.getItem("userToken");
+                : localStorage.getItem("usertoken");
             
             if (!token) {
                 if (isAdminMode) {
@@ -185,7 +190,7 @@ export default function EventEdit() {
             if (response.ok) {
                 const successMsg = isAdminMode 
                     ? "更新が完了しました。" 
-                    : "再申請が完了しました。承認されるまで一時的に非公開となります。";
+                    : "再申請を受け付けました。本人確認のため、ご登録のメールアドレスへ認証メールを送信しました。メール内のリンクをクリックすると、管理者の審査が始まります。";
                 
                 alert(successMsg);
                 navigate(-1);
@@ -286,6 +291,6 @@ export default function EventEdit() {
 const inputGroupStyle = { marginBottom: "15px" };
 const labelStyle = { display: "block", marginBottom: "5px", fontWeight: "bold", fontSize: "0.9em" };
 const inputStyle = { width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc", boxSizing: "border-box" };
-const userButtonStyle = { flex: 2, padding: "12px", backgroundColor: "#4CAF50", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" };
-const adminButtonStyle = { flex: 2, padding: "12px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" };
+const userButtonStyle = { flex: 2, padding: "12px", backgroundColor: "#F93D5D", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" };
+const adminButtonStyle = { flex: 2, padding: "12px", backgroundColor: "#F93D5D", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" };
 const cancelButtonStyle = { flex: 1, padding: "12px", backgroundColor: "#f0f0f0", color: "#333", border: "1px solid #ccc", borderRadius: "4px", cursor: "pointer" };

@@ -31,7 +31,8 @@ class Restaurant extends Model
         'image2_path',
         'image3_path',
         'approval_status_id',
-        'rejection_reason'
+        'rejection_reason',
+        'confirmation_token',
     ];
 
     public function genre()

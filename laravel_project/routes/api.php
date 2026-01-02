@@ -140,3 +140,9 @@ Route::post('/reset-password', [UserController::class, 'resetPassword']);
 Route::post('/email-change-request', [UserController::class, 'requestChange'])->middleware('check.token');
 //確定
 Route::get('/email-change/confirm', [UserController::class, 'confirmChange']);
+
+//イベントメール認証
+Route::get('/event-request/confirm', [EventController::class, 'confirmEvent']);
+
+//飲食店メール認証
+Route::get('/restaurant-request/confirm', [RestaurantController::class, 'confirmRestaurant']);

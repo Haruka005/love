@@ -26,6 +26,10 @@ import ResetPassword from "./User/ResetPassword.jsx";
 import EmailChangeForm from "./User/EmailChangeForm.jsx";
 import EmailChangeConfirm from "./User/EmailChangeConfirm.jsx";
 import EmailChangeSuccess from "./User/EmailChangeSuccess.jsx";
+import EventRegistrationSuccess from "./User/EventRegistrationSuccess.jsx";
+import EventRegistrationError from "./User/EventRegistrationError.jsx";
+import RestaurantRegistrationSuccess from './User/RestaurantRegistrationSuccess';
+import RestaurantRegistrationError from './User/RestaurantRegistrationError';
 
 // ▼ 管理者用ページ
 import AdminLogin from "./admin/AdminLogin.jsx";
@@ -112,8 +116,18 @@ function App() {
         {/*イベント新規登録 */}
         <Route path="/EventForm" element={<EventForm />} />
 
-        {/*イベント新規登録 */}
+        {/*イベント認証完了 */}
+        <Route path="/event-registration-success" element={<EventRegistrationSuccess />} />
+        {/*イベント認証失敗 */}
+        <Route path="/event-registration-error" element={<EventRegistrationError />} />
+
+        {/*飲食店新規登録 */}
         <Route path="/RestaurantForm" element={<RestaurantForm />} />
+
+        {/*飲食店認証完了 */}
+        <Route path="/restaurant-registration-success" element={<RestaurantRegistrationSuccess />} />
+        {/*飲食店認証失敗 */}
+        <Route path="/restaurant-registration-error" element={<RestaurantRegistrationError />} />
 
         {/*管理者TOP*/}
         <Route path="/AdminTop" element={<AdminTop />} />

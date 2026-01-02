@@ -29,5 +29,6 @@ class EventImage extends Model
         'approval_status_id',
         'rejection_reason',
         'image_path',
+        'confirmation_token',
     ];
 }

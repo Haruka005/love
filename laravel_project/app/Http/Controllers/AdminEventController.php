@@ -16,7 +16,7 @@ class AdminEventController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        $events = Event::whereIn('approval_status_id', [0, 3])
+        $events = Event::whereIn('approval_status_id', [1])
                     ->orderBy('created_at', 'desc')
                     ->get();
 
@@ -38,7 +38,7 @@ class AdminEventController extends Controller
         }
 
         $yearMonth = $request->query('year_month');
-        $query = Event::where('approval_status_id', 1)->orderBy('start_date', 'asc');
+        $query = Event::where('approval_status_id', 2)->orderBy('start_date', 'asc');
 
         if ($yearMonth) {
             try {
@@ -71,7 +71,7 @@ class AdminEventController extends Controller
         ]);
 
         $event = Event::findOrFail($id);
-        $event->approval_status_id = $request->status === 'approved' ? 1 : 2;
+        $event->approval_status_id = $request->status === 'approved' ? 2 : 3;
         $event->rejection_reason = $request->status === 'rejected'
             ? $request->input('reason', '管理者による却下')
             : null;
@@ -118,8 +118,12 @@ class AdminEventController extends Controller
 
         $event->fill($request->all());
 
-        // 再申請扱いにする
-        $event->approval_status_id = 3;
+        // 再申請(審査待ちに戻す)
+        if ($event->approval_status_id != 2) {
+            $event->approval_status_id = 1; //審査待ちリストへ戻す
+            // 前回の却下理由をクリアする場合
+            $event->rejection_reason = null; 
+        }
 
         $event->save();
 
