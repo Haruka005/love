@@ -16,6 +16,7 @@ function RestaurantApproval({ onUpdate }) {
     const [pendingShops, setPendingShops] = useState([]);
     const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState(null);
+    const navigate = useNavigate(); // ナビゲーション用に追加
 
     const fetchPendingShops = async () => {
         setLoading(true);
@@ -133,6 +134,13 @@ function RestaurantApproval({ onUpdate }) {
                                     </div>
 
                                     <div style={actionAreaStyle}>
+                                        {/* 編集ボタンをここに追加 */}
+                                        <button 
+                                            onClick={() => navigate(`/RestaurantEdit/${shop.id}`, { state: { fromAdmin: true } })} 
+                                            style={editButtonStyle}
+                                        >
+                                            編集 
+                                        </button>
                                         <button onClick={() => handleStatusUpdate(shop.id, 2)} style={rejectButtonStyle}>却下する</button>
                                         <button onClick={() => handleStatusUpdate(shop.id, 1)} style={approveButtonStyle}>承認して公開</button>
                                     </div>

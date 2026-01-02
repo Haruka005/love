@@ -251,6 +251,7 @@ export default function EventApplicationHistory() {
           );
         })
       )}
+      
 
       {/* ページネーション */}
       {totalPages > 1 && (

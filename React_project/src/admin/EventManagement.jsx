@@ -14,8 +14,6 @@ const cardStyle = { border: "1px solid #ddd", borderRadius: "8px", padding: "15p
 const cardHeaderStyle = { cursor: "pointer", fontWeight: "bold", fontSize: "18px", color: "#333", display: "flex", justifyContent: "space-between", alignItems: "center" };
 const cardSubTextStyle = { fontSize: '12px', color: '#666', marginTop: '5px' };
 const cardDetailStyle = { marginTop: "10px", padding: "10px", borderTop: "1px dashed #eee" };
-const resubmitBadgeStyle = { backgroundColor: "#faad14", color: "white", fontSize: "11px", padding: "2px 8px", borderRadius: "10px", marginLeft: "10px" };
-const newBadgeStyle = { backgroundColor: "#1890ff", color: "white", fontSize: "11px", padding: "2px 8px", borderRadius: "10px", marginLeft: "10px" };
 const infoGridStyle = { fontSize: "14px", lineHeight: "1.8", color: "#444" };
 const actionAreaStyle = { marginTop: "20px", textAlign: "right", borderTop: "1px solid #eee", paddingTop: "15px" };
 const thumbStyleLarge = { maxWidth: "300px", height: "auto", borderRadius: "6px", border: "1px solid #ddd" };
@@ -28,8 +26,8 @@ const showButtonStyle = { padding: "8px 16px", backgroundColor: "#28a745", color
 function EventList({ status, title, onStatusUpdate }) {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [expandedId, setExpandedId] = useState(null); // 追加: 詳細表示の管理
-    const navigate = useNavigate(); // 追加: 編集画面への遷移用
+    const [expandedId, setExpandedId] = useState(null); // 詳細表示の管理
+    const navigate = useNavigate(); // 編集画面への遷移用
     
     const today = new Date();
     const [selectedYearMonth, setSelectedYearMonth] = useState(
@@ -53,7 +51,6 @@ function EventList({ status, title, onStatusUpdate }) {
         setLoading(true);
         try {
             const token = localStorage.getItem("admintoken"); 
-            // 修正: statusパラメータもURLに含める
             const url = `${API_URL}/approved?year_month=${selectedYearMonth}&status=${status}`;
             
             const response = await fetch(url, {
@@ -64,7 +61,7 @@ function EventList({ status, title, onStatusUpdate }) {
             });
             if (response.ok) {
                 const data = await response.json();
-                setEvents(data); // 修正: setApprovedEventsから変更
+                setEvents(data);
             }
         } catch (error) {
             console.error("Fetch Error:", error);
@@ -114,7 +111,7 @@ function EventList({ status, title, onStatusUpdate }) {
                 <label style={{ marginRight: '10px' }}>表示年月：</label>
                 <select 
                     value={selectedYearMonth} 
-                    onChange={(e) => setSelectedYearMonth(e.target.value)} // 修正: 直接useStateを更新
+                    onChange={(e) => setSelectedYearMonth(e.target.value)} 
                     style={{ padding: '5px', borderRadius: '4px' }}
                 >
                     {yearMonthOptions.map(opt => (
@@ -127,7 +124,6 @@ function EventList({ status, title, onStatusUpdate }) {
                 <p style={{ color: "#888", padding: "10px" }}>該当するイベントはありません。</p>
             ) : (
                 events.map(event => {
-                    const isResubmitted = Number(event.approval_status_id) === 3;
                     const isExpanded = expandedId === event.id;
                     return (
                         <div key={event.id} style={{ ...cardStyle, borderLeft: "1px solid #ddd" }}>
@@ -137,11 +133,9 @@ function EventList({ status, title, onStatusUpdate }) {
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                     <strong style={{ color: status === 9 ? "#666" : "#333" }}>{event.name}</strong> 
-                                    {isResubmitted ? (
-                                        <span style={resubmitBadgeStyle}>再申請経由</span>
-                                    ) : (
-                                        <span style={newBadgeStyle}>新規申請経由</span>
-                                    )}
+                                    {/* ここでバッジ表示を行っていたロジックを削除しました。
+                                        (isResubmitted判定とそれに基づくspanタグを削除) 
+                                    */}
                                 </div>
                                 <span style={{ float: 'right', color: '#333', fontWeight: 'normal', fontSize: '14px' }}>
                                     {isExpanded ? "▲ 閉じる" : "▼ 詳細編集・公開設定"}
@@ -203,7 +197,7 @@ function EventList({ status, title, onStatusUpdate }) {
                                             onClick={() => navigate(`/EventEdit/${event.id}`, { state: { fromAdmin: true } })}
                                             style={editButtonStyle}
                                         >
-                                            編集 ✏️
+                                            編集 
                                         </button>
                                         
                                         <button 

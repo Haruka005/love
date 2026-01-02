@@ -16,6 +16,7 @@ function RestaurantApproval({ onUpdate }) {
     const [pendingShops, setPendingShops] = useState([]);
     const [loading, setLoading] = useState(true);
     const [expandedId, setExpandedId] = useState(null);
+    const navigate = useNavigate();
 
     const fetchPendingShops = async () => {
         setLoading(true);
@@ -133,6 +134,12 @@ function RestaurantApproval({ onUpdate }) {
                                     </div>
 
                                     <div style={actionAreaStyle}>
+                                        <button 
+                                            onClick={() => navigate(`/RestaurantEdit/${shop.id}`, { state: { fromAdmin: true } })} 
+                                            style={editButtonStyle}
+                                        >
+                                            編集 ✏️
+                                        </button>
                                         <button onClick={() => handleStatusUpdate(shop.id, 2)} style={rejectButtonStyle}>却下する</button>
                                         <button onClick={() => handleStatusUpdate(shop.id, 1)} style={approveButtonStyle}>承認して公開</button>
                                     </div>
@@ -163,7 +170,7 @@ function RestaurantList({ status, title, onStatusUpdate }) {
             const url = `${API_URL}/approved?year_month=${selectedYearMonth}&status=${status}`;
             const response = await fetch(url, { 
                 headers: { 
-                    "Authorization": `Bearer ${token}`,
+                    "Authorization": `Bearer ${token}`, 
                     "Accept": "application/json"
                 } 
             });
