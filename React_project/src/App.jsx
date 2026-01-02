@@ -87,8 +87,8 @@ function AnalyticsTracker() {
 function App() {
 
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <BrowserRouter>
+      <AuthProvider>
         {/* URLの変更を監視してLaravelに送るコンポーネントを配置 */}
         <AnalyticsTracker />
 
@@ -111,23 +111,23 @@ function App() {
           {/* アカウント作成完了ページ */}
           <Route path="/AccountCreated" element={<AccountCreated />} />
 
-        {/* パスワードをお忘れですかページ */}
-        <Route path="/ForgotPassword" element={<ForgotPassword />} />
+          {/* パスワードをお忘れですかページ */}
+          <Route path="/ForgotPassword" element={<ForgotPassword />} />
 
-        {/* パスワード再設定ページ */}
-        <Route path="/password-reset" element={<ResetPassword />} />
+          {/* パスワード再設定ページ */}
+          <Route path="/password-reset" element={<ResetPassword />} />
 
-        {/* メールアドレス変更ページ */}
-        <Route path="/EmailChangeForm" element={<EmailChangeForm />} />
+          {/* メールアドレス変更ページ */}
+          <Route path="/EmailChangeForm" element={<EmailChangeForm />} />
 
-        {/* メールアドレス変更確定ページ */}
-        <Route path="/EmailChangeConfirm" element={<EmailChangeConfirm />} />
+          {/* メールアドレス変更確定ページ */}
+          <Route path="/EmailChangeConfirm" element={<EmailChangeConfirm />} />
 
-        {/* メールアドレス変更認証完了ページ */}
-        <Route path="/email-change-success" element={<EmailChangeSuccess />} />
+          {/* メールアドレス変更認証完了ページ */}
+          <Route path="/email-change-success" element={<EmailChangeSuccess />} />
 
-        {/* 通報ページ */}
-        <Route path="/ReportForm" element={<ReportForm />} />
+          {/* 通報ページ */}
+          <Route path="/ReportForm" element={<ReportForm />} />
 
           {/* マイページ */}
           <Route path="/MyPage" element={<MyPage />} />
@@ -138,9 +138,6 @@ function App() {
           {/* イベント詳細 */}
           <Route path="/events/:id" element={<EventDetail />} />
 
-          {/*パスワード再設定ページ*/}
-          <Route path="/reset-pass" element={<ResetPass/>}/>
-
           {/*来店一覧*/}
           <Route path="/VisitList" element={<VisitList />} />
 
@@ -150,24 +147,24 @@ function App() {
           {/*閲覧履歴一覧*/}
           <Route path="/HistoryList" element={<HistoryList />} />
 
-        {/*イベント親戚確認 */}
-        <Route path="/EventApplicationHistory" element={<EventApplicationHistory />} />
+          {/*イベント親戚確認 */}
+          <Route path="/EventApplicationHistory" element={<EventApplicationHistory />} />
 
-        {/*イベント新規登録 */}
-        <Route path="/EventForm" element={<EventForm />} />
+          {/*イベント新規登録 */}
+          <Route path="/EventForm" element={<EventForm />} />
 
-        {/*イベント認証完了 */}
-        <Route path="/event-registration-success" element={<EventRegistrationSuccess />} />
-        {/*イベント認証失敗 */}
-        <Route path="/event-registration-error" element={<EventRegistrationError />} />
+          {/*イベント認証完了 */}
+          <Route path="/event-registration-success" element={<EventRegistrationSuccess />} />
+          {/*イベント認証失敗 */}
+          <Route path="/event-registration-error" element={<EventRegistrationError />} />
 
-        {/*飲食店新規登録 */}
-        <Route path="/RestaurantForm" element={<RestaurantForm />} />
+          {/*飲食店新規登録 */}
+          <Route path="/RestaurantForm" element={<RestaurantForm />} />
 
-        {/*飲食店認証完了 */}
-        <Route path="/restaurant-registration-success" element={<RestaurantRegistrationSuccess />} />
-        {/*飲食店認証失敗 */}
-        <Route path="/restaurant-registration-error" element={<RestaurantRegistrationError />} />
+          {/*飲食店認証完了 */}
+          <Route path="/restaurant-registration-success" element={<RestaurantRegistrationSuccess />} />
+          {/*飲食店認証失敗 */}
+          <Route path="/restaurant-registration-error" element={<RestaurantRegistrationError />} />
 
           {/*管理者TOP*/}
           <Route path="/AdminTop" element={<AdminTop />} />
@@ -188,8 +185,8 @@ function App() {
           <Route path="/admin/login" element={<AdminLogin />} />
 
         </Routes>    
-      </BrowserRouter>
-    </AuthProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
