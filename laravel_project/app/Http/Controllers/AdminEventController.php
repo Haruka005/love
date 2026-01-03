@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Mail\EventApprovedMail;
+use Illuminate\Support\Facades\Mail;
 
 class AdminEventController extends Controller
 {
@@ -76,6 +78,11 @@ class AdminEventController extends Controller
             ? $request->input('reason', '管理者による却下')
             : null;
         $event->save();
+
+        //承認された時だけメールを送信
+        if ($newStatus === 2 && $oldStatus !== 2) {
+            Mail::to($event->user->email)->send(new EventApprovedMail($event));
+        }
 
         return response()->json([
             'message' => 'ステータスを更新しました',

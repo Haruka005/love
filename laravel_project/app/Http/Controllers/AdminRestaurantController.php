@@ -19,7 +19,7 @@ class AdminRestaurantController extends Controller
         }
 
         $restaurants = Restaurant::with(['genre', 'area', 'budget', 'user'])
-                        ->whereIn('approval_status_id', [0, 3])
+                        ->whereIn('approval_status_id', [1])
                         ->orderBy('created_at', 'desc')
                         ->get();
 
@@ -34,7 +34,7 @@ class AdminRestaurantController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        $status = $request->query('status', 1);
+        $status = $request->query('status', 2);
         $yearMonth = $request->query('year_month');
 
         $query = Restaurant::where('approval_status_id', $status)
@@ -57,7 +57,7 @@ class AdminRestaurantController extends Controller
         }
 
         $request->validate([
-            'approval_status_id' => 'required|integer',
+            'approval_status_id' => 'required|integer|in:2,3',
             'rejection_reason' => 'nullable|string'
         ]);
 
@@ -65,13 +65,21 @@ class AdminRestaurantController extends Controller
         $newStatus = (int)$request->approval_status_id;
         $restaurant->approval_status_id = $newStatus;
 
-        if ($newStatus === 2) {
+        if ($newStatus === 3) {
             $restaurant->rejection_reason = $request->rejection_reason;
         } else {
             $restaurant->rejection_reason = null;
         }
 
         $restaurant->save();
+
+        
+        //承認(2)になった瞬間にメールを送信
+        if ($newStatus === 2 && $oldStatus !== 2) {
+            $url = config('app.frontend_url') . "/shops/" . $restaurant->id;
+            Mail::to($restaurant->user->email)->send(new RestaurantApprovedMail($restaurant, $url));
+        }
+
         return response()->json(['message' => 'ステータスを更新しました']);
     }
 
