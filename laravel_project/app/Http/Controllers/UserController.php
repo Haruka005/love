@@ -7,106 +7,152 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Models\Token;
 
-
-//laravelの基本コントローラーを継承
 class UserController extends Controller
 {
-    //registerという名前の関数（新規登録処理）
+    // ユーザー登録
     public function register(Request $request)
     {
-        //バリデーション（入力チェック）を行う
-        //$request->all()で送られてきた全データを取得
-        //配列でルールを設定:name,email,passwordに対して条件を付ける
-        $validator = Validator::make($request->all(),[
-            'name' => 'required|string|max:255',
-            //これで一意制約できた
-            'email' => 'required|email|unique:users,email',
-            'password' => ['required',
-                          'string',
-                          'min:12',
-                          'regex:/[A-Z]/',       // 大文字
-                          'regex:/[a-z]/',       // 小文字
-                          'regex:/[0-9]/',       // 数字
-                          'regex:/[!@&?]/',      // 記号
+        $validator = Validator::make($request->all(), [
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email',
+            'password' => [
+                'required',
+                'string',
+                'min:12',
+                'regex:/[A-Z]/',
+                'regex:/[a-z]/',
+                'regex:/[0-9]/',
+                'regex:/[!@&?]/',
             ],
         ]);
 
-        //バリデーションに失敗した場合の処理
-        //エラー内容をJSON形式で返す（React側で表示できる）
-        if($validator ->fails()){
-            return response() ->json([
-                'message' =>'入力エラーがあります',
-                'errors' => $validator ->errors()
-            ],422);//HTTPステータスコード:422(処理できない入力)
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => '入力エラーがあります',
+                'errors'  => $validator->errors()
+            ], 422);
         }
 
-        $user=User::create([
-            'name'=>$request->name,
-            'email'=>$request->email,
-            'password'=>Hash::make($request->password),
-            'user_status' => 1,           // 利用者として登録
-           // 'is_delete' => 0,             // 未削除
-            //'has_image_folder' => 0,      // 未作成
-
+        $user = User::create([
+            'name'     => $request->name,
+            'email'    => $request->email,
+            'password' => Hash::make($request->password),
+            'user_status' => 1,
         ]);
-    
-        //バリデーションが成功した場合の処理（仮）
-       //DB保存後に受け取ったnameとemailを返す
-        return response() ->json([
+
+        return response()->json([
             'message' => '登録処理は成功しました（仮）',
-            'user'=>[
-                'name'=>$user->name,
-                'email'=>$user->email,
+            'user'    => [
+                'name'  => $user->name,
+                'email' => $user->email,
             ]
-        ],201);//HTTPステータスコード:201(成功)
+        ], 201);
     }
 
-    //ログイン
+    // ログイン処理
     public function login(Request $request)
     {
-        $validator = Validator::make($request->all(),[
-            'email' => 'required|email',
-            'password'=>'required|string',
+        $validator = Validator::make($request->all(), [
+            'email'    => 'required|email',
+            'password' => 'required|string',
         ]);
 
-        if($validator -> fails()){
-            return response() ->json([
-                'message'=>'入力エラーがあります',
-                'errors'=>$validator->errors()
-            ],422);        
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => '入力エラーがあります',
+                'errors'  => $validator->errors()
+            ], 422);
         }
-    
 
-
-        //認証チェック
-        if(Auth::attempt($request->only('email','password'))) {
-            $user = Auth::user();
-
-            //トークン作成(ランダム64文字)
+        if (Auth::attempt($request->only('email', 'password'))) {
+            $user  = Auth::user();
             $token = bin2hex(random_bytes(32));
 
-             // トークン保存
-             Token::create([
-                'user_id'     => $user->id,
-                'token'       => $token,
-                'expires_at'  => now()->addHour(1), // 有効期限1時間
-                'last_used_at'=> now(),
+            Token::create([
+                'user_id'      => $user->id,
+                'token'        => $token,
+                'expires_at'   => now()->addHour(1),
+                'last_used_at' => now(),
             ]);
-            
+
             return response()->json([
-                'message'=>'ログイン成功',
-                'user'=>[
-                    'id'=>$user->id,
-                    'name'=>$user->name,
-                    'email'=>$user->email,
+                'message' => 'ログイン成功',
+                'user'    => [
+                    'id'    => $user->id,
+                    'name'  => $user->name,
+                    'email' => $user->email,
                 ]
-            ],200);
-        }else{
-            return response()->json([
-                'message'=>'メールアドレスまたはパスワードが違います'
-            ],401);
+            ], 200);
         }
+
+        return response()->json([
+            'message' => 'メールアドレスまたはパスワードが違います'
+        ], 401);
     }
 
+    // 【管理者用】ユーザー一覧取得
+    public function getUsers()
+    {
+        $users = User::select('id', 'name', 'email', 'user_status', 'created_at')->get();
+
+        return response()->json([
+            'message' => 'ユーザー一覧取得成功',
+            'users'   => $users
+        ], 200);
+    }
+
+    // 【管理者用】特定ユーザー取得
+    public function getUser($id)
+    {
+        $user = User::select('id', 'name', 'email', 'user_status')->find($id);
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'ユーザーが見つかりません'
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'ユーザー取得成功',
+            'user'    => $user
+        ], 200);
+    }
+
+    // 【管理者用】ユーザー情報更新
+    public function updateUser(Request $request, $id)
+    {
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json([
+                'message' => 'ユーザーが見つかりません'
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name'        => 'required|string|max:255',
+            'email'       => 'required|email|unique:users,email,' . $id,
+            'user_status' => 'required|in:0,1,2',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => '入力エラーがあります',
+                'errors'  => $validator->errors()
+            ], 422);
+        }
+
+        $user->update([
+            'name'        => $request->name,
+            'email'       => $request->email,
+            'user_status' => $request->user_status,
+        ]);
+
+        return response()->json([
+            'message' => 'ユーザー情報を更新しました',
+            'user'    => $user
+        ], 200);
+    }
 }
+
