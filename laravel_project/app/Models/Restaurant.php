@@ -1,24 +1,23 @@
 <?php
 
-//モデルは1テーブルにつき1個（基本的には）
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Restaurant extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
-    // もしテーブル名がモデル名と違う場合は明示
     protected $table = 'm_restaurants';
 
-    // 書き換え可能なカラムを指定（任意）
     protected $fillable = [
+        'user_id',
         'name',
         'catchphrase',
-        'description',
+        'comment',
         'url',
         'area_id',
         'genre_id',
@@ -27,18 +26,18 @@ class Restaurant extends Model
         'longitude',
         'address',
         'tel',
+        'topimage_path',
+        'image1_path',
+        'image2_path',
+        'image3_path',
+        'approval_status_id',
+        'rejection_reason',
+        'confirmation_token',
     ];
 
-    //他のテーブルとの関係
-     public function genre()
+    public function genre()
     {
-        return $this->belongsTo(Genre::class, 'genre_id'); // 外部キー明示
-    }
-
-    //他のテーブルとの関係
-     public function genre()
-    {
-        return $this->belongsTo(Genre::class, 'genre_id'); // 外部キー明示
+        return $this->belongsTo(Genre::class, 'genre_id');
     }
 
     // エリアとの関係（1レストランは1エリア）
@@ -47,9 +46,14 @@ class Restaurant extends Model
         return $this->belongsTo(Area::class, 'area_id');
     }
 
-    // 予算との関係（1レストランは1予算）
     public function budget()
     {
         return $this->belongsTo(Budget::class, 'budget_id');
+    }
+
+    
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

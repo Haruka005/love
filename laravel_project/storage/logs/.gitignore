@@ -1,2 +1,12 @@
-*
-!.gitignore
+# DBバックアップ・SQLite
+backup_all.sql
+*.sqlite
+
+# ローカルセッションファイル
+*.session.sql
+
+# VSCode設定
+.vscode/
+
+# Laravelログ
+/storage/logs/*.log

@@ -31,43 +31,43 @@ export default function Signup(){
         if(!/[0-9]/.test(password)){
             setError("半角数字（0～9）を入れてくださいい");
             return;}
-        if(!/[!@&?]/.test(password)){
-            setError("記号（！＠＆？）を入れてください");
+        if(!/[@#!%*+=_?-]/.test(password)){
+            setError("記号（@#!%*+=_-?）を入れてください");
             return;}
         if(password !== confi_pass){
             setError('パスワードが一致しません');
             return;   
         }
         setError(""); //エラーをリセット
-    try {
-    // LaravelのAPIにPOSTリクエストを送信
-    const response = await axios.post('http://localhost:8000/api/register', {
-      name: name,
-      email: Email,
-      password: password
-    });
+        try {
+            // LaravelのAPIにPOSTリクエストを送信
+            await axios.post('http://localhost:8000/api/register', {
+                name: name,
+                email: Email,
+                password: password
+            });
 
-    //登録成功したら遷移
-    navigate('/AccountCreated', {
-    state: {
-    name: name,
-    email: Email
-  }
-});
+            //登録成功したら遷移
+            navigate('/AccountCreated', {
+                state: {
+                    name: name,
+                    email: Email
+                }
+            });
 
-     //確認用（ここでAPIに送るらしい）
-     console.log('登録情報：',{name,Email,password});
+            //確認用（ここでAPIに送るらしい）
+            console.log('登録情報：',{name,Email,password});
 
-  } catch (error) {
-    // バリデーションエラーなどが返ってきた場合
-    if (error.response && error.response.status === 422) {
-      const errors = error.response.data.errors;
-      const firstError = Object.values(errors)[0][0]; // 最初のエラーだけ表示
-      setError(firstError);
-    } else {
-      setError('通信エラーが発生しました');
-    }
-  }
+        } catch (error) {
+            // バリデーションエラーなどが返ってきた場合
+            if (error.response && error.response.status === 422) {
+                const errors = error.response.data.errors;
+                const firstError = Object.values(errors)[0][0]; // 最初のエラーだけ表示
+                setError(firstError);
+            } else {
+                setError('通信エラーが発生しました');
+            }
+        }
 };
 
     //ここからは画面に表示する内容
@@ -96,7 +96,7 @@ export default function Signup(){
                 <div className="password-field">
                     <input
                         type = {showPass ? "text" : "password"}     //showPassword関数がtrueならtext,falseならpasswordで表示する
-                        placeholder="パスワード(大小英字、半角数字、記号（!@&?）を１つ以上含む)"
+                        placeholder="パスワード"
                         value = {password}
                         onChange={(e) => setpassword(e.target.value)}
                         required
@@ -107,7 +107,7 @@ export default function Signup(){
                         type = "button"
                         onClick={() => setShowPass(!showPass)}
                     >
-                        {showPass ? "非表示" : "表示"}
+                        {showPass ? "😀" : "😑"}
                     </button>
                 </div>
 
@@ -125,14 +125,21 @@ export default function Signup(){
                         type = "button"
                         onClick={() => setShowconfi_Pass(!showconfi_Pass)}
                     >
-                        {showconfi_Pass ? "非表示" : "表示"}
+                        {showconfi_Pass ? "😀" : "😑"}
                     </button>
                 </div>
-                    {error && <p style={{ color: "red" }}>{error}</p>}
-                    <button 
-                        className="form-button" 
-                        type = "submit"
-                    >登録</button>
+
+                {error && <p style={{ color: "red" }}>{error}</p>}
+                <button 
+                    className="form-button" 
+                    type = "submit"
+                >登録</button>
+
+                <div style={{ marginTop: '15px' }}>
+                    <p style={{ margin: '0', fontSize: '0.7rem', color: 'red' }}>
+                        ※パスワードは12桁以上、大小英字、半角数字、<br />記号（@#!%*+=_-?）を全て含むものに設定してください。
+                    </p>
+                </div>
             </form>
         </div>
     );
