@@ -1,5 +1,5 @@
 <?php
-
+//管理者用店舗承認・掲載管理機能
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;

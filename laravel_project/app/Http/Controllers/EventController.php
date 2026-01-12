@@ -1,5 +1,5 @@
 <?php
-
+//イベント情報登録
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;

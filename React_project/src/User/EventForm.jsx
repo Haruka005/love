@@ -1,4 +1,5 @@
 // src/User/EventForm.jsx
+// イベント申請フォームコンポーネント
 import React, { useState, useContext, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext.js";

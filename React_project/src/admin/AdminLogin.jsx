@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
+//管理者ログイン画面
 const AdminLogin = () => {
   const navigate = useNavigate();
   const { adminLogin } = useAuth();   // ← AuthContext の管理者ログイン関数

@@ -1,5 +1,5 @@
 <?php
-
+//アプリ基本環境設定
 return [
 
     'name' => env('APP_NAME', 'Laravel'),

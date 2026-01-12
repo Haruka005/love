@@ -1,5 +1,6 @@
 <?php
 
+//予算マスタ・モデル
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;

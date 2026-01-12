@@ -1,5 +1,6 @@
 <?php
 
+//飲食店登録機能
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;

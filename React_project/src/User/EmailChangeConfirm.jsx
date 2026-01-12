@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+
+//メアド変更確定
 const EmailChangeConfirm = () => {
     const [searchParams] = useSearchParams();
     const [status, setStatus] = useState('processing'); // 'processing', 'success', 'error'

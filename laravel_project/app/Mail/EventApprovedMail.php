@@ -1,4 +1,6 @@
 <?php
+
+//イベント承認通知メール機能
 namespace App\Mail;
 
 use App\Models\Event;

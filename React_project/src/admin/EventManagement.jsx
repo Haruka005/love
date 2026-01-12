@@ -1,4 +1,4 @@
-// EventManagement.js
+// 管理者用イベント管理コンポーネント
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";

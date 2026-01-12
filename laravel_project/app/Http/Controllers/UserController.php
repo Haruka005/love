@@ -1,5 +1,5 @@
 <?php
-
+//ユーザーアカウント管理機能
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;

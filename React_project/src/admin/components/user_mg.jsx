@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 
+
+//ユーザー管理画面
+
 /**
  * APIのベースURLを安全に構築
  */

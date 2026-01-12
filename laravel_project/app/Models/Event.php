@@ -2,6 +2,7 @@
 
 //モデルは1テーブルにつき1個（基本的には）
 
+//イベント・モデル
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;

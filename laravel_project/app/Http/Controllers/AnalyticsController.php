@@ -1,5 +1,5 @@
 <?php
-
+//利用状況分析画面
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
