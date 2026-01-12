@@ -20,7 +20,7 @@ export default function Login() {    // 外に持って行ってOKなLoginって
   const { login } = useAuth();
 
   const exitButton = {
-    padding: '8px 16px',
+    padding: '8px 20px', // 左右の余白を少し広めに
     fontSize: '0.9rem',
     fontWeight: '500',
     backgroundColor: '#ffffff',
@@ -30,18 +30,18 @@ export default function Login() {    // 外に持って行ってOKなLoginって
     cursor: 'pointer',
     transition: 'all 0.3s ease',
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    display: 'block', 
-    margin: '30px auto 0 auto', 
+    display: 'inline-block', // blockからinline-blockに変更（中央揃えしやすくなります）
+    margin: '0 auto', 
+    whiteSpace: 'nowrap',    
+    minWidth: '120px',       //  最低限の幅を確保
   };
 
   const buttonWrapperStyle = {
     marginTop: "30px",
-    display: "block", 
+    display: "flex",          // blockからflexに変更して中央に寄せやすくします
+    justifyContent: "center", // 横方向の中央揃え
     width: "100%",
-    textAlign: "center", // ボタンを中央揃えにする
-    position: "static",
-    right: 'auto', 
-    top: 'auto',
+    textAlign: "center", 
   };
 
   const handleSubmit = async (e) => {   // 送信操作がされたら次の処理を実行
