@@ -1,6 +1,5 @@
 <?php
-
-//飲食店登録機能
+//飲食店登録・管理機能
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -13,11 +12,13 @@ use App\Models\Restaurant;
 use App\Models\Genre;
 use App\Models\Area;
 use App\Models\Budget;
-use App\Mail\RestaurantApplicationMail;
+use App\Mail\RestaurantReappliedMail;
 
 class RestaurantController extends Controller
 {
-    // --- ログインユーザーの登録店舗一覧 ---
+    /**
+     * ログインユーザーの登録店舗一覧 (マイページ用)
+     */
     public function index(Request $request)
     {
         try {
@@ -33,12 +34,22 @@ class RestaurantController extends Controller
         }
     }
 
-    // --- 店舗登録処理 ---
+    /**
+     * 新規店舗登録処理
+     */
     public function storeRestaurantData(Request $request)
     {
-        Log::info('店舗登録申請開始', ['user_id' => $request->input('user_id')]);
+        // イベント側と同じく input() を使用して安全にユーザーを取得
+        $userId = $request->input('user_id');
+        $user = User::find($userId);
 
-        //バリデーション
+        if (!$user) {
+            return response()->json(['error' => 'ユーザーが見つかりません'], 404);
+        }
+
+        Log::info('店舗登録申請開始', ['user_id' => $user->id]);
+
+        // バリデーション
         $request->validate([
             'topimages.*' => 'required|image|max:5120',
             'images.*' => 'nullable|image|max:5120',
@@ -54,45 +65,37 @@ class RestaurantController extends Controller
         ]);
 
         try {
-            $user = User::findOrFail($request->user_id);
             $restaurant = new Restaurant();
 
-            //基本情報のセット
             $restaurant->user_id = $user->id;
-            $restaurant->name = $request->name;
-            $restaurant->catchphrase = $request->catchphrase;
-            $restaurant->tel = $request->tel;
-            $restaurant->address = $request->address;
-            $restaurant->url = $request->url;
-            $restaurant->comment = $request->comment;
-            $restaurant->business_hours = $request->business_hours;
-            $restaurant->holiday = $request->holiday;
-            $restaurant->genre_id = (int)$request->genre_id;
-            $restaurant->area_id = (int)$request->area_id;
-            $restaurant->budget_id = (int)$request->budget_id;
+            $restaurant->name = $request->input('name');
+            $restaurant->catchphrase = $request->input('catchphrase');
+            $restaurant->tel = $request->input('tel');
+            $restaurant->address = $request->input('address');
+            $restaurant->url = $request->input('url');
+            $restaurant->comment = $request->input('comment');
+            $restaurant->business_hours = $request->input('business_hours');
+            $restaurant->holiday = $request->input('holiday');
+            $restaurant->genre_id = (int)$request->input('genre_id');
+            $restaurant->area_id = (int)$request->input('area_id');
+            $restaurant->budget_id = (int)$request->input('budget_id');
 
-            //ステータス0（認証待ち）とトークン発行
+            // 初期ステータス：メール認証待ち(0)
             $restaurant->approval_status_id = 0;
             $restaurant->confirmation_token = Str::random(64);
-            
-            // 座標（フロントの初期値に合わせて幌別駅）
-            $restaurant->latitude = $request->latitude ?: 42.4123;
-            $restaurant->longitude = $request->longitude ?: 141.2063;
-            
-            // ステータス（0: 承認待ち）
-            $restaurant->approval_status_id = 0;
+            $restaurant->latitude = $request->input('latitude') ?: 42.4123;
+            $restaurant->longitude = $request->input('longitude') ?: 141.2063;
 
-            //画像の保存処理
             $basePath = "user_images/{$user->id}/restaurants";
 
-            // TOP画像 (React側は topimages[] 配列で送ってくる)
+            // メイン画像の保存
             if ($request->hasFile('topimages')) {
                 $topFile = $request->file('topimages')[0];
                 $path = $topFile->store($basePath . "/top", 'public');
                 $restaurant->topimage_path = Storage::url($path);
             }
 
-            // サブ画像 (React側は images[] 配列で送ってくる)
+            // サブ画像の保存 (最大3枚)
             if ($request->hasFile('images')) {
                 $subImages = $request->file('images');
                 foreach ($subImages as $index => $image) {
@@ -106,11 +109,11 @@ class RestaurantController extends Controller
 
             $restaurant->save();
 
-            //認証メール送信
+            // 認証リンクの生成とメール送信
             $confirmationUrl = url("/api/restaurant-request/confirm?token=" . $restaurant->confirmation_token);
-            Mail::to($user->email)->send(new RestaurantApplicationMail($confirmationUrl, $restaurant->name));
+            Mail::to($user->email)->send(new RestaurantReappliedMail($restaurant->name, $confirmationUrl));
 
-            return response()->json(['message' => '店舗情報を送信しました。管理者による承認をお待ちください。'], 201);
+            return response()->json(['message' => '店舗情報を保存しました。メールを確認してください。'], 201);
 
         } catch (\Exception $e) {
             Log::error('店舗登録エラー: ' . $e->getMessage());
@@ -118,7 +121,9 @@ class RestaurantController extends Controller
         }
     }
 
-    // --- 店舗情報の更新 (一般ユーザー用：再申請) ---
+    /**
+     * 店舗情報の更新 (一般ユーザー用：再申請)
+     */
     public function update(Request $request, $id)
     {
         try {
@@ -129,33 +134,29 @@ class RestaurantController extends Controller
                 return response()->json(['error' => '編集権限がありません'], 403);
             }
 
-            $restaurant->name = $request->input('name', $restaurant->name);
-            $restaurant->catchphrase = $request->input('catchphrase', $restaurant->catchphrase);
-            $restaurant->tel = $request->input('tel', $restaurant->tel);
-            $restaurant->address = $request->input('address', $restaurant->address);
-            $restaurant->url = $request->input('url', $restaurant->url);
-            $restaurant->comment = $request->input('comment', $restaurant->comment);
-            $restaurant->business_hours = $request->input('business_hours', $restaurant->business_hours);
-            $restaurant->holiday = $request->input('holiday', $restaurant->holiday);
-            $restaurant->genre_id = (int)$request->input('genre_id', $restaurant->genre_id);
-            $restaurant->area_id = (int)$request->input('area_id', $restaurant->area_id);
-            $restaurant->budget_id = (int)$request->input('budget_id', $restaurant->budget_id);
+            // フィールド更新
+            $fields = ['name', 'catchphrase', 'tel', 'address', 'url', 'comment', 'business_hours', 'holiday', 'genre_id', 'area_id', 'budget_id'];
+            foreach ($fields as $field) {
+                if ($request->has($field)) {
+                    $val = $request->input($field);
+                    $restaurant->$field = in_array($field, ['genre_id', 'area_id', 'budget_id']) ? (int)$val : $val;
+                }
+            }
 
-            // ステータス制御
-            if ($request->from_admin === "true") {
+            $needsEmail = false;
+
+            if ($request->input('from_admin') === "true") {
+                // 管理者からの編集時
                 $restaurant->approval_status_id = (int)$request->input('approval_status_id');
             } else {
-                $restaurant->approval_status_id = 0;
+                // ユーザーからの編集時：再申請扱い
+                $restaurant->approval_status_id = 0; // メール認証待ちに戻す
                 $restaurant->confirmation_token = Str::random(64);
-                $restaurant->rejection_reason = null; //以前の却下理由をクリア
-                $isReapplication = true;
+                $restaurant->rejection_reason = null; 
+                $needsEmail = true;
             }
 
-            if (in_array($restaurant->approval_status_id, [0, 3])) {
-                $restaurant->rejection_reason = null;
-            }
-
-            // 画像の更新（個別ファイルとして topimage, image1, image2, image3 が来る場合を想定）
+            // 画像の差し替え
             $basePath = "user_images/{$restaurant->user_id}/restaurants";
             if ($request->hasFile('topimage')) {
                 $path = $request->file('topimage')->store($basePath, 'public');
@@ -171,11 +172,11 @@ class RestaurantController extends Controller
 
             $restaurant->save();
 
-            //メール送信
-           if ($needsEmail) {
+            // 再申請の場合、確認メールを再送
+            if ($needsEmail) {
                 $user = $request->user();
                 $confirmationUrl = url("/api/restaurant-request/confirm?token=" . $restaurant->confirmation_token);
-                Mail::to($user->email)->send(new RestaurantApplicationMail($confirmationUrl, $restaurant->name));
+                Mail::to($user->email)->send(new RestaurantReappliedMail($restaurant->name, $confirmationUrl));
             }
 
             return response()->json(['message' => '店舗情報を更新しました', 'restaurant' => $restaurant]);
@@ -186,27 +187,31 @@ class RestaurantController extends Controller
         }
     }
 
-    //メール認証完了メソッド
+    /**
+     * メール認証完了処理 (飲食店専用の成功ページへリダイレクト)
+     */
     public function confirmRestaurant(Request $request)
     {
         $token = $request->query('token');
         $restaurant = Restaurant::where('confirmation_token', $token)->first();
 
+        // トークンが無効な場合
         if (!$restaurant) {
-            return response()->json(['error' => '無効なトークンです'], 400);
+            return redirect('http://localhost:3000/event-registration-error');
         }
 
-        //ステータスを 1（審査待ち）に更新
+        // ステータスを管理者審査待ち(1)へ更新
         $restaurant->approval_status_id = 1;
         $restaurant->confirmation_token = null;
         $restaurant->save();
 
-        //認証後のリダイレクト先（ReactのURL）
-        return redirect('http://localhost:3000/RestaurantApplicationHistory?verified=true');
+        // ★ 飲食店専用の成功ページ（RestaurantRegistrationSuccess.jsx）へリダイレクト
+        return redirect('http://localhost:3000/restaurant-registration-success');
     }
 
-
-    // --- 店舗削除 (論理削除) ---
+    /**
+     * 店舗削除
+     */
     public function destroy(Request $request, $id)
     {
         try {
@@ -221,7 +226,9 @@ class RestaurantController extends Controller
         }
     }
 
-    // --- 詳細取得 ---
+    /**
+     * 公開詳細用
+     */
     public function show($id)
     {
         try {
@@ -239,7 +246,9 @@ class RestaurantController extends Controller
         }
     }
 
-    // --- 公開中の店舗一覧取得 ---
+    /**
+     * 公開中店舗一覧取得
+     */
     public function getRestaurant()
     {
         try {
@@ -252,7 +261,9 @@ class RestaurantController extends Controller
         }
     }
 
+    // マスタデータ取得用
     public function getGenres() { return response()->json(Genre::all()); }
     public function getAreas() { return response()->json(Area::all()); }
     public function getBudgets() { return response()->json(Budget::all()); }
 }
+

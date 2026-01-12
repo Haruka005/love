@@ -7,13 +7,14 @@ use App\Models\Restaurant;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\RestaurantApprovedMail;
 
 class AdminRestaurantController extends Controller
 {
     // 未承認 & 再申請
     public function getPendingShops(Request $request)
     {
-        // ★ 管理者チェック
         if ($request->user()->role !== 'admin') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
@@ -29,7 +30,6 @@ class AdminRestaurantController extends Controller
     // 承認済み or 非公開
     public function getApprovedShops(Request $request)
     {
-        // ★ 管理者チェック
         if ($request->user()->role !== 'admin') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
@@ -48,10 +48,9 @@ class AdminRestaurantController extends Controller
         return response()->json($restaurants);
     }
 
-    // ステータス更新
+    // ステータス更新（承認・却下ボタン用）
     public function updateStatus(Request $request, $id)
     {
-        // ★ 管理者チェック
         if ($request->user()->role !== 'admin') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
@@ -61,8 +60,11 @@ class AdminRestaurantController extends Controller
             'rejection_reason' => 'nullable|string'
         ]);
 
-        $restaurant = Restaurant::findOrFail($id);
+        $restaurant = Restaurant::with('user')->findOrFail($id);
+        
+        $oldStatus = (int)$restaurant->approval_status_id;
         $newStatus = (int)$request->approval_status_id;
+        
         $restaurant->approval_status_id = $newStatus;
 
         if ($newStatus === 3) {
@@ -73,11 +75,21 @@ class AdminRestaurantController extends Controller
 
         $restaurant->save();
 
-        
-        //承認(2)になった瞬間にメールを送信
+        // 承認(2)になった瞬間にメールを送信
         if ($newStatus === 2 && $oldStatus !== 2) {
-            $url = config('app.frontend_url') . "/shops/" . $restaurant->id;
-            Mail::to($restaurant->user->email)->send(new RestaurantApprovedMail($restaurant, $url));
+            if ($restaurant->user) {
+                try {
+                    $baseUrl = config('app.frontend_url') ?? 'http://localhost:3000';
+                    $url = $baseUrl . "/shops/" . $restaurant->id;
+
+                    Mail::to($restaurant->user->email)->send(new RestaurantApprovedMail($restaurant, $url));
+                    Log::info("店舗承認メール送信成功: " . $restaurant->user->email);
+                } catch (\Exception $e) {
+                    Log::error("店舗承認メール送信失敗: " . $e->getMessage());
+                }
+            } else {
+                Log::warning("店舗ID {$id} に紐づくユーザーが見つからないためメールを送信できません。");
+            }
         }
 
         return response()->json(['message' => 'ステータスを更新しました']);
@@ -86,7 +98,6 @@ class AdminRestaurantController extends Controller
     // 店舗詳細
     public function show($id)
     {
-        // ★ 管理者チェック
         if (request()->user()->role !== 'admin') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
@@ -103,7 +114,6 @@ class AdminRestaurantController extends Controller
     // 全店舗一覧
     public function index(Request $request)
     {
-        // ★ 管理者チェック
         if ($request->user()->role !== 'admin') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
@@ -113,10 +123,9 @@ class AdminRestaurantController extends Controller
         );
     }
 
-    // 店舗情報更新
+    // 店舗情報更新（管理画面からの編集）
     public function update(Request $request, $id)
     {
-        // ★ 管理者チェック
         if ($request->user()->role !== 'admin') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
@@ -163,4 +172,5 @@ class AdminRestaurantController extends Controller
         ]);
     }
 }
+
 
