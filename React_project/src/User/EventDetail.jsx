@@ -23,6 +23,23 @@ export default function EventDetail() {
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    //閲覧履歴用
+    const saveToHistory = (eventData) => {
+        const history = JSON.parse(localStorage.getItem("view_history") || "[]");
+
+        const newItem = {
+            id: eventData.id,
+            name: eventData.name,
+            image: eventData.image_path || eventData.topimage_path || eventData.image_url,
+            type: "event", //飲食店と区別するため
+            viewedAt: new Date().getTime()
+        };
+
+        const filteredHistory = history.filter(item => item.id !== newItem.id);
+        const newHistory = [newItem, ...filteredHistory].slice(0, 10);
+        localStorage.setItem("view_history", JSON.stringify(newHistory));
+    };
+
     const fetchEvent = useCallback(async () => {
         if (!id) {
             setLoading(false);
@@ -44,6 +61,7 @@ export default function EventDetail() {
 
             const data = await res.json();
             setEvent(data);
+            saveToHistory(data);
         } catch (err) {
             console.error("Fetch Error:", err);
             setEvent(null);

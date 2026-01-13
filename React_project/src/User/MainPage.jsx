@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+
 
 // 画像をインポート
 import oniIcon from "./images/onioni.png";
@@ -11,6 +11,7 @@ import Footer from "./components/Footer";
 import GetRestaurants from "./components/GetRestaurants";
 import HeroSlider from "./components/HeroSlider";
 import SiteDescription from "./components/SiteDescription";
+import ViewHistory from "./components/ViewHistory";
 
 export default function MainPage() {
   const [selectedGenre, setSelectedGenre] = useState("洋食");
@@ -83,41 +84,10 @@ export default function MainPage() {
           <GetRestaurants onRecordClick={(id) => recordClick("restaurant", id)} />
         </div>
 
-        {/* 会員機能 */}
-        <section style={{ 
-          margin: "0", 
-          padding: "60px 20px", 
-          textAlign: "center", 
-          backgroundColor: "#fff",
-          marginTop: "-1px",
-          lineHeight: "normal"
-        }}>
-          <h2 style={{ marginBottom: "30px", fontSize: "1.8rem" }}>会員機能</h2>
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 250px), 1fr))",
-            gap: "20px",
-            maxWidth: "800px",
-            margin: "0 auto"
-          }}>
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} style={{
-                backgroundColor: "#f9f9f9",
-                border: "1px solid #eee",
-                borderRadius: "12px",
-                height: "120px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#888",
-                fontSize: "16px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
-              }}>
-                コンテンツ未定
-              </div>
-            ))}
-          </div>
-        </section>
+        {/*閲覧履歴*/}
+        <div style={{ marginTop: "-1px", lineHeight: "normal" }}>
+          <ViewHistory />
+        </div>
       </div>
 
       {/* --- 追従する鬼のボタン --- */}
@@ -151,7 +121,7 @@ export default function MainPage() {
             width: "100%", 
             height: "100%", 
             objectFit: "contain",
-            display: "block", // 画像下の謎の隙間を消す
+            display: "block", 
             filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.4))"
           }} 
         />
