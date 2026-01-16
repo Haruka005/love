@@ -22,6 +22,27 @@ export default function RestaurantDetail() {
     const [restaurant, setRestaurant] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    //閲覧履歴用
+    const saveToHistory = (data) => {
+        const history = JSON.parse(localStorage.getItem("view_history") || "[]");
+
+        const newItem = {
+            id: data.id,
+            name: data.name,
+            image: data.all_images?.[0] || data.image_path || data.topimage_path,
+            type: "restaurant", 
+            viewedAt: new Date().getTime()
+        };
+
+        const filteredHistory = history.filter(item => 
+            !(item.id === newItem.id && item.type === "restaurant")
+        );
+
+        const newHistory = [newItem, ...filteredHistory].slice(0, 10);
+
+        localStorage.setItem("view_history", JSON.stringify(newHistory));
+    };
+
     const fetchRestaurant = useCallback(async () => {
         if (!id) {
             setLoading(false);
@@ -43,6 +64,7 @@ export default function RestaurantDetail() {
 
             const data = await res.json();
             setRestaurant(data);
+            saveToHistory(data);
         } catch (err) {
             console.error("Fetch Error:", err);
             setRestaurant(null);

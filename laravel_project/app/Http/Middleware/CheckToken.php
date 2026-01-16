@@ -42,9 +42,21 @@ class CheckToken
         }
 
         //有効期限切れの場合
-        if ($record->token_expires_at->isPast()) {
-            Log::warning('【CheckToken】トークン期限切れ', ['token' => $token, 'expires_at' => $record->token_expires_at]);
-            // 期限切れの場合、データベースからも削除します
+        $isExpired = $record->token_expires_at->isPast();
+
+        //60分間
+        $isInactive = $record->last_used_at && $record->last_used_at->addMinutes(60)->isPast();
+
+        if ($isExpired || $isInactive) {
+            Log::warning('【CheckToken】トークン無効（期限切れまたは無操作）', [
+                'user_id' => $record->user_id,
+                'is_expired' => $isExpired,
+                'is_inactive' => $isInactive
+            ]);
+
+            //DBからトークンを削除
+            $record->delete();
+
             return response()->json(['error' => 'Token expired'], 401);
         }
 
