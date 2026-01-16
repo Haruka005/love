@@ -16,13 +16,20 @@ import ViewHistory from "./components/ViewHistory";
 export default function MainPage() {
   const [selectedGenre, setSelectedGenre] = useState("洋食");
 
-  // --- ページ読み込み時に最上部（HeroSlider）へスクロールする処理 ---
+  // 背景画像の設定とスクロール制御
   useEffect(() => {
-    // ブラウザのスクロール位置復元を無効化し、強制的にトップへ移動
+    document.body.style.backgroundImage = "url('images/images.png')";
+    document.body.style.backgroundAttachment = "fixed";
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+    document.body.style.backgroundRepeat = "no-repeat";
+
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual';
     }
     window.scrollTo(0, 0);
+
+    return () => { document.body.style.backgroundImage = ""; };
   }, []);
 
   const scrollToTop = () => {
@@ -32,7 +39,6 @@ export default function MainPage() {
     });
   };
 
-  // --- 追加：クリック計測関数 ---
   const recordClick = async (type, id) => {
     try {
       const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000/api";
@@ -52,37 +58,35 @@ export default function MainPage() {
   };
 
   return (
-    <div className="main-background" style={{ backgroundColor: "#fff", overflowX: "hidden" }}>
-      {/* ヘッダー */}
+    <>
+      {/* 画面いっぱいに広がる固定ヘッダー */}
       <Header />
 
-      {/* セクション間の隙間を埋めるコンテナ：lineHeight: 0 で微細な隙間を排除 */}
-      <div style={{ display: "flex", flexDirection: "column", width: "100%", lineHeight: 0 }}>
+      {/* 中央寄せのメインコンテンツ */}
+      <div className="main-background" style={{ overflowX: "hidden" }}>
         
-        {/* ヒーローエリア */}
-        <div style={{ width: "100%", margin: 0, padding: 0 }}>
-          <HeroSlider />
-        </div>
+        {/* ヘッダーの高さ分、全体を下げる */}
+        <div style={{ display: "flex", flexDirection: "column", width: "100%", lineHeight: 0, paddingTop: "65px" }}>
+          
+          <div style={{ width: "100%", margin: 0, padding: 0 }}>
+            <HeroSlider />
+          </div>
 
-        {/* 各セクション：marginTop: "-1px" と lineHeight: "normal" をセットで適用 */}
-        <div style={{ marginTop: "-1px", lineHeight: "normal" }}>
-          <SiteDescription />
-        </div>
+          <div style={{ marginTop: "-1px", lineHeight: "normal" }}>
+            <SiteDescription />
+          </div>
 
-        <div style={{ marginTop: "-1px", lineHeight: "normal" }}>
-          {/* 修正：onRecordClick を追加 */}
-          <UpComingEvents onRecordClick={(id) => recordClick("event", id)} />
-        </div>
+          <div style={{ marginTop: "-1px", lineHeight: "normal" }}>
+            <UpComingEvents onRecordClick={(id) => recordClick("event", id)} />
+          </div>
 
-        <div style={{ marginTop: "-1px", lineHeight: "normal" }}>
-          {/* 修正：onRecordClick を追加 */}
-          <GetEvents onRecordClick={(id) => recordClick("event", id)} />
-        </div>
+          <div style={{ marginTop: "-1px", lineHeight: "normal" }}>
+            <GetEvents onRecordClick={(id) => recordClick("event", id)} />
+          </div>
 
-        <div style={{ marginTop: "-1px", lineHeight: "normal" }}>
-          {/* 修正：onRecordClick を追加 */}
-          <GetRestaurants onRecordClick={(id) => recordClick("restaurant", id)} />
-        </div>
+          <div style={{ marginTop: "-1px", lineHeight: "normal" }}>
+            <GetRestaurants onRecordClick={(id) => recordClick("restaurant", id)} />
+          </div>
 
         {/*閲覧履歴*/}
         <div style={{ marginTop: "-1px", lineHeight: "normal" }}>
@@ -90,7 +94,10 @@ export default function MainPage() {
         </div>
       </div>
 
-      {/* --- 追従する鬼のボタン --- */}
+        <Footer />
+      </div>
+
+      {/* --- 追従する鬼のボタン (元の機能・スタイルそのまま) --- */}
       <button
         onClick={scrollToTop}
         style={{
@@ -107,7 +114,7 @@ export default function MainPage() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          zIndex: 2000,
+          zIndex: 4000,
           transition: "transform 0.2s",
         }}
         onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.1)"}
@@ -121,13 +128,11 @@ export default function MainPage() {
             width: "100%", 
             height: "100%", 
             objectFit: "contain",
-            display: "block", 
+            display: "block", // 画像下の謎の隙間を消す
             filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.4))"
           }} 
         />
       </button>
-
-      <Footer />
-    </div>
+    </>
   );
 }

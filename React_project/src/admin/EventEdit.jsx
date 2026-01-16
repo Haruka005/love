@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 
+// イベント編集画面
+
 // APIのベースURLを環境変数から取得し、末尾の /api を適切に処理する関数
 const getBaseApiUrl = () => {
     const envUrl = process.env.REACT_APP_API_URL || "http://localhost:8000";

@@ -1,5 +1,6 @@
 <?php
 
+//マルチ認証（ユーザー・管理者）設定
 return [
 
     'defaults' => [
@@ -13,7 +14,7 @@ return [
             'provider' => 'users',
         ],
 
-        // ✅ 管理者用
+        // 管理者用
         'admin' => [
             'driver' => 'session',
             'provider' => 'admins',

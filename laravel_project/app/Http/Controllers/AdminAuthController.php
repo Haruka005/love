@@ -1,5 +1,6 @@
 <?php
 
+//管理者用ユーザー一覧取得機能
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;

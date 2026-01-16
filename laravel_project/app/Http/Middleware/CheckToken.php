@@ -1,4 +1,7 @@
 <?php
+//CheckToken.phpAPI通信時のトークン認証共通処理
+
+
 namespace App\Http\Middleware;
 
 use Closure;

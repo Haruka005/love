@@ -1,5 +1,6 @@
 <?php
 
+//パスワード再設定メール機能
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;

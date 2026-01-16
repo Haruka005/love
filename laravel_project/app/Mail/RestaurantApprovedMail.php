@@ -1,5 +1,6 @@
 <?php
 
+//店舗承認通知メール機能
 namespace App\Mail;
 
 use App\Models\Restaurant;

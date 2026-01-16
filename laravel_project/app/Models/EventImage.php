@@ -1,5 +1,6 @@
 <?php
 
+//イベント画像・モデル
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;

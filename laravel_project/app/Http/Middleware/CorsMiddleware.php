@@ -1,5 +1,6 @@
 <?php
 
+//独自ミドルウェア
 namespace App\Http\Middleware;
 
 use Closure;

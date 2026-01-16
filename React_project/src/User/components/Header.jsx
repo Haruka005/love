@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext.js";
 
 function Header() {
-  //メニューの開閉状態
   const [isOpen, setIsOpen] = useState(false);
   const { user, isLoggedIn } = useAuth();
 

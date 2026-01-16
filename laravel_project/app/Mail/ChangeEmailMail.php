@@ -1,5 +1,6 @@
 <?php
 
+//メールアドレス変更通知機能
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;

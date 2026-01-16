@@ -5,6 +5,7 @@ import UserManagement from './components/user_mg';
 import EventManagement from './EventManagement.jsx';
 import RestaurantManagement from './RestaurantManagement.jsx';
 
+//管理者TOPページ
 const getBaseApiUrl = () => {
     const envUrl = process.env.REACT_APP_API_URL || "http://localhost:8000";
     return envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;

@@ -1,5 +1,6 @@
 <?php
 
+//店舗再申請確認メール機能
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
@@ -22,7 +23,7 @@ class RestaurantReappliedMail extends Mailable
     public function build()
     {
         return $this->subject('【LOVEりべつ】飲食店掲載申請を完了させてください')
-                    ->view('emails.restaurant_comfirmation') 
+                    ->view('emails.restaurant_confirmation') 
                     ->with([
                         'url' => $this->confirmationUrl,
                     ]);

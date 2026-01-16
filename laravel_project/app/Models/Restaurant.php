@@ -1,5 +1,6 @@
 <?php
 
+//店舗・モデル
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;

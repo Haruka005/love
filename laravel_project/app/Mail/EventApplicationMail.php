@@ -1,5 +1,6 @@
 <?php
 
+//イベント申請確認メール機能
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
