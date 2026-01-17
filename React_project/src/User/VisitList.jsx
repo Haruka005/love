@@ -46,29 +46,7 @@ export default function VisitList() {
 
 
   // 店舗データ（仮のデータ）
-  const stores = [
-    {
-      name: "びくどん",
-      genre: "洋食",
-      address: "北海道室蘭市東町1丁目3",
-      lat: 42.342621,
-      lng: 141.018801,
-    },
-    {
-      name: "すきや",
-      genre: "定食",
-      address: "北海道登別",
-      lat: 42.415,
-      lng: 141.102,
-    },
-    {
-      name: "クレープ屋",
-      genre: "デザート",
-      address: "北海道登別",
-      lat: 42.418,
-      lng: 141.108,
-    },
-  ];
+  const stores = [];
 
   // 検索キーワードとジャンルで店舗を絞り込む
   const filteredStores = stores.filter((store) => {

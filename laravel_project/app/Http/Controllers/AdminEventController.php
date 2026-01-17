@@ -13,7 +13,7 @@ class AdminEventController extends Controller
     // 承認待ちイベント一覧
     public function getPendingEvents(Request $request)
     {
-        // ★ 管理者チェック
+        // 管理者チェック
         if ($request->user()->role !== 'admin') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
@@ -34,7 +34,7 @@ class AdminEventController extends Controller
     // 承認済みイベント一覧
     public function getApprovedEvents(Request $request)
     {
-        // ★ 管理者チェック
+        // 管理者チェック
         if ($request->user()->role !== 'admin') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
@@ -63,7 +63,7 @@ class AdminEventController extends Controller
     // ステータス更新（承認・却下ボタン用）
     public function updateEventStatus(Request $request, $id)
     {
-        // ★ 管理者チェック
+        // 管理者チェック
         if ($request->user()->role !== 'admin') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
@@ -103,7 +103,7 @@ class AdminEventController extends Controller
     // イベント詳細取得
     public function show($id)
     {
-        // ★ 管理者チェック
+        // 管理者チェック
         if (request()->user()->role !== 'admin') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
@@ -120,7 +120,7 @@ class AdminEventController extends Controller
     // イベント内容の更新保存（編集画面からの保存用）
     public function update(Request $request, $id)
     {
-        // ★ 管理者チェック
+        // 管理者チェック
         if ($request->user()->role !== 'admin') {
             return response()->json(['message' => 'Forbidden'], 403);
         }

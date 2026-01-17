@@ -14,36 +14,7 @@ function FavoritesList() {
   const [category, setCategory] = useState("restaurant"); // 初期値は "restaurant"
 
   // お気に入りデータを保存する状態変数（初期値として4件登録）
-  const [favorites, setFavorites] = useState([
-    {
-      id: 1,
-      type: "restaurant", // 種類（飲食店）
-      name: "びくどん", // 店名
-      image: "🍴", // 絵文字アイコン
-      detail: "びくどんは洋食レストランです。", // 詳細説明
-    },
-    {
-      id: 2,
-      type: "event",
-      name: "満点花火",
-      image: "🎆",
-      detail: "満点花火は夏の夜空を彩るイベントです。",
-    },
-    {
-      id: 3,
-      type: "restaurant",
-      name: "かつや",
-      image: "🍚",
-      detail: "かつやは定食屋で、カツ丼が人気です。",
-    },
-    {
-      id: 4,
-      type: "event",
-      name: "どこかの花火大会",
-      image: "🎆",
-      detail: "地域で開催される花火大会です。",
-    },
-  ]);
+  const [favorites, setFavorites] = useState([]);
 
   // 現在のページ番号を保存する状態変数（今はダミー構造）
   const [page, setPage] = useState(1);

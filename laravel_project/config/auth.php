@@ -27,7 +27,7 @@ return [
             'model' => App\Models\User::class,
         ],
 
-        // ✅ 管理者用
+        //  管理者用
         'admins' => [
             'driver' => 'eloquent',
             'model' => App\Models\Admin::class,
