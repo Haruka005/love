@@ -1,73 +1,170 @@
-//通報画面
-
 import React, { useState } from "react";
 
-export default function ReportForm(){
+export default function ReportForm() {
+    const [formData, setData] = useState({
+        name: "",
+        email: "",
+        reason: "",
+    });
 
-    const [formData,setData] = useState({
-        name:"", //名前
-        email:"", //メールアドレス
-        reason:"", //通報理由
+    const [status, setStatus] = useState({ type: "", message: "" });
+    const [loading, setLoading] = useState(false);
 
-    })
-
-    //入力欄に文字が入るたびに呼ばれる関数
     const handleChange = (e) => {
-        const name = e.target.name;
-        const value = e.target.value;
-        setData({
-            ...formData, //今のformDataをそのままコピーするという意味
-            [name]:value, //nameキーを新しい値に置き換える
-        });
+        const { name, value } = e.target;
+        setData({ ...formData, [name]: value });
     };
 
-    //送信されたときに呼ばれる関数
-    const handleSubmit = (e) => {
-        e.preventDefault(); //ページのリロードを防ぐ
-        console.log("送信データ：",formData); //送信内容を開発者ツールに表示
-        alert("通報が送信されました。")  //後に変更する
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setStatus({ type: "", message: "" });
+
+        try {
+            const response = await fetch("http://localhost:8000/api/report", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (response.ok) {
+                setStatus({ type: "success", message: "通報が送信されました。ご協力ありがとうございます。" });
+                setData({ name: "", email: "", reason: "" });
+            } else {
+                setStatus({ type: "error", message: "送信に失敗しました。内容を確認してください。" });
+            }
+        } catch (error) {
+            setStatus({ type: "error", message: "サーバーと通信できませんでした。" });
+        } finally {
+            setLoading(false);
+        }
     };
 
-    //ブラウザに表示される内容
-    return(
-        <form className="report-form" onSubmit={handleSubmit}>
-            <h2>通報フォーム</h2>
+    // ページ独自の追加スタイル
+    const localStyles = (
+        <style>{`
+            .report-page-container {
+                padding-top: 80px; /* ヘッダー固定分 */
+                padding-bottom: 50px;
+            }
+            .report-description {
+                text-align: center;
+                font-size: 0.9rem;
+                color: #666;
+                margin-bottom: 20px;
+                padding: 0 20px;
+            }
+            .report-form-box {
+                margin-top: 10px;
+            }
+            .input-label {
+                display: block;
+                text-align: left;
+                margin-bottom: 5px;
+                font-weight: bold;
+                font-size: 0.9rem;
+                color: #555;
+            }
+            .required-tag {
+                background-color: #F93D5D;
+                color: white;
+                font-size: 0.7rem;
+                padding: 2px 6px;
+                border-radius: 4px;
+                margin-left: 5px;
+                vertical-align: middle;
+            }
+            .status-banner {
+                padding: 15px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+                font-weight: bold;
+                font-size: 0.9rem;
+            }
+            .status-banner.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+            .status-banner.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+            
+            textarea.custom-textarea {
+                width: 100%;
+                padding: 12px 16px;
+                font-size: 16px;
+                border: 1.5px solid #ccc;
+                border-radius: 8px;
+                outline: none;
+                transition: all 0.2s ease;
+                font-family: inherit;
+            }
+            textarea.custom-textarea:focus { border-color: #f93d5d; }
+        `}</style>
+    );
 
-            {/*入力欄のラベルを作るタグ*/}
-            <label>
-                名前（任意）:
-                <input
-                    type = "text"
-                    name = "name" //この入力欄の名前
-                    value = {formData.name}  //入力欄の値をform.nameとして扱うよ
-                    onChange={handleChange}  //入力するたびにhandleChangeを呼ぶよ
-                />
-            </label>
+    return (
+        <div className="main-background report-page-container">
+            {localStyles}
+            
+            <section className="container">
+                <h1>通報フォーム</h1>
+                <p className="report-description">
+                    不適切な投稿や規約違反を見つけた場合は、こちらからお知らせください。
+                </p>
 
-            <label>
-                メールアドレス:
-                <input
-                    type = "email"
-                    name = "email" //この入力欄の名前
-                    value = {formData.email}  //入力欄の値をform.emailとして扱うよ
-                    onChange={handleChange}  //入力するたびにhandleChangeを呼ぶよ
-                    required //必須項目とする
-                />
-            </label>
+                {status.message && (
+                    <div className={`status-banner ${status.type}`}>
+                        {status.message}
+                    </div>
+                )}
 
-            <label>
-                理由(詳細に記入してください):
-                <textarea
-                    name = "reason" //この入力欄の名前
-                    value = {formData.reason}  //入力欄の値をform.emailとして扱うよ
-                    onChange={handleChange}  //入力するたびにhandleChangeを呼ぶよ
-                    required //必須項目とする
-                    placeholder={"例)-2020/02/04 開催の〇〇のイベントページに不適切な画像が掲載されていた"}
-                />
-            </label>
+                <div className="form-container report-form-box">
+                    <form onSubmit={handleSubmit}>
+                        <div style={{ marginBottom: '20px' }}>
+                            <label className="input-label">お名前（任意）</label>
+                            <input
+                                type="text"
+                                name="name"
+                                placeholder="例：登別 太郎"
+                                value={formData.name}
+                                onChange={handleChange}
+                            />
+                        </div>
 
-            <button type = "submit">送信</button>
-        </form>
+                        <div style={{ marginBottom: '20px' }}>
+                            <label className="input-label">
+                                メールアドレス<span className="required-tag">必須</span>
+                            </label>
+                            <input
+                                type="email"
+                                name="email"
+                                placeholder="example@mail.com"
+                                value={formData.email}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
 
+                        <div style={{ marginBottom: '25px' }}>
+                            <label className="input-label">
+                                通報の理由<span className="required-tag">必須</span>
+                            </label>
+                            <textarea
+                                name="reason"
+                                className="custom-textarea"
+                                rows="6"
+                                placeholder="詳細をご記入ください。"
+                                value={formData.reason}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+
+                        <button type="submit" disabled={loading}>
+                            {loading ? "送信中..." : "この内容で通報する"}
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </div>
     );
 }

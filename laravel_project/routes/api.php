@@ -16,7 +16,10 @@ use App\Http\Controllers\EventDetailController;
 use App\Models\User;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\ReportController;
 
+// --- 通報用ルート ---
+Route::post('/report', [App\Http\Controllers\ReportController::class, 'sendReport']);
 // ==============================
 // 認証不要ルート
 // ==============================
