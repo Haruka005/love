@@ -10,7 +10,6 @@ class ReportController extends Controller
 {
     public function sendReport(Request $request)
     {
-        // 1. バリデーション
         $validated = $request->validate([
             'name'   => 'nullable|string|max:255',
             'email'  => 'required|email',
