@@ -17,9 +17,12 @@ use App\Models\User;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\ReportController;
+// 新しく作成したコントローラーをインポート
+use App\Http\Controllers\AdminManagementController;
 
 // --- 通報用ルート ---
 Route::post('/report', [App\Http\Controllers\ReportController::class, 'sendReport']);
+
 // ==============================
 // 認証不要ルート
 // ==============================
@@ -27,6 +30,16 @@ Route::post('/login', [UserController::class, 'login']);
 Route::post('/register', [UserController::class, 'register']);
 Route::get('/users', [AdminController::class, 'user_all']);
 Route::post('/admin/login', [AdminAuthController::class, 'login']);
+
+// 【修正ポイント：ここへ移動】ログアウトは期限切れトークンでも受け付けるため、middlewareの外に配置
+Route::post('/logout', function (Request $request) {
+    $bearerToken = $request->bearerToken();
+    if ($bearerToken) {
+        // Tokenモデルを使用してDBから物理削除（これで管理画面から消えるようになります）
+        \App\Models\Token::where('token', $bearerToken)->delete();
+    }
+    return response()->json(['message' => 'Logged out'], 200);
+});
 
 // アクセス記録エンドポイント（認証なし）
 Route::post('/log-access', [AnalyticsController::class, 'storeAccess']);
@@ -70,12 +83,9 @@ Route::middleware(['check.token'])->group(function () {
     Route::post('/store-restaurant-data', [RestaurantController::class, 'storeRestaurantData']);
     Route::post('/store-event-data', [EventController::class, 'storeEventData']);
 
-    Route::post('/logout', function (Request $request) {
-        if ($request->user()) {
-            $request->user()->tokens()->delete();
-        }
-        return response()->json(['message' => 'Logged out'], 200);
-    });
+    // --- 管理者専用：アカウント新規登録 ---
+    // ここで管理者による user または admin の作成を行う
+    Route::post('/admin/register', [AdminManagementController::class, 'store']);
 
     // --- 管理者イベントAPI ---
     Route::get('/admin/events/pending', [AdminEventController::class, 'getPendingEvents']);
@@ -151,4 +161,3 @@ Route::get('/email-change/confirm', [UserController::class, 'confirmChange']);
 // イベント・飲食店 メール認証
 Route::get('/event-request/confirm', [EventController::class, 'confirmEvent']);
 Route::get('/restaurant-request/confirm', [RestaurantController::class, 'confirmRestaurant']);
-

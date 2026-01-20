@@ -46,6 +46,12 @@ function UserManagement() {
     useEffect(() => {
         fetchAdminMe();
         fetchUsers();
+
+        const timer = setInterval(() => {
+            fetchUsers();
+        }, 30000);
+
+        return () => clearInterval(timer);
     }, [fetchAdminMe, fetchUsers]);
 
     const handleUpdate = async (e) => {
@@ -60,6 +66,9 @@ function UserManagement() {
                 alert("更新しました");
                 setEditingUser(null);
                 fetchUsers();
+            } else {
+                const errorData = await res.json();
+                alert("更新失敗: " + errorData.message);
             }
         } catch (err) {
             console.error("更新エラー:", err);
@@ -119,7 +128,7 @@ function UserManagement() {
                     <thead>
                         <tr style={{ background: "#F8F9FA", borderBottom: "1px solid #eee" }}>
                             <th style={{ padding: "12px", textAlign: "left", fontSize: "13px", color: "#666" }}>ID</th>
-                            <th style={{ padding: "12px", textAlign: "left", fontSize: "13px", color: "#666" }}>名前</th>
+                            <th style={{ padding: "12px", textAlign: "left", fontSize: "13px", color: "#666" }}>名前 / ステータス</th>
                             <th style={{ padding: "12px", textAlign: "left", fontSize: "13px", color: "#666" }}>メールアドレス</th>
                             <th style={{ padding: "12px", textAlign: "center", fontSize: "13px", color: "#666" }}>操作</th>
                         </tr>
@@ -131,11 +140,17 @@ function UserManagement() {
                                 <td style={{ padding: "12px" }}>
                                     <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                                         <span style={{ fontSize: "14px", fontWeight: "bold" }}>{u.name}</span>
-                                        {u.is_online && (
-                                            <span style={{ width: "fit-content", backgroundColor: "#D4EDDA", color: "#155724", fontSize: "10px", padding: "1px 6px", borderRadius: "4px", border: "1px solid #C3E6CB", fontWeight: "bold" }}>
-                                                ログイン中
-                                            </span>
-                                        )}
+                                        <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                                            {u.is_online && (
+                                                <span style={{ backgroundColor: "#D4EDDA", color: "#155724", fontSize: "10px", padding: "1px 6px", borderRadius: "4px", border: "1px solid #C3E6CB", fontWeight: "bold" }}>オンライン</span>
+                                            )}
+                                            {u.user_status === 0 && (
+                                                <span style={{ backgroundColor: "#FFF3CD", color: "#856404", fontSize: "10px", padding: "1px 6px", borderRadius: "4px", border: "1px solid #FFEEBA", fontWeight: "bold" }}>停止中</span>
+                                            )}
+                                            {u.is_locked && (
+                                                <span style={{ backgroundColor: "#F8D7DA", color: "#721C24", fontSize: "10px", padding: "1px 6px", borderRadius: "4px", border: "1px solid #F5C6CB", fontWeight: "bold" }}>ロック中</span>
+                                            )}
+                                        </div>
                                     </div>
                                 </td>
                                 <td style={{ padding: "12px", fontSize: "13px", color: "#444" }}>{u.email}</td>
@@ -168,7 +183,7 @@ function UserManagement() {
 
             {editingUser && (
                 <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 2000, padding: "20px", boxSizing: "border-box" }}>
-                    <div style={{ backgroundColor: "#fff", padding: "25px", borderRadius: "12px", width: "100%", maxWidth: "400px", boxShadow: "0 10px 25px rgba(0,0,0,0.2)" }}>
+                    <div style={{ backgroundColor: "#fff", padding: "25px", borderRadius: "12px", width: "100%", maxWidth: "400px", boxShadow: "0 10px 25px rgba(0,0,0,0.2)", maxHeight: "90vh", overflowY: "auto" }}>
                         <h3 style={{ marginTop: 0, marginBottom: "20px", fontSize: "18px" }}>ユーザー情報の編集</h3>
                         <form onSubmit={handleUpdate}>
                             <div style={{ marginBottom: "15px" }}>
@@ -179,13 +194,40 @@ function UserManagement() {
                                 <label style={{ display: "block", fontSize: "12px", marginBottom: "5px", color: "#666" }}>メール</label>
                                 <input style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ddd", boxSizing: "border-box" }} type="email" value={editingUser.email} onChange={e => setEditingUser({...editingUser, email: e.target.value})} required />
                             </div>
+                            
+                            <div style={{ marginBottom: "15px", padding: "10px", backgroundColor: "#F9F9F9", borderRadius: "8px" }}>
+                                <div style={{ marginBottom: "10px" }}>
+                                    <label style={{ display: "block", fontSize: "12px", marginBottom: "5px", color: "#333", fontWeight: "bold" }}>アカウント状態</label>
+                                    <select 
+                                        style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
+                                        value={editingUser.user_status} 
+                                        onChange={e => setEditingUser({...editingUser, user_status: parseInt(e.target.value)})}
+                                    >
+                                        <option value={1}>有効 (Active)</option>
+                                        <option value={0}>停止 (Suspended)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style={{ display: "block", fontSize: "12px", marginBottom: "5px", color: "#333", fontWeight: "bold" }}>ロック状態</label>
+                                    <select 
+                                        style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #ccc" }}
+                                        value={editingUser.is_locked ? "1" : "0"} 
+                                        onChange={e => setEditingUser({...editingUser, is_locked: e.target.value === "1"})}
+                                    >
+                                        <option value="0">通常（解除）</option>
+                                        <option value="1">ロック中</option>
+                                    </select>
+                                </div>
+                            </div>
+
                             <div style={{ marginBottom: "20px" }}>
                                 <label style={{ display: "block", fontSize: "12px", marginBottom: "5px", color: "#666" }}>新パスワード（任意）</label>
                                 <input style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ddd", boxSizing: "border-box" }} type="password" placeholder="変更しない場合は空欄" onChange={e => setEditingUser({...editingUser, password: e.target.value})} />
                             </div>
+                            
                             <div style={{ display: "flex", gap: "10px" }}>
-                                <button type="submit" style={{ flex: 1, padding: "12px", backgroundColor: "#007BFF", color: "#fff", border: "none", borderRadius: "6px", fontWeight: "bold", fontSize: "14px" }}>保存</button>
-                                <button type="button" onClick={() => setEditingUser(null)} style={{ flex: 1, padding: "12px", backgroundColor: "#F4F4F4", color: "#333", border: "none", borderRadius: "6px", fontSize: "14px" }}>キャンセル</button>
+                                <button type="submit" style={{ flex: 1, padding: "12px", backgroundColor: "#007BFF", color: "#fff", border: "none", borderRadius: "6px", fontWeight: "bold", fontSize: "14px", cursor: "pointer" }}>保存</button>
+                                <button type="button" onClick={() => setEditingUser(null)} style={{ flex: 1, padding: "12px", backgroundColor: "#F4F4F4", color: "#333", border: "none", borderRadius: "6px", fontSize: "14px", cursor: "pointer" }}>キャンセル</button>
                             </div>
                         </form>
                     </div>

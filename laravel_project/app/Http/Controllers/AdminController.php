@@ -24,12 +24,15 @@ class AdminController extends Controller
         }
 
         $users = $query->orderBy('id', 'desc')->get()->map(function($user) {
-            // トークンの有効期限が現在より後のレコードが存在すればオンライン
+            // 有効期限が現在時刻より後ならオンライン
             $isLoggedIn = Token::where('user_id', $user->id)
                 ->where('token_expires_at', '>', now())
                 ->exists();
 
             $user->is_online = $isLoggedIn;
+            
+            // is_locked や user_status はモデルのプロパティとして自動で含まれますが、
+            // 念のためここで明示的に整形することも可能です。
             return $user;
         });
 
@@ -37,7 +40,7 @@ class AdminController extends Controller
     }
 
     /**
-     * ユーザー更新（名前、メール、パスワード）
+     * ユーザー更新（名前、メール、パスワード、ステータス、ロック）
      */
     public function update(Request $request, $id)
     {
@@ -47,10 +50,21 @@ class AdminController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $id,
             'password' => 'nullable|min:12', // パスワードは任意
+            'user_status' => 'required|integer', // 1:有効, 0:停止
+            'is_locked' => 'required|boolean',   // true:ロック, false:通常
         ]);
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
+        $user->user_status = $validated['user_status'];
+        $user->is_locked = $validated['is_locked'];
+
+        // 管理者が手動でロック解除（is_locked = false）した場合は、
+        // 失敗回数やロック時刻もリセットしてあげる
+        if ($validated['is_locked'] === false) {
+            $user->login_attempts = 0;
+            $user->locked_at = null;
+        }
 
         if (!empty($validated['password'])) {
             $user->password = \Illuminate\Support\Facades\Hash::make($validated['password']);
@@ -85,4 +99,3 @@ class AdminController extends Controller
         return response()->json(['message' => 'Deleted']);
     }
 }
-
