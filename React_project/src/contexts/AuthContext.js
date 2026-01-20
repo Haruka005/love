@@ -16,7 +16,9 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   // 有効期限の定数（テスト用に短く設定している場合はここを調整）
-  const EXPIRY_TIME = 60 * 1000; // 現在は60秒（1分）設定
+  //60*1000ミリ秒＝１分、60*60*1000ミリ秒＝１時間
+  const EXPIRY_TIME = 60*60 * 1000; //１時間
+
 
   // 一般ユーザーログイン
   const login = (userData, jwtToken) => {
