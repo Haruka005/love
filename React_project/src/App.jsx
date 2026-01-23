@@ -26,9 +26,9 @@ import EmailChangeConfirm from "./User/EmailChangeConfirm.jsx";
 import EmailChangeSuccess from "./User/EmailChangeSuccess.jsx";
 import EventRegistrationSuccess from "./User/EventRegistrationSuccess.jsx";
 import EventRegistrationError from "./User/EventRegistrationError.jsx";
-import RestaurantRegistrationSuccess from "./User/RestaurantRegistrationSuccess";
-import RestaurantRegistrationError from "./User/RestaurantRegistrationError";
-import RestaurantForm from "./User/RestaurantForm"; // ✅ 追加済み
+import RestaurantRegistrationSuccess from "./User/RestaurantRegistrationSuccess"; // ✅ 修正済み
+import RestaurantRegistrationError from "./User/RestaurantRegistrationError";     // ✅ 修正済み
+import RestaurantForm from "./User/RestaurantForm";
 
 // ▼ 管理者用ページ
 import AdminLogin from "./admin/AdminLogin.jsx";
@@ -36,7 +36,7 @@ import AdminTop from "./admin/AdminTop";
 import EventEdit from "./admin/EventEdit";
 import RestaurantEdit from "./admin/RestaurantEdit";
 import RestaurantApproval from "./admin/RestaurantApproval.jsx";
-import UserManagement from "./admin/components/user_mg"; // ✅ 修正済みパス
+import UserManagement from "./admin/components/user_mg";
 
 function AnalyticsTracker() {
   const location = useLocation();
@@ -47,6 +47,18 @@ function AnalyticsTracker() {
         const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000/api";
         const token = localStorage.getItem("token") || localStorage.getItem("admintoken");
 
+        // localStorage からユーザー情報を取得
+        const userStr = localStorage.getItem("user");
+        let userId = null;
+        if (userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            userId = user.id;
+          } catch (e) {
+            console.error("ユーザー情報のパースに失敗しました", e);
+          }
+        }
+
         await fetch(`${API_BASE}/log-access`, {
           method: "POST",
           headers: {
@@ -56,6 +68,7 @@ function AnalyticsTracker() {
           },
           body: JSON.stringify({
             url: location.pathname,
+            user_id: userId,
           }),
         });
       } catch (error) {

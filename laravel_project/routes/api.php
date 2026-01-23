@@ -29,7 +29,10 @@ Route::post('/report', [App\Http\Controllers\ReportController::class, 'sendRepor
 Route::post('/login', [UserController::class, 'login']);
 Route::post('/register', [UserController::class, 'register']);
 Route::get('/users', [AdminController::class, 'user_all']);
+
+// --- 管理者ログイン関連 ---
 Route::post('/admin/login', [AdminAuthController::class, 'login']);
+Route::post('/admin/verify-code', [AdminAuthController::class, 'verifyCode']); // ★ここを追加しました
 
 // 【修正ポイント：ここへ移動】ログアウトは期限切れトークンでも受け付けるため、middlewareの外に配置
 Route::post('/logout', function (Request $request) {
@@ -107,6 +110,7 @@ Route::middleware(['check.token'])->group(function () {
     // --- 追記：ユーザー管理API ---
     Route::get('/admin/users', [AdminController::class, 'index']);
     Route::put('/admin/users/{id}', [AdminController::class, 'update']);
+    Route::get('/admin/users/{id}/history', [AdminController::class, 'loginHistory']);
     Route::get('/admin/users/{id}/history', [AdminController::class, 'loginHistory']);
     Route::delete('/admin/users/{id}', [AdminController::class, 'destroy']);
 
