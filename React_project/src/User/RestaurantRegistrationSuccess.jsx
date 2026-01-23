@@ -18,11 +18,6 @@ const RestaurantRegistrationSuccess = () => {
           マイページで状況を確認する
         </Link>
       </div>
-      <div style={{ marginTop: '15px' }}>
-        <Link to="/" style={{ color: '#777' }}>
-          トップページへ戻る
-        </Link>
-      </div>
     </div>
   );
 };

@@ -11,9 +11,6 @@ const EventRegistrationSuccess = () => {
       <div style={{ marginTop: '30px' }}>
         <Link to="/mypage" style={buttonStyle}>マイページで状況を確認する</Link>
       </div>
-      <div style={{ marginTop: '15px' }}>
-        <Link to="/" style={{ color: '#777' }}>トップページへ戻る</Link>
-      </div>
     </div>
   );
 };
