@@ -11,3 +11,6 @@ export default function Select({ value, onChange, options }){
         </label>
     );
 }
+
+
+//セレクトボックスコンポーネント

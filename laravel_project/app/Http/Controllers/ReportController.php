@@ -1,5 +1,5 @@
 <?php
-
+// 通報機能コントローラー
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;

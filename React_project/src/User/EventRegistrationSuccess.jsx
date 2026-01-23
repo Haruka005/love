@@ -1,3 +1,4 @@
+//イベント申請成功画面
 import { Link } from 'react-router-dom';
 
 const EventRegistrationSuccess = () => {

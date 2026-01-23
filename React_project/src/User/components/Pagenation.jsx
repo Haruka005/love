@@ -1,6 +1,7 @@
 function Pagenation({ totalPages, currentPage, onPageChange }) {
   //if (totalPages <= 1) return null; // ページ数1以下なら表示しない
 
+  // ページネーションコンポーネント
   return (
     <div style={{ marginTop: "20px" }}>
       {/* 前へボタン */}

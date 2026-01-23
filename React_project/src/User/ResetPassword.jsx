@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
+//パスワード再設定画面
 const ResetPassword = () => {
     const [searchParams] = useSearchParams(); //URLを解析するため
     const navigate = useNavigate();

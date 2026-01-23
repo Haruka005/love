@@ -3,6 +3,8 @@ import EventCard from "./EventCard";
 import { DateTime } from "./dateFormatter.js"; 
 import Pagenation from "./Pagenation";
 
+//イベント情報取得反映
+// APIのベースURLを調整
 const getBaseApiUrl = () => {
     const envUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
     return envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;

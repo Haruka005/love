@@ -28,8 +28,8 @@ class AnalyticsController extends Controller
                 ->join('t_access_logs as l', 'l.url', 'like', DB::raw("CONCAT('%/restaurants/', r.id)"))
                 ->leftJoin('users as u', 'l.user_id', '=', 'u.id')
                 ->where(function($q) { $q->where('u.role', '!=', 1)->orWhereNull('l.user_id'); })
-                ->select('r.name', DB::raw('(SELECT name FROM m_areas WHERE id = r.area_id) as area'), DB::raw('COUNT(l.id) as count'))
-                ->groupBy('r.id', 'r.name', 'r.area_id')
+                ->select('r.name', DB::raw('COUNT(l.id) as count'))
+                ->groupBy('r.id', 'r.name')
                 ->orderBy('count', 'desc')->limit(10)->get();
 
             // 2. イベントPVランキング
@@ -37,23 +37,22 @@ class AnalyticsController extends Controller
                 ->join('t_access_logs as l', 'l.url', 'like', DB::raw("CONCAT('%/events/', e.id)"))
                 ->leftJoin('users as u', 'l.user_id', '=', 'u.id')
                 ->where(function($q) { $q->where('u.role', '!=', 1)->orWhereNull('l.user_id'); })
-                ->select('e.name', 'e.location', DB::raw('COUNT(l.id) as count'))
-                ->groupBy('e.id', 'e.name', 'e.location')
+                ->select('e.name', DB::raw('COUNT(l.id) as count'))
+                ->groupBy('e.id', 'e.name')
                 ->orderBy('count', 'desc')->limit(10)->get();
 
-            // 3. 直近10件の注目度
-            $latestEvents = DB::table('test_events as e')
-                ->leftJoin('t_access_logs as l', 'l.url', 'like', DB::raw("CONCAT('%/events/', e.id)"))
-                ->select('e.id', 'e.name', 'e.start_date as event_date', 'e.location', DB::raw('COUNT(l.id) as pv_count'))
-                ->groupBy('e.id', 'e.name', 'e.start_date', 'e.location')
-                ->orderBy('pv_count', 'desc')->limit(10)->get();
-
-            // 4. リアルタイムログ
+            // 3. リアルタイムログ（URL, ユーザー名, UA, IPを取得）
             $recentLogs = (clone $baseQuery)
-                ->select('t_access_logs.url', 't_access_logs.ip_address', 't_access_logs.accessed_at', 'users.name as user_name')
-                ->orderBy('t_access_logs.accessed_at', 'desc')->limit(50)->get();
+                ->select([
+                    't_access_logs.url', 
+                    't_access_logs.accessed_at', 
+                    't_access_logs.user_agent', 
+                    't_access_logs.ip_address', 
+                    'users.name as user_name'
+                ])
+                ->orderBy('t_access_logs.accessed_at', 'desc')->limit(100)->get();
 
-            // 5. 【重要】24時間詳細分析 (直近7日間)
+            // 4. 24時間詳細分析
             $hourlyData = (clone $baseQuery)
                 ->where('t_access_logs.accessed_at', '>=', now()->subDays(7))
                 ->select(DB::raw('HOUR(t_access_logs.accessed_at) as hour'), DB::raw('COUNT(*) as count'))
@@ -71,7 +70,6 @@ class AnalyticsController extends Controller
                 'total_pv' => $totalPv,
                 'restaurants' => $restaurants,
                 'events' => $events,
-                'latest_events' => $latestEvents,
                 'recent_logs' => $recentLogs,
                 'hourly_stats' => $hourlyStats,
             ]);
@@ -80,34 +78,17 @@ class AnalyticsController extends Controller
         }
     }
 
-    /**
-     * アクセスログを保存するメソッドを追加
-     */
-    public function storeAccess(Request $request)
-    {
-        try {
-            // バリデーション
-            $request->validate([
-                'url' => 'required|string',
-                'user_id' => 'nullable|integer',
-            ]);
-
-            // ログの保存処理
-            DB::table('t_access_logs')->insert([
-                'url' => $request->url,
-                'user_id' => $request->user_id,
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-                'accessed_at' => now(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            return response()->json(['success' => true]);
-        } catch (\Exception $e) {
-            // ログ保存の失敗で画面が止まらないよう、エラーを返さずログにのみ記録
-            \Log::error('Access Log Save Failed: ' . $e->getMessage());
-            return response()->json(['success' => false], 200); 
-        }
+    // ログ保存時にユーザーIDを受け取れるように修正
+    public function storeAccess(Request $request) {
+        DB::table('t_access_logs')->insert([
+            'url' => $request->url,
+            'user_id' => $request->user_id, // React側から送られたIDを保存
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+            'accessed_at' => now(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        return response()->json(['success' => true]);
     }
 }

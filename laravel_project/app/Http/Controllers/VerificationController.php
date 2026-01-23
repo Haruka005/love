@@ -1,5 +1,5 @@
 <?php
-
+// メール認証コード送信コントローラー
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;

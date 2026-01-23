@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+//メール認証成功画面
 const VerifiedSuccess = () => {
   const navigate = useNavigate();
 

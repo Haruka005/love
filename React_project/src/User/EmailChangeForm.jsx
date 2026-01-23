@@ -1,3 +1,4 @@
+//メールアドレス変更フォーム
 import React, { useState } from 'react';
 
 const EmailChangeForm = () => {

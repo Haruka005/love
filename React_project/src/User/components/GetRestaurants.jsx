@@ -7,6 +7,8 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
+//飲食店情報の取得反映
+// 登別駅の緯度経度
 const HOROBETSU_STATION = [42.409441, 141.1069605];
 
 const getBaseApiUrl = () => {

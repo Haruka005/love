@@ -6,6 +6,7 @@ function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isLoggedIn } = useAuth();
 
+  //ヘッダーコンポーネント
   //メニュー項目の共通スタイル
   const linkStyle = {
     display: "flex",

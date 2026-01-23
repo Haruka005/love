@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+
+//店舗登録成功画面
 const RestaurantRegistrationSuccess = () => {
   return (
     <div style={{ textAlign: 'center', padding: '50px' }}>

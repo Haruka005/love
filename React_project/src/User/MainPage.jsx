@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-
+// メインページ
 // 画像をインポート
 import oniIcon from "./images/onioni.png";
 

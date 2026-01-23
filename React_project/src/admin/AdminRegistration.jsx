@@ -1,3 +1,4 @@
+//管理者新規登録画面
 import React, { useState } from "react";
 
 const getBaseApiUrl = () => {

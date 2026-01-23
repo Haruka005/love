@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 
+//店舗登録エラー画面
 const RestaurantRegistrationError = () => {
   const buttonStyle = {
     backgroundColor: '#F93D5D',

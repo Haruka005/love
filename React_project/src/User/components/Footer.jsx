@@ -1,5 +1,7 @@
 import React from "react";
 
+
+//フッターコンポーネント
 function Footer() {
   const footerStyle = {
     backgroundColor: "#ffffffff",    //背景色
