@@ -54,7 +54,7 @@ const EmailChangeConfirm = () => {
             {status === 'error' && (
                 <div>
                     <p style={{ color: 'red' }}>{message}</p>
-                    <button onClick={() => navigate('/login')}>ログイン画面へ戻る</button>
+                    <button onClick={() => navigate('/MyPage')}>マイページへ戻る</button>
                 </div>
             )}
         </div>
