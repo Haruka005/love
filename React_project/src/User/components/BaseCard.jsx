@@ -1,4 +1,4 @@
-// カードの見た目を共通化
+// カードの見た目共通化
 export default function BaseCard({ title, text, image, children }) {
   return (
     <div className="card">

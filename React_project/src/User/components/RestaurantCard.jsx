@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import BaseCard from "./BaseCard";
 
+
+// 飲食店カードコンポーネント
 export default function RestaurantCard({
   id,
   name,

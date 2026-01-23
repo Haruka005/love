@@ -1,3 +1,4 @@
+//申請履歴確認画面
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 

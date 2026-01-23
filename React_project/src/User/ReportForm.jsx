@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+//お問合せ・通報フォーム
 export default function ReportForm() {
     const [formData, setData] = useState({
         name: "",

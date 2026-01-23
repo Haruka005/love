@@ -1,3 +1,4 @@
+//店舗情報編集画面（管理者・ユーザー共通）
 import React, { useState, useEffect, useCallback, useContext } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";

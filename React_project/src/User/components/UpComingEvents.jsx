@@ -2,6 +2,8 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import EventCard from "./EventCard";
 import { DateTime } from "./dateFormatter.js";
 
+//直近のイベント情報の取得反映
+// APIの基本URLを取得するユーティリティ
 const getBaseApiUrl = () => {
     const envUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
     return envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;

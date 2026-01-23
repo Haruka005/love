@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 
+//認証コンテキストとプロバイダー
 export const AuthContext = createContext(null);
 
 // APIのベースURLを取得する関数

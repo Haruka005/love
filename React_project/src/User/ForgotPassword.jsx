@@ -1,3 +1,4 @@
+//パスワード再設定フォーム
 import React, { useState } from 'react';
 
 const ForgotPassword = () => {

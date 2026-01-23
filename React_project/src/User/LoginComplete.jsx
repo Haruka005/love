@@ -11,3 +11,5 @@ export default function LoginComplete(){
         </div>
     );
 };
+
+//ログイン完了画面

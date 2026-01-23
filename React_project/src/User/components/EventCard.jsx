@@ -1,6 +1,7 @@
 import BaseCard from "./BaseCard";
 import { useNavigate } from "react-router-dom";
 
+// イベントカードコンポーネント
 
 export default function EventCard({
   id,

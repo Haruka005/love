@@ -1,5 +1,6 @@
 import React from "react";
 
+//サイト説明コンポーネント
 function SiteDescription() {
   return (
     <section

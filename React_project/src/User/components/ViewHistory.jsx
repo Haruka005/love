@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+//閲覧履歴コンポーネント
+// APIの基本URLを取得するユーティリティ
 const getServerRootUrl = () => {
     const envUrl = process.env.REACT_APP_API_URL || "http://127.0.0.1:8000";
     return envUrl.endsWith("/api") ? envUrl.replace(/\/api$/, "") : envUrl;

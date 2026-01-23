@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import img1 from "../images/登別マリンパークニクス.jpg";
 import img2 from "../images/登別観光.jpeg";
 
+//ヒーロースライダーコンポーネント
 function HeroSlider(){
 
     const images = [img1, img2];

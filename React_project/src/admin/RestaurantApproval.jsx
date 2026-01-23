@@ -1,3 +1,4 @@
+//飲食店承認管理
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
