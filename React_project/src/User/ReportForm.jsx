@@ -1,6 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // navigateを使うために追加
+
 //お問合せ・通報フォーム
 export default function ReportForm() {
+    const navigate = useNavigate(); // navigateの初期化
+
     const [formData, setData] = useState({
         name: "",
         email: "",
@@ -41,6 +45,24 @@ export default function ReportForm() {
         } finally {
             setLoading(false);
         }
+    };
+
+    // ✕ ボタンのスタイル（マイページのデザインを適用）
+    const closeButtonStyle = {
+        backgroundColor: "#eee",
+        color: "#666",
+        border: "none",
+        borderRadius: "50%",
+        width: "40px",
+        height: "40px",
+        fontSize: "20px",
+        cursor: "pointer",
+        margin: "20px auto",
+        display: "flex", 
+        justifyContent: "center", 
+        alignItems: "center", 
+        padding: 0, 
+        lineHeight: 1, 
     };
 
     // ページ独自の追加スタイル
@@ -106,7 +128,7 @@ export default function ReportForm() {
             {localStyles}
             
             <section className="container">
-                <h1>通報フォーム</h1>
+                <h1>お問い合わせ・通報フォーム</h1>
                 <p className="report-description">
                     不適切な投稿や規約違反を見つけた場合は、こちらからお知らせください。
                 </p>
@@ -146,7 +168,7 @@ export default function ReportForm() {
 
                         <div style={{ marginBottom: '25px' }}>
                             <label className="input-label">
-                                通報の理由<span className="required-tag">必須</span>
+                                お問い合わせ・通報の理由<span className="required-tag">必須</span>
                             </label>
                             <textarea
                                 name="reason"
@@ -164,6 +186,15 @@ export default function ReportForm() {
                         </button>
                     </form>
                 </div>
+
+                {/* ✕ ボタン（通報するボタンのすぐ下に配置） */}
+                <button
+                    style={closeButtonStyle}
+                    onClick={() => navigate("/")}
+                >
+                    ✕
+                </button>
+                
             </section>
         </div>
     );

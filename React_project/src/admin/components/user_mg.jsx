@@ -17,6 +17,9 @@ function UserManagement() {
     const [editingUser, setEditingUser] = useState(null);
     const [history, setHistory] = useState([]);
 
+    // --- パスワード表示切替用の追加ステート ---
+    const [showPassword, setShowPassword] = useState(false);
+
     const token = localStorage.getItem("admintoken");
     const headers = {
         "Authorization": `Bearer ${token}`,
@@ -54,7 +57,7 @@ function UserManagement() {
                 data = data.filter(u => u.is_online);
             }
 
-            // 【修正】停止中で絞り込む際、nullやundefinedを排除し、厳密に 0 の人だけを残す
+            // 【維持】停止中で絞り込む際、nullやundefinedを排除し、厳密に 0 の人だけを残すロジック
             if (statusFilter === "0") {
                 data = data.filter(u => u.user_status !== null && Number(u.user_status) === 0);
             }
@@ -85,6 +88,7 @@ function UserManagement() {
             if (res.ok) {
                 alert("更新しました");
                 setEditingUser(null);
+                setShowPassword(false); // 保存時にパスワード表示をリセット
                 fetchUsers();
             } else {
                 const errorData = await res.json();
@@ -183,7 +187,7 @@ function UserManagement() {
                                             }
                                             {u.is_online && <span style={{ background: "#D4EDDA", color: "#155724", fontSize: "10px", padding: "1px 6px", borderRadius: "4px" }}>ログイン中</span>}
                                             
-                                            {/* 【修正】user_status が null でなく、かつ 0 の時だけ「停止中」と表示 */}
+                                            {/* 【維持】user_status が null でなく、かつ 0 の時だけ「停止中」と表示 */}
                                             {u.user_status !== null && Number(u.user_status) === 0 && (
                                                 <span style={{ background: "#FFF3CD", color: "#856404", fontSize: "10px", padding: "1px 6px", borderRadius: "4px", border: "1px solid #FFEEBA", fontWeight: "bold" }}>停止中</span>
                                             )}
@@ -197,7 +201,8 @@ function UserManagement() {
                                 <td style={{ padding: "12px", fontSize: "13px", color: "#444" }}>{u.email}</td>
                                 <td style={{ padding: "12px" }}>
                                     <div style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
-                                        <button onClick={() => setEditingUser(u)} style={{ padding: "6px 10px", border: "1px solid #007BFF", color: "#007BFF", background: "#fff", borderRadius: "4px", cursor: "pointer", fontSize: "12px" }}>編集</button>
+                                        {/* 編集時にパスワードステートを空で初期化 */}
+                                        <button onClick={() => setEditingUser({ ...u, password: "" })} style={{ padding: "6px 10px", border: "1px solid #007BFF", color: "#007BFF", background: "#fff", borderRadius: "4px", cursor: "pointer", fontSize: "12px" }}>編集</button>
                                         <button onClick={() => showHistory(u.id)} style={{ padding: "6px 10px", border: "1px solid #28A745", color: "#28A745", background: "#fff", borderRadius: "4px", cursor: "pointer", fontSize: "12px" }}>履歴</button>
                                         <button onClick={() => handleDelete(u.id)} style={{ padding: "6px 10px", border: "1px solid #DC3545", color: "#DC3545", background: "#fff", borderRadius: "4px", cursor: "pointer", fontSize: "12px" }}>削除</button>
                                     </div>
@@ -208,6 +213,7 @@ function UserManagement() {
                 </table>
             </div>
 
+            {/* 編集モーダル */}
             {editingUser && (
                 <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 2000 }}>
                     <div style={{ backgroundColor: "#fff", padding: "25px", borderRadius: "12px", width: "90%", maxWidth: "400px" }}>
@@ -221,6 +227,29 @@ function UserManagement() {
                                 <label style={{ fontSize: "12px" }}>メール</label>
                                 <input style={{ width: "100%", padding: "8px", boxSizing: "border-box" }} type="email" value={editingUser.email} onChange={e => setEditingUser({...editingUser, email: e.target.value})} />
                             </div>
+
+                            {/* --- 新しく追加したパスワード編集エリア --- */}
+                            <div style={{ marginBottom: "15px" }}>
+                                <label style={{ fontSize: "12px" }}>新しいパスワード (変更する場合のみ入力)</label>
+                                <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                                    <input 
+                                        style={{ width: "100%", padding: "8px", paddingRight: "40px", boxSizing: "border-box" }} 
+                                        type={showPassword ? "text" : "password"} 
+                                        value={editingUser.password || ""} 
+                                        onChange={e => setEditingUser({...editingUser, password: e.target.value})}
+                                        placeholder="未入力なら変更しません"
+                                    />
+                                    {/* 顔文字による表示切替ボタン */}
+                                    <span 
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        style={{ position: "absolute", right: "10px", cursor: "pointer", fontSize: "18px", userSelect: "none" }}
+                                    >
+                                        {showPassword ? "🤨" : "🙈"}
+                                    </span>
+                                </div>
+                            </div>
+                            {/* ------------------------------------------ */}
+
                             <div style={{ marginBottom: "15px" }}>
                                 <label style={{ fontSize: "12px" }}>権限</label>
                                 <select style={{ width: "100%", padding: "8px" }} value={editingUser.role} onChange={e => setEditingUser({...editingUser, role: e.target.value})}>
@@ -248,7 +277,7 @@ function UserManagement() {
 
                             <div style={{ display: "flex", gap: "10px" }}>
                                 <button type="submit" style={{ flex: 1, padding: "10px", backgroundColor: "#007BFF", color: "#fff", border: "none", borderRadius: "4px" }}>保存</button>
-                                <button type="button" onClick={() => setEditingUser(null)} style={{ flex: 1, padding: "10px", backgroundColor: "#eee", border: "none", borderRadius: "4px" }}>閉じる</button>
+                                <button type="button" onClick={() => { setEditingUser(null); setShowPassword(false); }} style={{ flex: 1, padding: "10px", backgroundColor: "#eee", border: "none", borderRadius: "4px" }}>閉じる</button>
                             </div>
                         </form>
                     </div>

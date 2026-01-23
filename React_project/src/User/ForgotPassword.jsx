@@ -65,7 +65,7 @@ const ForgotPassword = () => {
                 </button>
 
                 <div style={styles.footer}>
-                    <a href="/login" style={styles.link}>ログイン画面に戻る</a>
+                    <a href="/Mypage" style={styles.link}>マイページに戻る</a>
                 </div>
             </form>
         </div>
