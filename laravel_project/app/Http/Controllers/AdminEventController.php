@@ -1,5 +1,5 @@
 <?php
-
+// 管理者イベントコントローラー
 namespace App\Http\Controllers;
 
 use App\Models\Event;
@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Mail\EventApprovedMail;
 use Illuminate\Support\Facades\Mail;
+
 
 class AdminEventController extends Controller
 {

@@ -1,5 +1,5 @@
 <?php
-
+// 管理者認証コントローラー
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -10,6 +10,7 @@ use App\Models\Token;
 use App\Models\User;
 use App\Mail\AdminLoginVerifyMail;
 use Carbon\Carbon;
+
 
 class AdminAuthController extends Controller
 {
@@ -90,6 +91,22 @@ class AdminAuthController extends Controller
                 'email' => $user->email,
             ]
         ], 200);
+    }
+
+    /**
+     * 管理者ログアウト処理
+     */
+    public function logout(Request $request)
+    {
+        // React側から送られてきたBearerトークンを取得
+        $token = $request->bearerToken();
+
+        if ($token) {
+            // Tokenテーブルからそのトークンを削除（無効化）
+            Token::where('token', $token)->delete();
+        }
+
+        return response()->json(['message' => '管理者ログアウトに成功しました'], 200);
     }
 }
 

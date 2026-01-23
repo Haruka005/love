@@ -1,5 +1,5 @@
 <?php
-
+// 認証コントローラー
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;

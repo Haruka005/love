@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 
+
 class AdminManagementController extends Controller
 {
     /**
