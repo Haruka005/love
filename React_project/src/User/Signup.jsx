@@ -16,6 +16,7 @@ export default function Signup(){
     const [showconfi_Pass,setShowconfi_Pass] = useState(false)
     const [error,setError] = useState(''); //エラーメッセージをいれる、空ならエラーなし
 
+    
     const handleSubmit = async (e) => {    //関数handleSubmitを作りフォーム送信情報が入ってきたら{}を実行する
         e.preventDefault();   // リロードさせない
 
@@ -31,7 +32,8 @@ export default function Signup(){
         if(!/[0-9]/.test(password)){
             setError("半角数字（0～9）を入れてくださいい");
             return;}
-        if(!/[@#!%*+=_?-]/.test(password)){
+        // 修正箇所：ハイフンを \- と記述し、正しく記号として判定されるようにしました
+        if(!/[@#!%*+=_?\-]/.test(password)){
             setError("記号（@#!%*+=_-?）を入れてください");
             return;}
         if(password !== confi_pass){

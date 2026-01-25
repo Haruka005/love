@@ -85,8 +85,8 @@ function RestaurantApproval({ onUpdate }) {
                             backgroundColor: isResubmitted ? "#fffaf0" : "#fff",
                         }}>
                             <div onClick={() => setExpandedId(expandedId === shop.id ? null : shop.id)} style={cardHeaderStyle}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    {shop.name || `店舗 #${shop.id}`}
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '5px' }}>
+                                    <span>{shop.name || `店舗 #${shop.id}`}</span>
                                     {isResubmitted ? <span style={resubmitBadgeStyle}>再申請</span> : <span style={newBadgeStyle}>新規申請</span>}
                                 </div>
                                 <span style={{ float: 'right', color: '#888', fontWeight: 'normal', fontSize: '14px' }}>
@@ -224,7 +224,7 @@ function RestaurantList({ status, title, onStatusUpdate }) {
                 shops.map(shop => (
                     <div key={shop.id} style={cardStyle}>
                         <div onClick={() => setExpandedId(expandedId === shop.id ? null : shop.id)} style={cardHeaderStyle}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '5px' }}>
                                 <strong>{shop.name}</strong>
                             </div>
                             <span style={{ float: 'right', color: '#888', fontSize: '14px', fontWeight: 'normal' }}>
@@ -257,7 +257,7 @@ function RestaurantList({ status, title, onStatusUpdate }) {
                                     <p><strong>詳細:</strong> {shop.comment || 'なし'}</p>
                                 </div>
                                 <div style={actionAreaStyle}>
-                                    <button onClick={() => navigate(`/RestaurantEdit/${shop.id}`, { state: { fromAdmin: true } })} style={editButtonStyle}>編集 ✏️</button>
+                                    <button onClick={() => navigate(`/RestaurantEdit/${shop.id}`, { state: { fromAdmin: true } })} style={editButtonStyle}>編集 </button>
                                     <button onClick={(e) => handleToggleStatus(e, shop.id, status === 1 ? 9 : 1)} style={status === 1 ? hideButtonStyle : showButtonStyle}>
                                         {status === 1 ? "非公開にする" : "再公開する"}
                                     </button>
@@ -301,8 +301,8 @@ const cardStyle = { border: "1px solid #ddd", borderRadius: "8px", padding: "15p
 const cardHeaderStyle = { cursor: "pointer", fontWeight: "bold", fontSize: "18px", color: "#333", display: "flex", justifyContent: "space-between", alignItems: "center" };
 const cardSubTextStyle = { fontSize: '12px', color: '#666', marginTop: '5px' };
 const cardDetailStyle = { marginTop: "10px", padding: "10px", borderTop: "1px dashed #eee" };
-const resubmitBadgeStyle = { backgroundColor: "#faad14", color: "white", fontSize: "11px", padding: "2px 8px", borderRadius: "10px", marginLeft: "10px" };
-const newBadgeStyle = { backgroundColor: "#1890ff", color: "white", fontSize: "11px", padding: "2px 8px", borderRadius: "10px", marginLeft: "10px" };
+const resubmitBadgeStyle = { backgroundColor: "#faad14", color: "white", fontSize: "11px", padding: "2px 8px", borderRadius: "10px", marginLeft: "0px" };
+const newBadgeStyle = { backgroundColor: "#1890ff", color: "white", fontSize: "11px", padding: "2px 8px", borderRadius: "10px", marginLeft: "0px" };
 const rejectionBoxStyle = { backgroundColor: "#fff0f0", padding: "10px", borderRadius: "5px", marginBottom: "15px", border: "1px solid #ffccc7", color: "#cf1322", fontSize: "13px" };
 const imageGalleryStyle = { display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: "20px", marginTop: "10px" };
 const imageWrapper = { textAlign: "center" };

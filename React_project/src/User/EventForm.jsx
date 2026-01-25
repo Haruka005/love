@@ -119,7 +119,7 @@ function EventForm() {
             });
 
             if (response.ok) {
-                alert("イベント申請が完了しました！\n管理者による承認後に掲載されます。");
+                alert("イベント申請が完了しました！\nメールにて承認をお願いします。\n管理者による承認後に掲載されます。");
                 navigate("/EventApplicationHistory");
             } else if (response.status === 401) {
                 alert("セッションが切れました。再度ログインしてください。");

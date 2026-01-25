@@ -32,7 +32,7 @@ class UserController extends Controller
                 'regex:/[A-Z]/', // 大文字
                 'regex:/[a-z]/', // 小文字
                 'regex:/[0-9]/', // 数字
-                'regex:/[!@&?]/', // 記号
+                'regex:/[@#!%*+=_?\-]/', // 特殊文字
             ],
         ]);
 

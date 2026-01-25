@@ -169,11 +169,23 @@ export default function EventApplicationHistory() {
           const statusId = Number(item.approval_status_id);
           return (
             <div key={item.id} style={cardStyle}>
-              <div onClick={() => setExpandedId(expandedId === item.id ? null : item.id)} style={{ cursor: "pointer", display: "flex", justifyContent: "space-between" }}>
+              <div onClick={() => setExpandedId(expandedId === item.id ? null : item.id)} style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div>
-                  <strong style={{ fontSize: "1.1em" }}>{item.name}</strong>
+                  {/* タイトルを block にして強制改行 */}
+                  <strong style={{ fontSize: "1.1em", display: "block", marginBottom: "5px" }}>{item.name}</strong>
+                  
                   {activeTab === "pending" && (
-                    <span style={{ fontSize: "0.75em", marginLeft: "10px", padding: "2px 8px", borderRadius: "10px", backgroundColor: statusId === 0 ? "#faad14" : "#1890ff", color: "white" }}>
+                    /* ラベルも block にして独自行に。左右余白を調整 */
+                    <span style={{ 
+                      display: "inline-block", 
+                      fontSize: "0.75em", 
+                      padding: "2px 8px", 
+                      borderRadius: "10px", 
+                      backgroundColor: statusId === 0 ? "#faad14" : "#1890ff", 
+                      color: "white",
+                      fontWeight: "bold",
+                      marginBottom: "4px"
+                    }}>
                       {statusId === 0 ? "メール認証待ち" : "審査待ち"}
                     </span>
                   )}
@@ -181,7 +193,9 @@ export default function EventApplicationHistory() {
                     {activeType === "events" ? `開催: ${item.start_date?.substring(0, 10)}` : `住所: ${item.address}`}
                   </div>
                 </div>
-                <span style={{ color: "#007bff", fontSize: "0.85em" }}>{expandedId === item.id ? "▲ 閉じる" : "▼ 詳細表示"}</span>
+                <span style={{ color: "#888", fontSize: "0.85em", fontWeight: "bold", whiteSpace: "nowrap" }}>
+                  {expandedId === item.id ? "▲ 閉じる" : "▼ 詳細表示"}
+                </span>
               </div>
 
               {expandedId === item.id && (

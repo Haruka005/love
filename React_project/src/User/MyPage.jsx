@@ -75,24 +75,32 @@ export default function MyPage() {
     marginBottom: "20px",
   };
 
-  // 閉じるボタンのスタイル（丸くてグレー）
-  const closeButtonStyle = {
-    backgroundColor: "#eee",
-    color: "white",
-    border: "none",
-    borderRadius: "50%",
-    width: "40px",
-    height: "40px",
-    fontSize: "20px",
-    cursor: "pointer",
-    display: "block", 
-    margin: "20px auto",
-    display: "flex", 
-    justifyContent: "center", 
-    alignItems: "center", 
-    padding: 0, 
-    lineHeight: 1, 
+  // ボタンのスタイル定義 ------
+  const exitButton = {
+    padding: '8px 20px',
+    fontSize: '0.9rem',
+    fontWeight: '500',
+    backgroundColor: '#ffffff',
+    color: '#f93d5d', 
+    border: '1px solid #f93d5d', 
+    borderRadius: '20px',
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    display: 'inline-block',
+    margin: '0 auto', 
+    whiteSpace: 'nowrap',    
+    minWidth: '120px',
   };
+
+  const buttonWrapperStyle = {
+    marginTop: "30px",
+    display: "flex",
+    justifyContent: "center",
+    width: "100%",
+    textAlign: "center", 
+  };
+  // ------------------------------
   
   //returnの中に、このコンポーネントが画面に表示する内容を書く
   //ログイン済みならマイページ表示
@@ -115,7 +123,7 @@ export default function MyPage() {
           <button  onClick={() => navigate("/EmailChangeForm")}>メールアドレス変更</button>
           <button  onClick={() => navigate("/EventApplicationHistory")}>登録・申請確認</button>
           <button  onClick={() => navigate("/EventForm")}>イベント申請新規登録</button>
-          <button  onClick={() => navigate("/RestaurantForm")}>店登録</button>
+          <button  onClick={() => navigate("/RestaurantForm")}>飲食店申請新規登録</button>
           {!loginOut && <button  onClick={handleLogoutClick}>ログアウト</button>}
 
         </div>
@@ -143,15 +151,16 @@ export default function MyPage() {
 
       </div>
 
-      {/* メインページに戻る ✕ ボタン */}
-    
-      <button
-        style={closeButtonStyle}
-        onClick={() => navigate("/")} // ← ここでメインページに戻る
-      >
-      ✕
-      </button>
-      
+      {/* TOPページへ戻るボタン*/}
+      <div style={buttonWrapperStyle}>
+        <button
+          type="button"
+          style={exitButton}
+          onClick={() => navigate("/")} 
+        >
+          TOPページへ
+        </button>
+      </div>
     </div>
   );
 }

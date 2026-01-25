@@ -138,14 +138,14 @@ export default function EventApproval({ onUpdate }) {
                                     justifyContent: "space-between"
                                 }}
                             >
-                                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                                    <strong style={{ fontSize: "18px", color: "#333" }}>
+                                <div style={{ display: "block" }}>
+                                    <strong style={{ fontSize: "18px", color: "#333", display: "block", marginBottom: "5px" }}>
                                         {event.name || `イベント #${event.id}`} 
                                     </strong>
                                     {isResubmitted ? (
-                                        <span style={{ backgroundColor: "#faad14", color: "white", fontSize: "12px", padding: "3px 12px", borderRadius: "12px", fontWeight: "bold" }}>再申請</span>
+                                        <span style={{ backgroundColor: "#faad14", color: "white", fontSize: "12px", padding: "3px 12px", borderRadius: "12px", fontWeight: "bold", display: "inline-block" }}>再申請</span>
                                     ) : (
-                                        <span style={{ backgroundColor: "#1890ff", color: "white", fontSize: "12px", padding: "3px 12px", borderRadius: "12px", fontWeight: "bold" }}>新規申請</span>
+                                        <span style={{ backgroundColor: "#1890ff", color: "white", fontSize: "12px", padding: "3px 12px", borderRadius: "12px", fontWeight: "bold", display: "inline-block" }}>新規申請</span>
                                     )}
                                 </div>
                                 <span style={{ color: "#666", fontSize: "13px", fontWeight: "bold" }}>

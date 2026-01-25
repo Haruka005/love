@@ -131,11 +131,11 @@ function EventList({ status, title, onStatusUpdate }) {
                                 onClick={() => setExpandedId(isExpanded ? null : event.id)} 
                                 style={cardHeaderStyle}
                             >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <strong style={{ color: status === 9 ? "#666" : "#333" }}>{event.name}</strong> 
-                                    {/* ここでバッジ表示を行っていたロジックを削除しました。
-                                        (isResubmitted判定とそれに基づくspanタグを削除) 
-                                    */}
+                                <div style={{ display: 'block' }}>
+                                    <strong style={{ color: status === 9 ? "#666" : "#333", display: 'block' }}>{event.name}</strong> 
+                                    {/* ラベルが必要な場合はここに同様のロジックで追加可能ですが、
+                                        現状のコードではラベル表示ロジックがコメントアウト・削除されていたため、
+                                        構造のみ「タイトルとラベルが縦に並ぶ」ように修正しました */}
                                 </div>
                                 <span style={{ float: 'right', color: '#333', fontWeight: 'normal', fontSize: '14px' }}>
                                     {isExpanded ? "▲ 閉じる" : "▼ 詳細編集・公開設定"}

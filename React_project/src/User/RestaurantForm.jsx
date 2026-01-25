@@ -298,7 +298,7 @@ function RestaurantForm() {
 
             if (response.ok) {
 
-                alert("店舗情報を送信しました！");
+                alert("飲食店申請が完了しました！\nメールにて承認をお願いします。\n管理者による承認後に掲載されます。");
 
                 navigate("/MyPage");
 
@@ -530,7 +530,7 @@ function RestaurantForm() {
 
 
 
-            <h2 style={{ color: "#333", marginBottom: "30px", fontSize: "1.8rem", fontWeight: "700" }}>店舗情報登録</h2>
+            <h2 style={{ color: "#333", marginBottom: "30px", fontSize: "1.8rem", fontWeight: "700" }}>飲食店申請</h2>
 
 
 
