@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import EventApproval from './EventApproval.jsx';
+import EventApproval from './components/EventApproval.jsx';
 
 // APIのベースURL（環境変数があればそれを使用）
 const API_URL = process.env.REACT_APP_API_URL 

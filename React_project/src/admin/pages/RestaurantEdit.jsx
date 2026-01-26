@@ -1,7 +1,7 @@
 //店舗情報編集画面（管理者・ユーザー共通）
 import React, { useState, useEffect, useCallback, useContext } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { AuthContext } from "../contexts/AuthContext";
+import { AuthContext } from "../../contexts/AuthContext";
 
 // APIのベースURLを調整（末尾の /api 重複を防止）
 const getBaseApiUrl = () => {

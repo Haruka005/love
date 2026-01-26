@@ -1,14 +1,14 @@
 //管理者トップ画面
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from "../contexts/AuthContext.js";
+import { useAuth } from "../../contexts/AuthContext.js";
 
 // 各管理コンポーネントのインポート
 import UserManagement from './components/user_mg';
-import EventManagement from './EventManagement.jsx';
+import EventManagement from '../EventManagement.jsx';
 import RestaurantManagement from './RestaurantManagement.jsx';
-import SiteManagement from './AdminSiteManagement';
-import AdminRegistration from './AdminRegistration';
+import SiteManagement from '../AdminSiteManagement.jsx';
+import AdminRegistration from '../AdminRegistration.jsx';
 
 // APIの基本URLを取得するユーティリティ
 const getBaseApiUrl = () => {
