@@ -1,15 +1,21 @@
 // 管理者用イベント管理コンポーネント
-
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import EventApproval from './components/EventApproval.jsx';
+import EventApproval from './EventApproval.jsx';
 
-// APIのベースURL（環境変数があればそれを使用）
-const API_URL = process.env.REACT_APP_API_URL 
-    ? `${process.env.REACT_APP_API_URL}/admin/events` 
-    : "/api/admin/events";
+/**
+ * APIのベースURLを構築する関数
+ * EventApproval.jsx とロジックを統一し、パスの二重化を防ぎます
+ */
+const getBaseApiUrl = () => {
+    const envUrl = process.env.REACT_APP_API_URL || "http://localhost:8000";
+    const base = envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;
+    return `${base}/admin/events`;
+};
 
-// --- スタイル定義 (ReferenceError防止のため先に定義) ---
+const API_URL = getBaseApiUrl();
+
+// --- スタイル定義 ---
 const cardStyle = { border: "1px solid #ddd", borderRadius: "8px", padding: "15px", marginBottom: "15px", backgroundColor: "#fff", boxShadow: "0 2px 4px rgba(0,0,0,0.05)", position: 'relative' };
 const cardHeaderStyle = { cursor: "pointer", fontWeight: "bold", fontSize: "18px", color: "#333", display: "flex", justifyContent: "space-between", alignItems: "center" };
 const cardSubTextStyle = { fontSize: '12px', color: '#666', marginTop: '5px' };
@@ -26,8 +32,8 @@ const showButtonStyle = { padding: "8px 16px", backgroundColor: "#28a745", color
 function EventList({ status, title, onStatusUpdate }) {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [expandedId, setExpandedId] = useState(null); // 詳細表示の管理
-    const navigate = useNavigate(); // 編集画面への遷移用
+    const [expandedId, setExpandedId] = useState(null);
+    const navigate = useNavigate();
     
     const today = new Date();
     const [selectedYearMonth, setSelectedYearMonth] = useState(
@@ -46,11 +52,11 @@ function EventList({ status, title, onStatusUpdate }) {
         return options;
     })();
 
-    // APIからデータを取得する関数
     const fetchEvents = useCallback(async () => {
         setLoading(true);
         try {
             const token = localStorage.getItem("admintoken"); 
+            // API_URL は既に /api/admin/events なので、approved を付与
             const url = `${API_URL}/approved?year_month=${selectedYearMonth}&status=${status}`;
             
             const response = await fetch(url, {
@@ -133,9 +139,6 @@ function EventList({ status, title, onStatusUpdate }) {
                             >
                                 <div style={{ display: 'block' }}>
                                     <strong style={{ color: status === 9 ? "#666" : "#333", display: 'block' }}>{event.name}</strong> 
-                                    {/* ラベルが必要な場合はここに同様のロジックで追加可能ですが、
-                                        現状のコードではラベル表示ロジックがコメントアウト・削除されていたため、
-                                        構造のみ「タイトルとラベルが縦に並ぶ」ように修正しました */}
                                 </div>
                                 <span style={{ float: 'right', color: '#333', fontWeight: 'normal', fontSize: '14px' }}>
                                     {isExpanded ? "▲ 閉じる" : "▼ 詳細編集・公開設定"}
@@ -252,3 +255,4 @@ export default function EventManagement({ onStatusUpdate }) {
         </div>
     );
 }
+

@@ -1,42 +1,40 @@
 import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
-import "./App.css";
 
-// ▼ 一般ユーザー用ページ
-import MainPage from "./User/MainPage";
-import Login from "./User/Login";
-import Signup from "./User/Signup";
-import LoginComplete from "./User/LoginComplete";
-import AccountCreated from "./User/AccountCreated";
-import ReportForm from "./User/ReportForm";
-import MyPage from "./User/MyPage";
-import VisitList from "./User/VisitList";
-import FavoritesList from "./User/FavoritesList";
-import HistoryList from "./User/HistoryList";
-import EventApplicationHistory from "./User/EventApplicationHistory";
-import EventForm from "./User/EventForm";
-import EventDetail from "./User/EventDetail";
-import RestaurantDetail from "./User/RestaurantDetail";
-import VerifiedSuccess from "./User/VerifiedSuccess.jsx";
-import ForgotPassword from "./User/ForgotPassword.jsx";
-import ResetPassword from "./User/ResetPassword.jsx";
-import EmailChangeForm from "./User/EmailChangeForm.jsx";
-import EmailChangeConfirm from "./User/EmailChangeConfirm.jsx";
-import EmailChangeSuccess from "./User/EmailChangeSuccess.jsx";
-import EventRegistrationSuccess from "./User/EventRegistrationSuccess.jsx";
-import EventRegistrationError from "./User/EventRegistrationError.jsx";
-import RestaurantRegistrationSuccess from "./User/RestaurantRegistrationSuccess"; // ✅ 修正済み
-import RestaurantRegistrationError from "./User/RestaurantRegistrationError";     // ✅ 修正済み
-import RestaurantForm from "./User/RestaurantForm";
 
-// ▼ 管理者用ページ
-import AdminLogin from "./admin/AdminLogin.jsx";
-import AdminTop from "./admin/AdminTop";
-import EventEdit from "./admin/EventEdit";
-import RestaurantEdit from "./admin/RestaurantEdit";
-import RestaurantApproval from "./admin/RestaurantApproval.jsx";
-import UserManagement from "./admin/components/user_mg";
+// ▼ 一般ユーザー用ページ (src/User/pages)
+import MainPage from "./User/pages/MainPage.jsx";
+import Login from "./User/pages/Login.jsx";
+import Signup from "./User/pages/Signup.jsx";
+import LoginComplete from "./User/pages/LoginComplete.jsx";
+import AccountCreated from "./User/pages/AccountCreated.jsx";
+import ReportForm from "./User/pages/ReportForm.jsx";
+import MyPage from "./User/pages/MyPage.jsx";
+import EventApplicationHistory from "./User/pages/EventApplicationHistory.jsx";
+import EventForm from "./User/pages/EventForm.jsx";
+import EventDetail from "./User/pages/EventDetail.jsx";
+import RestaurantDetail from "./User/pages/RestaurantDetail.jsx";
+import VerifiedSuccess from "./User/pages/VerifiedSuccess.jsx";
+import ForgotPassword from "./User/pages/ForgotPassword.jsx";
+import ResetPassword from "./User/pages/ResetPassword.jsx";
+import EmailChangeForm from "./User/pages/EmailChangeForm.jsx";
+import EmailChangeConfirm from "./User/pages/EmailChangeConfirm.jsx";
+import EmailChangeSuccess from "./User/pages/EmailChangeSuccess.jsx";
+import EventRegistrationSuccess from "./User/pages/EventRegistrationSuccess.jsx";
+import EventRegistrationError from "./User/pages/EventRegistrationError.jsx";
+import RestaurantRegistrationSuccess from "./User/pages/RestaurantRegistrationSuccess.jsx";
+import RestaurantRegistrationError from "./User/pages/RestaurantRegistrationError.jsx";
+import RestaurantForm from "./User/pages/RestaurantForm.jsx";
+
+// ▼ 管理者用ページ (src/admin/pages)
+import AdminLogin from "./admin/pages/AdminLogin.jsx";
+import AdminTop from "./admin/pages/AdminTop.jsx";
+import EventEdit from "./admin/pages/EventEdit.jsx";
+import RestaurantEdit from "./admin/pages/RestaurantEdit.jsx";
+
+// ▼ 管理者用コンポーネント
+import RestaurantApproval from "./admin/components/RestaurantApproval.jsx";
 
 function AnalyticsTracker() {
   const location = useLocation();
@@ -44,10 +42,11 @@ function AnalyticsTracker() {
   useEffect(() => {
     const logAccess = async () => {
       try {
-        const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000/api";
-        const token = localStorage.getItem("token") || localStorage.getItem("admintoken");
+        const envUrl = process.env.REACT_APP_API_URL || "http://localhost:8000";
+        const API_BASE = envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;
+        
+        const token = localStorage.getItem("usertoken") || localStorage.getItem("admintoken");
 
-        // localStorage からユーザー情報を取得
         const userStr = localStorage.getItem("user");
         let userId = null;
         if (userStr) {
@@ -104,9 +103,7 @@ function App() {
           <Route path="/MyPage" element={<MyPage />} />
           <Route path="/restaurants/:id" element={<RestaurantDetail />} />
           <Route path="/events/:id" element={<EventDetail />} />
-          <Route path="/VisitList" element={<VisitList />} />
-          <Route path="/FavoritesList" element={<FavoritesList />} />
-          <Route path="/HistoryList" element={<HistoryList />} />
+          
           <Route path="/EventApplicationHistory" element={<EventApplicationHistory />} />
           <Route path="/EventForm" element={<EventForm />} />
           <Route path="/event-registration-success" element={<EventRegistrationSuccess />} />
@@ -122,7 +119,7 @@ function App() {
           <Route path="/EventEdit/:id" element={<EventEdit />} />
           <Route path="/RestaurantEdit/:id" element={<RestaurantEdit />} />
           <Route path="/RestaurantApproval" element={<RestaurantApproval />} />
-          <Route path="/admin" element={<UserManagement />} />
+          {/* UserManagement, adminルートは削除しました */}
         </Routes>
       </AuthProvider>
     </BrowserRouter>

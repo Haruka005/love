@@ -1,24 +1,27 @@
 import React, { useState, useEffect } from "react";
 
 // メインページ
-// 画像をインポート
-import oniIcon from "./images/onioni.png";
+// 画像のインポートパスを修正 (src/User/pages から見て 1つ上の User/images)
+import oniIcon from "../images/onioni.png";
 
-import GetEvents from "./components/GetEvents";
-import UpComingEvents from "./components/UpComingEvents";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
-import GetRestaurants from "./components/GetRestaurants";
-import HeroSlider from "./components/HeroSlider";
-import SiteDescription from "./components/SiteDescription";
-import ViewHistory from "./components/ViewHistory";
+// コンポーネントのインポートパスを修正 (src/User/pages から見て 1つ上の User/components)
+import GetEvents from "../components/GetEvents";
+import UpComingEvents from "../components/UpComingEvents";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import GetRestaurants from "../components/GetRestaurants";
+import HeroSlider from "../components/HeroSlider";
+import SiteDescription from "../components/SiteDescription";
+import ViewHistory from "../components/ViewHistory";
 
 export default function MainPage() {
   const [selectedGenre, setSelectedGenre] = useState("洋食");
 
   // 背景画像の設定とスクロール制御
   useEffect(() => {
-    document.body.style.backgroundImage = "url('images/images.png')";
+    // 画像パスの修正 (public フォルダにある場合はそのままでOKですが、
+    // 読み込めない場合は URL を確認してください)
+    document.body.style.backgroundImage = "url('/images/images.png')"; 
     document.body.style.backgroundAttachment = "fixed";
     document.body.style.backgroundSize = "cover";
     document.body.style.backgroundPosition = "center";
@@ -41,7 +44,8 @@ export default function MainPage() {
 
   const recordClick = async (type, id) => {
     try {
-      const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:8000/api";
+      const envUrl = process.env.REACT_APP_API_URL || "http://localhost:8000";
+      const API_BASE = envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;
       const logUrl = `/${type}s/${id}`; 
 
       await fetch(`${API_BASE}/analytics/store`, {
@@ -59,7 +63,6 @@ export default function MainPage() {
 
   return (
     <>
-
       {/* メインコンテンツ */}
       <div className="main-background" style={{ overflowX: "hidden" }}>
         <Header />
@@ -131,3 +134,4 @@ export default function MainPage() {
     </>
   );
 }
+

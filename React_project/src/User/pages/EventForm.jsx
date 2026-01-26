@@ -1,7 +1,8 @@
 //イベント申請フォーム
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../contexts/AuthContext.js";
+// パスを ../../ に修正
+import { AuthContext } from "../../contexts/AuthContext.js";
 
 const MAX_SIZE_MB = 5;
 const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
@@ -113,26 +114,24 @@ function EventForm() {
                 method: "POST",
                 body: formDataToSend,
                 headers: {
-                    "Authorization": `Bearer ${token}`,
+                    "Authorization": token ? `Bearer ${token}` : "",
                     "Accept": "application/json",
                 },
             });
 
             if (response.ok) {
-                alert("イベント申請が完了しました！\nメールにて承認をお願いします。\n管理者による承認後に掲載されます。");
+                alert("イベント申請が完了しました！\n管理者による承認後に掲載されます。");
                 navigate("/EventApplicationHistory");
             } else if (response.status === 401) {
                 alert("セッションが切れました。再度ログインしてください。");
                 navigate("/login");
-            } else if (response.status === 404) {
-                alert("送信先のURLが見つかりませんでした(404)。管理者に連絡してください。");
             } else {
                 const errorData = await response.json().catch(() => ({}));
                 alert(`申請に失敗しました: ${errorData.message || "内容を確認してください。"}`);
             }
         } catch (error) {
             console.error("Fetch error:", error);
-            alert("サーバーとの通信に失敗しました。ネットワーク状況を確認してください。");
+            alert("サーバーとの通信に失敗しました。");
         }
     };
 
@@ -170,7 +169,6 @@ function EventForm() {
             boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
             textAlign: "center"
         }}>
-            {/* 戻るボタン */}
             <button
                 onClick={() => navigate("/MyPage")}
                 style={{
@@ -187,18 +185,7 @@ function EventForm() {
                     border: "1px solid #ccc",
                     backgroundColor: "#fff",
                     color: "#333",
-                    cursor: "pointer",
-                    transition: "0.2s"
-                }}
-                onMouseOver={(e) => {
-                    e.currentTarget.style.backgroundColor = "#333";
-                    e.currentTarget.style.color = "#fff";
-                    e.currentTarget.style.borderColor = "#333";
-                }}
-                onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor = "#fff";
-                    e.currentTarget.style.color = "#333";
-                    e.currentTarget.style.borderColor = "#ccc";
+                    cursor: "pointer"
                 }}
             >
                 ✕
@@ -206,7 +193,6 @@ function EventForm() {
 
             <h2 style={{ color: "#333", marginBottom: "30px", fontSize: "1.8rem", fontWeight: "700" }}>イベント申請</h2>
 
-            {/* ガイドメッセージ */}
             <div style={{
                 backgroundColor: "#fffafb",
                 borderLeft: "4px solid #F93D5D",
@@ -223,7 +209,6 @@ function EventForm() {
                 画像は<strong>5MB以下</strong>でお願いします。
             </div>
 
-            {/* 見出し画像エリア */}
             <div style={{ marginBottom: "25px" }}>
                 <label style={labelStyle}>見出し画像 <span style={{ color: "#F93D5D" }}>※</span></label>
                 <div style={{
@@ -238,8 +223,8 @@ function EventForm() {
                         <div>
                             <img src={previewUrl} alt="プレビュー" style={{ maxWidth: "100%", maxHeight: "200px", borderRadius: "10px", display: "block", margin: "0 auto" }} />
                             <div style={{ marginTop: "15px", display: "flex", justifyContent: "center", gap: "10px" }}>
-                                <button onClick={handleImageRemove} style={{ padding: "8px 18px", border: "1px solid #ccc", backgroundColor: "#fff", borderRadius: "20px", cursor: "pointer", fontSize: "0.8rem", color: "#333" }}>削除</button>
-                                <label style={{ padding: "8px 18px", backgroundColor: "#333", color: "white", borderRadius: "20px", cursor: "pointer", fontSize: "0.8rem", border: "1px solid #333" }}>
+                                <button onClick={handleImageRemove} style={{ padding: "8px 18px", border: "1px solid #ccc", backgroundColor: "#fff", borderRadius: "20px", cursor: "pointer", fontSize: "0.8rem" }}>削除</button>
+                                <label style={{ padding: "8px 18px", backgroundColor: "#333", color: "white", borderRadius: "20px", cursor: "pointer", fontSize: "0.8rem" }}>
                                     変更
                                     <input type="file" onChange={handleImageUpload} style={{ display: "none" }} />
                                 </label>
@@ -255,7 +240,6 @@ function EventForm() {
                 </div>
             </div>
 
-            {/* 入力フィールド群 */}
             {[
                 { label: "イベント名", name: "name", type: "text", placeholder: "例：鬼火祭り2025" },
                 { label: "見出し", name: "catchphrase", type: "text", placeholder: "例：湯けむりに包まれる幻想の夜" },
@@ -274,22 +258,17 @@ function EventForm() {
                         onChange={handleChange}
                         placeholder={field.placeholder}
                         style={inputStyle}
-                        onFocus={(e) => e.target.style.borderColor = "#333"}
-                        onBlur={(e) => e.target.style.borderColor = "#ccc"}
                     />
                 </div>
             ))}
 
-            {/* 予約セレクトボックス */}
             <div style={{ marginBottom: "20px" }}>
                 <label style={labelStyle}>予約 <span style={{ color: "#F93D5D" }}>※</span></label>
                 <select
                     name="is_free_participation"
                     value={formData.is_free_participation}
                     onChange={handleChange}
-                    style={{ ...inputStyle, border: "1.5px solid #ccc" }}
-                    onFocus={(e) => e.target.style.borderColor = "#333"}
-                    onBlur={(e) => e.target.style.borderColor = "#ccc"}
+                    style={inputStyle}
                 >
                     <option value="">選択してください</option>
                     <option value="0">要予約</option>
@@ -297,7 +276,6 @@ function EventForm() {
                 </select>
             </div>
 
-            {/* 詳細・注意事項 */}
             <div style={{ marginBottom: "20px" }}>
                 <label style={labelStyle}>詳細</label>
                 <textarea
@@ -306,8 +284,6 @@ function EventForm() {
                     onChange={handleChange}
                     rows="4"
                     style={{ ...inputStyle, resize: "none" }}
-                    onFocus={(e) => e.target.style.borderColor = "#333"}
-                    onBlur={(e) => e.target.style.borderColor = "#ccc"}
                 />
             </div>
 
@@ -319,34 +295,21 @@ function EventForm() {
                     onChange={handleChange}
                     rows="3"
                     style={{ ...inputStyle, resize: "none" }}
-                    onFocus={(e) => e.target.style.borderColor = "#333"}
-                    onBlur={(e) => e.target.style.borderColor = "#ccc"}
                 />
             </div>
 
-            {/* 送信ボタン (ピンク色に変更) */}
             <button
                 onClick={handleEventSubmit}
                 style={{
                     width: "100%",
                     padding: "16px",
-                    backgroundColor: "#F93D5D", // ピンク色に変更
+                    backgroundColor: "#F93D5D",
                     color: "#fff",
                     border: "none",
                     borderRadius: "12px",
                     cursor: "pointer",
                     fontWeight: "bold",
-                    fontSize: "1.2rem",
-                    transition: "all 0.3s ease",
-                    boxShadow: "0 4px 10px rgba(249, 61, 93, 0.3)"
-                }}
-                onMouseOver={(e) => {
-                    e.currentTarget.style.backgroundColor = "#e03652";
-                    e.currentTarget.style.transform = "translateY(-1px)";
-                }}
-                onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor = "#F93D5D";
-                    e.currentTarget.style.transform = "translateY(0)";
+                    fontSize: "1.2rem"
                 }}
             >
                 申請を送信する
@@ -356,5 +319,3 @@ function EventForm() {
 }
 
 export default EventForm;
-
-

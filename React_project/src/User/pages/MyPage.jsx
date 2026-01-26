@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useState } from "react";
 //ログイン状態を確認する
-import { useAuth } from "../contexts/AuthContext";
+// ▼ パスを ../../ に修正しました
+import { useAuth } from "../../contexts/AuthContext";
 
 // このファイルで定義するコンポーネント（部品）の名前は MyPage
 export default function MyPage() {
@@ -164,3 +165,4 @@ export default function MyPage() {
     </div>
   );
 }
+

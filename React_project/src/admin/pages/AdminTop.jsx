@@ -1,16 +1,19 @@
-//管理者トップ画面
+// 管理者トップ画面
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../../contexts/AuthContext.js";
 
 // 各管理コンポーネントのインポート
-import UserManagement from './components/user_mg';
-import EventManagement from '../EventManagement.jsx';
-import RestaurantManagement from './RestaurantManagement.jsx';
-import SiteManagement from '../AdminSiteManagement.jsx';
-import AdminRegistration from '../AdminRegistration.jsx';
+// エラーに基づき、パスを ../components/ 配下に修正しました
+import UserManagement from '../components/UserManagement';
+import EventManagement from '../components/EventManagement'; 
+import RestaurantManagement from '../components/RestaurantManagement.jsx'; // 同ディレクトリ(pages)にある場合はこのまま
+import SiteManagement from '../components/AdminSiteManagement';
+import AdminRegistration from '../components/AdminRegistration';
 
-// APIの基本URLを取得するユーティリティ
+/**
+ * APIの基本URLを取得するユーティリティ
+ */
 const getBaseApiUrl = () => {
     const envUrl = process.env.REACT_APP_API_URL || "http://localhost:8000";
     return envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;
@@ -21,7 +24,7 @@ const EVENT_API_URL = `${API_BASE}/admin/events`;
 const SHOP_API_URL = `${API_BASE}/admin/restaurants`;
 
 export default function AdminTop() {
-    const { admin, logout } = useAuth(); // logoutを追加
+    const { admin, logout } = useAuth();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("users");
     const [eventCount, setEventCount] = useState(0);
@@ -61,8 +64,14 @@ export default function AdminTop() {
                 return;
             }
 
-            if (eventRes.ok) setEventCount((await eventRes.json()).length);
-            if (shopRes.ok) setShopCount((await shopRes.json()).length);
+            if (eventRes.ok) {
+                const eventData = await eventRes.json();
+                setEventCount(eventData.length);
+            }
+            if (shopRes.ok) {
+                const shopData = await shopRes.json();
+                setShopCount(shopData.length);
+            }
         } catch (error) { 
             console.error("承認待ち件数の取得に失敗しました:", error); 
         }
@@ -82,7 +91,6 @@ export default function AdminTop() {
         const token = localStorage.getItem("admintoken");
 
         try {
-            // サーバー側にログアウト通知（必要に応じて）
             await fetch(`${API_BASE}/admin/logout`, {
                 method: "POST",
                 headers: {
@@ -96,7 +104,7 @@ export default function AdminTop() {
 
         // ローカルのクリーンアップ
         localStorage.removeItem("admintoken");
-        logout(); // AuthContextの情報をクリア
+        if (logout) logout(); 
         
         setTimeout(() => {
             navigate("/AdminLogin");
@@ -245,4 +253,3 @@ export default function AdminTop() {
         </div>
     );
 }
-

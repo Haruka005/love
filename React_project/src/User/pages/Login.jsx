@@ -1,7 +1,8 @@
 // ログイン画面
 import React, { useState } from "react";   // Reactの中からuseStateっていう便利機能を取りだして使うよっていう宣言
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from "../contexts/AuthContext"; 
+// ▼ パスを ../../ に修正しました
+import { useAuth } from "../../contexts/AuthContext"; 
 
 // APIのベースURLを調整（末尾の /api 重複を防止する共通ロジック）
 const getBaseApiUrl = () => {
@@ -20,7 +21,7 @@ export default function Login() {    // 外に持って行ってOKなLoginって
   const { login } = useAuth();
 
   const exitButton = {
-    padding: '8px 20px', // 左右の余白を少し広めに
+    padding: '8px 20px', 
     fontSize: '0.9rem',
     fontWeight: '500',
     backgroundColor: '#ffffff',
@@ -30,16 +31,16 @@ export default function Login() {    // 外に持って行ってOKなLoginって
     cursor: 'pointer',
     transition: 'all 0.3s ease',
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    display: 'inline-block', // blockからinline-blockに変更（中央揃えしやすくなります）
+    display: 'inline-block', 
     margin: '0 auto', 
     whiteSpace: 'nowrap',    
-    minWidth: '120px',       //  最低限の幅を確保
+    minWidth: '120px',       
   };
 
   const buttonWrapperStyle = {
     marginTop: "30px",
-    display: "flex",          // blockからflexに変更して中央に寄せやすくします
-    justifyContent: "center", // 横方向の中央揃え
+    display: "flex",          
+    justifyContent: "center", 
     width: "100%",
     textAlign: "center", 
   };
