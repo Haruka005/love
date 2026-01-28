@@ -12,7 +12,7 @@ class EventImage extends Model
     use HasFactory;
 
     //テーブル名を指定
-    protected $table = "test_events";
+    protected $table = "t_events";
 
      protected $fillable = [
         'user_id',

@@ -33,7 +33,7 @@ class AnalyticsController extends Controller
                 ->orderBy('count', 'desc')->limit(10)->get();
 
             // 2. イベントPVランキング
-            $events = DB::table('test_events as e')
+            $events = DB::table('t_events as e')
                 ->join('t_access_logs as l', 'l.url', 'like', DB::raw("CONCAT('%/events/', e.id)"))
                 ->leftJoin('users as u', 'l.user_id', '=', 'u.id')
                 ->where(function($q) { $q->where('u.role', '!=', 1)->orWhereNull('l.user_id'); })
