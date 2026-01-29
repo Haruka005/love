@@ -42,9 +42,9 @@ class CorsMiddleware
         // レスポンスにCORSヘッダーを付与
 
         #ローカル用
-        $response->headers->set('Access-Control-Allow-Origin', 'http://localhost:3000');
+        #$response->headers->set('Access-Control-Allow-Origin', 'http://localhost:3000');
         #物理サーバー用
-        #$response->headers->set('Access-Control-Allow-Origin', 'http://172.16.117.200:3000');
+        $response->headers->set('Access-Control-Allow-Origin', 'http://172.16.117.200:3000');
         $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
         $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         $response->headers->set('Access-Control-Allow-Credentials', 'true');

@@ -5,9 +5,9 @@ return [
     'allowed_methods' => ['*'],
     'allowed_origins' => [
         # ローカル
-        'http://localhost:3000',
+        #'http://localhost:3000',
         #物理サーバー
-        #'http://172.16.117.200:3000',
+        'http://172.16.117.200:3000',
         '*',
     ],
     'allowed_headers' => ['*'],
