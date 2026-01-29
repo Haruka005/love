@@ -17,7 +17,7 @@ class Event extends Model
 
     // もしテーブル名がモデル名と違う場合は明示
     //とりあえず第一正規化からデータを取得している
-    protected $table = 'test_events';
+    protected $table = 't_events';
 
     protected $casts = [
         'is_free_participation' => 'integer',
