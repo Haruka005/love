@@ -1,5 +1,6 @@
 <?php
 
+//認証・認可サービスプロバイダ
 namespace App\Providers;
 
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;

@@ -1,5 +1,6 @@
 import React from "react";
 
+// 管理者用認証コード入力フォームコンポーネント
 const AdminVerifyForm = ({ code, setCode, handleVerify, setError, setStep, error }) => {
   const inputStyle = {
     width: "100%",

@@ -17,6 +17,7 @@ use App\Models\User;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\ReportController;
+
 // 新しく作成したコントローラーをインポート
 use App\Http\Controllers\AdminManagementController;
 
@@ -32,13 +33,13 @@ Route::get('/users', [AdminController::class, 'user_all']);
 
 // --- 管理者ログイン関連 ---
 Route::post('/admin/login', [AdminAuthController::class, 'login']);
-Route::post('/admin/verify-code', [AdminAuthController::class, 'verifyCode']); // ★ここを追加しました
+Route::post('/admin/verify-code', [AdminAuthController::class, 'verifyCode']); 
 
-// 【修正ポイント：ここへ移動】ログアウトは期限切れトークンでも受け付けるため、middlewareの外に配置
+// ログアウトは期限切れトークンでも受け付けるため、middlewareの外に配置
 Route::post('/logout', function (Request $request) {
     $bearerToken = $request->bearerToken();
     if ($bearerToken) {
-        // Tokenモデルを使用してDBから物理削除（これで管理画面から消えるようになります）
+        // Tokenモデルを使用してDBから物理削除
         \App\Models\Token::where('token', $bearerToken)->delete();
     }
     return response()->json(['message' => 'Logged out'], 200);

@@ -1,5 +1,6 @@
 <?php
 
+//アプリケーション共通サービスプロバイダ
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;

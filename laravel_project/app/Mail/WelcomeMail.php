@@ -17,9 +17,6 @@ class WelcomeMail extends Mailable
     public $user;   //ユーザ情報を受け取る変数
     public $url;
 
-    /**
-     * Create a new message instance.
-     */
 
     //コンストラクタでユーザ情報を受け取る
     public function __construct($user, $url)
@@ -27,10 +24,6 @@ class WelcomeMail extends Mailable
         $this->user = $user;
         $this->url = $url;
     }
-
-    /**
-     * Get the message envelope.
-     */
 
     //メールの件名を設定
     public function envelope(): Envelope

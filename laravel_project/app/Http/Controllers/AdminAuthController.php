@@ -1,5 +1,6 @@
 <?php
 
+//管理者用ユーザー認証コントローラー
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -89,7 +90,7 @@ class AdminAuthController extends Controller
      */
     private function issueToken($user)
     {
-        // 既存の古いトークンを削除（二重ログイン防止）
+        
         Token::where('user_id', $user->id)->delete();
 
         $token = bin2hex(random_bytes(32));

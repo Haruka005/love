@@ -1,5 +1,6 @@
 <?php
 
+//管理者ログイン認証機能
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
