@@ -152,7 +152,10 @@ class RestaurantController extends Controller
                 // ユーザーからの編集時：再申請扱い
                 $restaurant->approval_status_id = 0; // メール認証待ちに戻す
                 $restaurant->confirmation_token = Str::random(64);
-                $restaurant->rejection_reason = null; 
+                
+                // ★ 修正：rejection_reasonをnullにしない
+                // これによりReact側で rejection_reason !== null が成立し「再申請」ラベルが出るようになります
+                
                 $needsEmail = true;
             }
 
@@ -266,4 +269,3 @@ class RestaurantController extends Controller
     public function getAreas() { return response()->json(Area::all()); }
     public function getBudgets() { return response()->json(Budget::all()); }
 }
-

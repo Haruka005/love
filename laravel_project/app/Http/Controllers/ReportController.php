@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use App\Models\User; // 管理者ユーザー取得のために追加
 
 class ReportController extends Controller
 {
@@ -18,7 +19,15 @@ class ReportController extends Controller
 
         $userEmail = $validated['email'];
         $userName  = $validated['name'] ?? '利用者';
-        $adminEmail = "hc43.loveribetsu@gmail.com"; // 管理者のアドレス
+
+        // --- 管理者のアドレスを動的に取得 ---
+        // データベースの users テーブルから role が 'admin' のメールアドレスをすべて取得します
+        $adminEmails = User::where('role', 'admin')->pluck('email')->toArray();
+
+        // もしDBに管理者が一人も登録されていない場合のバックアップ
+        if (empty($adminEmails)) {
+            $adminEmails = ["hc43.loveribetsu@gmail.com"];
+        }
 
         // 2. 管理者への通知メール
         Mail::raw(
@@ -26,8 +35,8 @@ class ReportController extends Controller
             "名前: " . $userName . "\n" .
             "メール: " . $userEmail . "\n" .
             "理由: \n" . $validated['reason'],
-            function ($message) use ($adminEmail) {
-                $message->to($adminEmail)
+            function ($message) use ($adminEmails) {
+                $message->to($adminEmails)
                         ->subject('【管理者通知】通報フォームから新しい通知があります');
             }
         );
@@ -52,4 +61,3 @@ class ReportController extends Controller
         return response()->json(['message' => '通報を受理し、確認メールを送信しました'], 200);
     }
 }
-

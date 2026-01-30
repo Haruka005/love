@@ -188,7 +188,7 @@ export default function RestaurantEdit() {
             if (isAdminMode) {
                 data.set("approval_status_id", formData.approval_status_id);
             } else {
-                data.set("approval_status_id", "3");
+                data.set("approval_status_id", "1");
                 data.set("rejection_reason", "");
             }
 

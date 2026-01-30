@@ -5,7 +5,6 @@ import EventApproval from './EventApproval.jsx';
 
 /**
  * APIのベースURLを構築する関数
- * EventApproval.jsx とロジックを統一し、パスの二重化を防ぎます
  */
 const getBaseApiUrl = () => {
     const envUrl = process.env.REACT_APP_API_URL || "http://localhost:8000";
@@ -56,7 +55,6 @@ function EventList({ status, title, onStatusUpdate }) {
         setLoading(true);
         try {
             const token = localStorage.getItem("admintoken"); 
-            // API_URL は既に /api/admin/events なので、approved を付与
             const url = `${API_URL}/approved?year_month=${selectedYearMonth}&status=${status}`;
             
             const response = await fetch(url, {
@@ -82,7 +80,7 @@ function EventList({ status, title, onStatusUpdate }) {
 
     const handleUpdateStatus = async (e, id, newStatus) => {
         e.stopPropagation();
-        const msg = newStatus === 1 ? "このイベントを再度【公開】しますか？" : "このイベントを【非公開】にしますか？";
+        const msg = newStatus === 1 || newStatus === 2 ? "このイベントを【公開】しますか？" : "このイベントを【非公開】にしますか？";
         if (!window.confirm(msg)) return;
         
         try {
@@ -94,12 +92,13 @@ function EventList({ status, title, onStatusUpdate }) {
                     "Content-Type": "application/json",
                     "Accept": "application/json"
                 },
-                body: JSON.stringify({ status: newStatus })
+                // status: 'approved' で送信することで、Laravel側の updateEventStatus (status 2) が動くように調整
+                body: JSON.stringify({ status: newStatus === 1 || newStatus === 2 ? 'approved' : 'rejected' })
             });
 
             if (res.ok) {
                 setEvents(prev => prev.filter((ev) => ev.id !== id));
-                alert(newStatus === 1 ? "公開しました。" : "非公開にしました。");
+                alert(newStatus === 1 || newStatus === 2 ? "公開しました。" : "非公開にしました。");
                 if (onStatusUpdate) onStatusUpdate();
             }
         } catch (err) {
@@ -132,7 +131,7 @@ function EventList({ status, title, onStatusUpdate }) {
                 events.map(event => {
                     const isExpanded = expandedId === event.id;
                     return (
-                        <div key={event.id} style={{ ...cardStyle, borderLeft: "1px solid #ddd" }}>
+                        <div key={event.id} style={{ ...cardStyle }}>
                             <div 
                                 onClick={() => setExpandedId(isExpanded ? null : event.id)} 
                                 style={cardHeaderStyle}
@@ -204,7 +203,7 @@ function EventList({ status, title, onStatusUpdate }) {
                                         </button>
                                         
                                         <button 
-                                            onClick={(e) => handleUpdateStatus(e, event.id, status === 1 ? 9 : 1)}
+                                            onClick={(e) => handleUpdateStatus(e, event.id, status === 1 ? 9 : 2)}
                                             style={status === 1 ? hideButtonStyle : showButtonStyle}
                                         >
                                             {status === 1 ? "非公開にする" : "再公開する"}
@@ -255,4 +254,3 @@ export default function EventManagement({ onStatusUpdate }) {
         </div>
     );
 }
-

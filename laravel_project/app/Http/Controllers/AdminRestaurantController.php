@@ -12,13 +12,14 @@ use App\Mail\RestaurantApprovedMail;
 
 class AdminRestaurantController extends Controller
 {
-    // 未承認 & 再申請
+    // 未承認(審査待ち) & 再申請
     public function getPendingShops(Request $request)
     {
         if ($request->user()->role !== 'admin') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        // ステータス1（審査待ち・再申請）の店舗を取得
         $restaurants = Restaurant::with(['genre', 'area', 'budget', 'user'])
                         ->whereIn('approval_status_id', [1])
                         ->orderBy('created_at', 'desc')
@@ -34,6 +35,7 @@ class AdminRestaurantController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        // status=2 (公開中) か status=9 (非公開) を取得
         $status = $request->query('status', 2);
         $yearMonth = $request->query('year_month');
 
@@ -48,15 +50,16 @@ class AdminRestaurantController extends Controller
         return response()->json($restaurants);
     }
 
-    // ステータス更新（承認・却下ボタン用）
+    // ステータス更新（承認・却下・非公開ボタン用共通）
     public function updateStatus(Request $request, $id)
     {
         if ($request->user()->role !== 'admin') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        // 承認(2), 却下(3), 非公開(9) を許可
         $request->validate([
-            'approval_status_id' => 'required|integer|in:2,3',
+            'approval_status_id' => 'required|integer|in:2,3,9',
             'rejection_reason' => 'nullable|string'
         ]);
 
@@ -67,6 +70,7 @@ class AdminRestaurantController extends Controller
         
         $restaurant->approval_status_id = $newStatus;
 
+        // 却下(3)の場合は理由を保存、それ以外(2, 9)の場合は理由をクリア
         if ($newStatus === 3) {
             $restaurant->rejection_reason = $request->rejection_reason;
         } else {
@@ -87,8 +91,6 @@ class AdminRestaurantController extends Controller
                 } catch (\Exception $e) {
                     Log::error("店舗承認メール送信失敗: " . $e->getMessage());
                 }
-            } else {
-                Log::warning("店舗ID {$id} に紐づくユーザーが見つからないためメールを送信できません。");
             }
         }
 
@@ -159,7 +161,8 @@ class AdminRestaurantController extends Controller
             $newStatus = (int)$request->approval_status_id;
             $data['approval_status_id'] = $newStatus;
 
-            if (in_array($newStatus, [0, 1, 3])) {
+            // 承認(2)や審査待ち(1)、非公開(9)に変更される場合は、却下理由を消去する
+            if (in_array($newStatus, [1, 2, 9])) {
                 $data['rejection_reason'] = null;
             }
         }
@@ -172,5 +175,3 @@ class AdminRestaurantController extends Controller
         ]);
     }
 }
-
-

@@ -21,15 +21,34 @@ class Event extends Model
 
     protected $casts = [
         'is_free_participation' => 'integer',
+        'is_open_enrollment' => 'integer',
     ];
     
 
-    // 書き換え可能なカラムを指定（任意）
+    // 書き換え可能なカラムを指定
+    // ここにカラム名がないと、保存（insert/update）時に無視されます
     protected $fillable = [
+        'user_id',
         'name',
         'catchphrase',
+        'description',        // あなたの意図：注意事項
+        'notes',              // あなたの意図：詳細説明
         'start_date',
         'end_date',
-        'location'
+        'location',
+        'url',
+        'organizer',
+        'is_free_participation',
+        'is_open_enrollment',
+        'approval_status_id',
+        'rejection_reason',
+        'confirmation_token', 
+        'image_path',
     ];
+
+    // 必要に応じてリレーションを追加
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

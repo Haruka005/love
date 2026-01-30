@@ -6,6 +6,8 @@ use App\Models\User;
 use App\Models\Token;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB; // 追加
+use Illuminate\Support\Facades\Log;  // 追加
 
 class AdminController extends Controller
 {
@@ -30,14 +32,12 @@ class AdminController extends Controller
             $query->where('role', $request->role);
         }
 
-        // 3. 【重要】アカウント状態フィルタ
+        // 3. アカウント状態フィルタ
         if ($request->has('status') && $request->status !== '') {
-            $statusValue = (string)$request->status; // 文字列として扱う
+            $statusValue = (string)$request->status;
             if ($statusValue === "0") {
-                // 明示的に 0 の人だけを取得。NULL は含まれない。
                 $query->where('user_status', 0);
             } else {
-                // 有効(1)を選択した場合、0以外(1やNULL)のユーザーを表示
                 $query->where(function($q) {
                     $q->where('user_status', '!=', 0)
                       ->orWhereNull('user_status');
@@ -46,15 +46,10 @@ class AdminController extends Controller
         }
 
         $users = $query->orderBy('id', 'desc')->get()->map(function ($user) {
-            
-            // オンライン判定
             $user->is_online = Token::where('user_id', $user->id)
                 ->where('token_expires_at', '>', now())
                 ->exists();
-
-            // ロック判定 (バッジ表示用)
             $user->is_locked = (bool)($user->is_locked || $user->locked_at !== null);
-
             return $user;
         });
 
@@ -117,14 +112,30 @@ class AdminController extends Controller
     }
 
     /**
-     * ユーザー削除
+     * ユーザー削除 (外部キー制約エラーを回避)
      */
     public function destroy($id)
     {
         $user = User::findOrFail($id);
-        Token::where('user_id', $id)->delete();
-        $user->delete();
-        return response()->json(['message' => 'Deleted']);
+
+        try {
+            DB::transaction(function () use ($id, $user) {
+                // 1. アクセスログを削除 (これがないとエラーになる)
+                DB::table('t_access_logs')->where('user_id', $id)->delete();
+                
+                // 2. ログイントークンを削除
+                Token::where('user_id', $id)->delete();
+                
+                // 3. ユーザー本体を削除
+                $user->delete();
+            });
+
+            return response()->json(['message' => 'ユーザーに関連するすべてのデータを削除しました']);
+
+        } catch (\Exception $e) {
+            Log::error("ユーザー削除に失敗しました: " . $e->getMessage());
+            return response()->json(['message' => '削除に失敗しました。ログを確認してください。'], 500);
+        }
     }
 
     /**
@@ -135,4 +146,3 @@ class AdminController extends Controller
         return response()->json($request->user());
     }
 }
-

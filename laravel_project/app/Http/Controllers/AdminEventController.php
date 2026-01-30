@@ -75,14 +75,19 @@ class AdminEventController extends Controller
 
         $event = Event::findOrFail($id);
         
-        // --- 修正箇所: 変数を定義 ---
         $oldStatus = $event->approval_status_id;
         $newStatus = $request->status === 'approved' ? 2 : 3;
 
         $event->approval_status_id = $newStatus;
-        $event->rejection_reason = $request->status === 'rejected'
-            ? $request->input('reason', '管理者による却下')
-            : null;
+
+        if ($request->status === 'rejected') {
+            // 却下の場合は理由を保存
+            $event->rejection_reason = $request->input('reason', '管理者による却下');
+        } else {
+            // 承認(status 2)された場合は、再申請ラベルを消すために却下理由をクリア
+            $event->rejection_reason = null;
+        }
+
         $event->save();
 
         // 承認された時（かつ元々承認済みでなかった時）だけメールを送信
@@ -91,7 +96,6 @@ class AdminEventController extends Controller
                 Mail::to($event->user->email)->send(new EventApprovedMail($event));
             } catch (\Exception $e) {
                 Log::error("メール送信失敗: " . $e->getMessage());
-                // メール送信失敗してもDB更新はされているので、処理は続行
             }
         }
 
@@ -137,9 +141,10 @@ class AdminEventController extends Controller
         // データを埋める
         $event->fill($request->all());
 
-        // 管理者が修正保存した際、ステータスが「承認（2）」以外なら「審査待ち（1）」に戻すロジック
+        // 管理者が修正保存した際
         if ($event->approval_status_id != 2) {
             $event->approval_status_id = 1; 
+            // 管理者が直接修正した場合は一旦理由を消す（任意で残すことも可能ですが、通常はクリアします）
             $event->rejection_reason = null; 
         }
 
@@ -151,4 +156,3 @@ class AdminEventController extends Controller
         ]);
     }
 }
-

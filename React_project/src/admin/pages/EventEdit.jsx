@@ -31,8 +31,8 @@ export default function EventEdit() {
         is_free_participation: "",
         url: "",
         organizer: "",
-        description: "",
-        notes: "",
+        description: "", // 注意事項として使用
+        notes: "",       // 詳細説明として使用
         approval_status_id: "" 
     });
 
@@ -49,9 +49,8 @@ export default function EventEdit() {
          ? localStorage.getItem("admintoken")
          : localStorage.getItem("usertoken");
 
-        // 認証チェック：トークンがない場合は即リダイレクト
+        // 認証チェック
         if (!token) {
-            console.error("トークンがありません。");
             if (isAdminMode) {
                 navigate("/admin/login");
             } else {
@@ -71,7 +70,6 @@ export default function EventEdit() {
             // 認証チェック：トークンが無効（401）な場合
             if (response.status === 401) {
                 alert("ログインの有効期限が切れました。再度ログインしてください。");
-
                 if (isAdminMode) {
                     localStorage.removeItem("admintoken");
                     navigate("/admin/login");
@@ -89,7 +87,12 @@ export default function EventEdit() {
                 if (data.start_date) data.start_date = data.start_date.replace(' ', 'T').slice(0, 16);
                 if (data.end_date) data.end_date = data.end_date.replace(' ', 'T').slice(0, 16);
                 
-                setFormData(data);
+                // 飲食店側の成功例に合わせ、ID系は文字列に変換してセット
+                setFormData({
+                    ...data,
+                    approval_status_id: String(data.approval_status_id || ""),
+                    is_free_participation: String(data.is_free_participation !== null ? data.is_free_participation : "")
+                });
                 if (data.image_path) setPreviewUrl(data.image_path);
             } else {
                 alert("データの取得に失敗しました。");
@@ -123,11 +126,6 @@ export default function EventEdit() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         
-        // デバッグ用：何が起きているかコンソールに表示
-        console.log("--- 送信チェック開始 ---");
-        console.log("usertokenの内容:", localStorage.getItem("usertoken"));
-        console.log("isAdminModeの状態:", isAdminMode);
-
         const confirmMsg = isAdminMode 
             ? "管理者権限で内容を更新しますか？" 
             : "内容を修正して再申請しますか？\n（※メール認証完了後、管理者からの承認で掲載されます。）";
@@ -150,16 +148,18 @@ export default function EventEdit() {
 
             const data = new FormData();
             
-            // 既存データのセット
+            // 既存データのセット（飲食店側の typeof val !== 'object' チェックを参考に）
             Object.entries(formData).forEach(([key, value]) => {
-                data.append(key, value === null ? "" : value);
+                if (typeof value !== 'object' || value === null) {
+                    data.append(key, value === null ? "" : value);
+                }
             });
 
             if (imageFile) {
                 data.append("image", imageFile);
             }
 
-            // 送信先URLの構築
+            // 送信先URL
             let SUBMIT_URL = isAdminMode 
                 ? `${API_BASE}/admin/events/${id}`
                 : `${API_BASE}/events/${id}`;
@@ -167,8 +167,8 @@ export default function EventEdit() {
             if (isAdminMode) {
                 data.set("approval_status_id", formData.approval_status_id);
             } else {
-                // 一般ユーザーの再申請時はステータスを「3（再申請）」にする
-                data.set("approval_status_id", "3"); 
+                // 飲食店側が成功している「1（申請中）」に合わせる
+                data.set("approval_status_id", "1"); 
                 data.set("rejection_reason", ""); 
             }
 
@@ -197,11 +197,7 @@ export default function EventEdit() {
             }
 
             if (response.ok) {
-                const successMsg = isAdminMode 
-                    ? "更新が完了しました。" 
-                    : "再申請を受け付けました。本人確認のため、ご登録のメールアドレスへ認証メールを送信しました。メール内のリンクをクリックすると、管理者の審査が始まります。";
-                
-                alert(successMsg);
+                alert(isAdminMode ? "更新が完了しました。" : "再申請を受け付けました。本人確認のため、ご登録のメールアドレスへ認証メールを送信しました。メール内のリンクをクリックすると、管理者の審査が始まります。");
                 navigate(-1);
             } else {
                 const errRes = await response.json();
@@ -275,14 +271,15 @@ export default function EventEdit() {
                     </select>
                 </div>
 
+                {/* 【修正】あなたの意図に合わせて name とラベルを入れ替えました */}
                 <div style={inputGroupStyle}>
                     <label style={labelStyle}>詳細説明</label>
-                    <textarea name="description" value={formData.description || ""} onChange={handleChange} style={{ ...inputStyle, height: "80px" }} />
+                    <textarea name="notes" value={formData.notes || ""} onChange={handleChange} style={{ ...inputStyle, height: "120px" }} />
                 </div>
 
                 <div style={inputGroupStyle}>
                     <label style={labelStyle}>注意事項</label>
-                    <textarea name="notes" value={formData.notes || ""} onChange={handleChange} style={{ ...inputStyle, height: "60px" }} />
+                    <textarea name="description" value={formData.description || ""} onChange={handleChange} style={{ ...inputStyle, height: "80px" }} />
                 </div>
 
                 <div style={{ marginTop: "30px", display: "flex", gap: "10px" }}>
@@ -303,3 +300,4 @@ const inputStyle = { width: "100%", padding: "10px", borderRadius: "4px", border
 const userButtonStyle = { flex: 2, padding: "12px", backgroundColor: "#F93D5D", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" };
 const adminButtonStyle = { flex: 2, padding: "12px", backgroundColor: "#F93D5D", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" };
 const cancelButtonStyle = { flex: 1, padding: "12px", backgroundColor: "#f0f0f0", color: "#333", border: "1px solid #ccc", borderRadius: "4px", cursor: "pointer" };
+

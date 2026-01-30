@@ -175,7 +175,7 @@ class EventController extends Controller
     {
         try {
             $event = Event::findOrFail($id);
-            $isReapplication = false; // 変数を初期化
+            $isReapplication = false; 
 
             // 基本情報の更新
             $fields = ['name', 'catchphrase', 'description', 'start_date', 'end_date', 'location', 'url', 'notes', 'organizer'];
@@ -196,6 +196,10 @@ class EventController extends Controller
                 $event->approval_status_id = 0; // メール確認待ちへ
                 $event->confirmation_token = Str::random(64); 
                 $isReapplication = true;
+                
+                // 【重要】$event->rejection_reason = null; を実行しない（削除しました）
+                // 過去の却下理由を残すことで、管理画面で「再申請」ラベルが出るようにします
+                
             } elseif ($request->has('approval_status_id')) {
                 // ステータスが直接指定されている場合（管理者操作など）
                 $event->approval_status_id = (int) $statusInput;
@@ -248,4 +252,5 @@ class EventController extends Controller
         }
     }
 }
+
 

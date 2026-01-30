@@ -1,10 +1,7 @@
-// EventApproval.jsx（管理者未承認イベント画面）
-
 import React, { useState, useEffect } from "react";
 
 /**
  * APIのベースURLを構築する関数
- * 環境変数の末尾が /api かどうかを判定し、二重スラッシュや二重apiパスを防ぎます
  */
 const getBaseApiUrl = () => {
     const envUrl = process.env.REACT_APP_API_URL || "http://172.16.117.200";
@@ -25,7 +22,6 @@ export default function EventApproval({ onUpdate }) {
         setLoading(true);
         try {
             const token = localStorage.getItem("admintoken");
-            // API_URL は既に /api/admin/events なので、後ろに /pending を付与
             const response = await fetch(`${API_URL}/pending`, {
                 method: "GET",
                 headers: {
@@ -61,7 +57,7 @@ export default function EventApproval({ onUpdate }) {
         
         if (newStatus === 'rejected') {
             const reason = window.prompt("却下する理由を入力してください（任意）:");
-            if (reason === null) return; // キャンセルされた場合
+            if (reason === null) return; 
             
             requestBody.reason = reason; 
             if (reason.trim() !== '') {
@@ -85,9 +81,7 @@ export default function EventApproval({ onUpdate }) {
 
             if (response.ok) {
                 alert(`${newStatus === 'approved' ? '承認' : '却下'}が完了しました。`);
-                // 画面上のリストから削除
                 setPendingEvents(prev => prev.filter(event => event.id !== eventId));
-                // 親コンポーネント（AdminTopなど）のカウントを更新するために通知
                 if (onUpdate) onUpdate(); 
             } else {
                 const errorData = await response.json();
@@ -112,8 +106,8 @@ export default function EventApproval({ onUpdate }) {
                 </p>
             ) : (
                 pendingEvents.map((event) => {
-                    // 再申請かどうかを判定 (status: 3 等、DBの設計に合わせて調整してください)
-                    const isResubmitted = Number(event.approval_status_id) === 3;
+                    // 再申請判定
+                    const isResubmitted = Number(event.approval_status_id) === 3 || (event.rejection_reason && event.rejection_reason !== "");
 
                     return (
                         <div
@@ -124,32 +118,28 @@ export default function EventApproval({ onUpdate }) {
                                 padding: "20px",
                                 marginBottom: "20px",
                                 backgroundColor: isResubmitted ? "#fffaf0" : "#fff",
-                                boxShadow: isResubmitted ? "0 4px 12px rgba(0, 0, 0, 0.15)" : "0 2px 4px rgba(0,0,0,0.05)",
+                                borderLeft: isResubmitted ? "5px solid #faad14" : "1px solid #ddd",
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
                                 transition: "all 0.3s ease"
                             }}
                         >
-                            {/* タイトル行（クリックで詳細開閉） */}
+                            {/* タイトル行 */}
                             <div
                                 onClick={() => setExpandedId(expandedId === event.id ? null : event.id)}
-                                style={{ 
-                                    cursor: "pointer", 
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "space-between"
-                                }}
+                                style={{ cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}
                             >
-                                <div style={{ display: "block" }}>
+                                <div>
                                     <strong style={{ fontSize: "18px", color: "#333", display: "block", marginBottom: "5px" }}>
                                         {event.name || `イベント #${event.id}`} 
                                     </strong>
                                     {isResubmitted ? (
-                                        <span style={{ backgroundColor: "#faad14", color: "white", fontSize: "12px", padding: "3px 12px", borderRadius: "12px", fontWeight: "bold", display: "inline-block" }}>再申請</span>
+                                        <span style={{ backgroundColor: "#faad14", color: "white", fontSize: "11px", padding: "2px 10px", borderRadius: "10px", fontWeight: "bold" }}>再申請</span>
                                     ) : (
-                                        <span style={{ backgroundColor: "#1890ff", color: "white", fontSize: "12px", padding: "3px 12px", borderRadius: "12px", fontWeight: "bold", display: "inline-block" }}>新規申請</span>
+                                        <span style={{ backgroundColor: "#1890ff", color: "white", fontSize: "11px", padding: "2px 10px", borderRadius: "10px", fontWeight: "bold" }}>新規申請</span>
                                     )}
                                 </div>
-                                <span style={{ color: "#666", fontSize: "13px", fontWeight: "bold" }}>
-                                    {expandedId === event.id ? '▲ 閉じる' : '▼ 詳細表示'}
+                                <span style={{ color: "#666", fontSize: "13px" }}>
+                                    {expandedId === event.id ? '▲ 閉じる' : '▼ 詳細を表示して審査'}
                                 </span>
                             </div>
 
@@ -159,14 +149,17 @@ export default function EventApproval({ onUpdate }) {
 
                             {/* 詳細情報エリア */}
                             {expandedId === event.id && (
-                                <div style={{ marginTop: "15px", padding: "15px", borderTop: "1px solid #eee", backgroundColor: "rgba(255,255,255,0.5)" }}>
-                                    {isResubmitted && event.rejection_reason && (
-                                        <div style={{ backgroundColor: "#fff0f0", padding: "12px", borderRadius: "5px", marginBottom: "15px", border: "1px solid #ffccc7" }}>
+                                <div style={{ marginTop: "15px", padding: "15px", borderTop: "1px solid #eee", backgroundColor: "rgba(255,255,255,0.7)" }}>
+                                    
+                                    {/* 前回の却下理由 */}
+                                    {event.rejection_reason && (
+                                        <div style={{ backgroundColor: "#fff2f0", padding: "12px", borderRadius: "5px", marginBottom: "15px", border: "1px solid #ffccc7" }}>
                                             <strong style={{ color: "#cf1322", fontSize: "14px" }}>⚠️ 前回の却下理由：</strong>
-                                            <p style={{ margin: "5px 0 0", color: "#cf1322", fontSize: "14px" }}>{event.rejection_reason}</p>
+                                            <p style={{ margin: "5px 0 0", color: "#cf1322", fontSize: "14px", lineHeight: "1.5" }}>{event.rejection_reason}</p>
                                         </div>
                                     )}
 
+                                    {/* 基本情報 */}
                                     <div style={{ display: "grid", gridTemplateColumns: "100px 1fr", gap: "8px", fontSize: "14px" }}>
                                         <strong>見出し:</strong> <span>{event.catchphrase || "未入力"}</span>
                                         <strong>開催期間:</strong> <span>{event.start_date} ～ {event.end_date}</span>
@@ -177,18 +170,30 @@ export default function EventApproval({ onUpdate }) {
                                          <strong>注意事項:</strong> <span>{event.description || "未入力"}</span>
                                     </div>
 
-                                    <div style={{ marginTop: "12px" }}>
-                                        <strong>詳細説明:</strong>
-                                        <p style={{ whiteSpace: "pre-wrap", marginTop: "5px", fontSize: "13px", color: "#444" }}>{event.description || '記載なし'}</p>
+                                    {/* 詳細説明（今回追加） */}
+                                    <div style={{ marginTop: "15px", padding: "12px", backgroundColor: "#f9f9f9", borderRadius: "5px", border: "1px solid #eee" }}>
+                                        <strong style={{ display: "block", marginBottom: "5px", fontSize: "14px" }}>イベント詳細説明:</strong>
+                                        <p style={{ whiteSpace: "pre-wrap", margin: 0, fontSize: "13px", color: "#444", lineHeight: "1.6" }}>
+                                            {event.description || '記載なし'}
+                                        </p>
                                     </div>
 
+                                    {/* 注意事項（今回追加） */}
+                                    <div style={{ marginTop: "10px", padding: "12px", backgroundColor: "#fffbe6", borderRadius: "5px", border: "1px solid #ffe58f" }}>
+                                        <strong style={{ display: "block", marginBottom: "5px", fontSize: "14px", color: "#856404" }}>注意事項:</strong>
+                                        <p style={{ whiteSpace: "pre-wrap", margin: 0, fontSize: "13px", color: "#856404", lineHeight: "1.6" }}>
+                                            {event.notes || '特に記載なし'}
+                                        </p>
+                                    </div>
+
+                                    {/* 画像表示 */}
                                     {event.image_path && (
                                         <div style={{ marginTop: '15px' }}>
-                                            <strong>画像:</strong>
+                                            <strong style={{ display: "block", marginBottom: "5px", fontSize: "14px" }}>メイン画像:</strong>
                                             <img 
                                                 src={event.image_path} 
                                                 alt="イベント画像" 
-                                                style={{ maxWidth: '100%', maxHeight: '300px', display: 'block', marginTop: '8px', borderRadius: '6px', border: "1px solid #eee" }}
+                                                style={{ maxWidth: '100%', maxHeight: '300px', borderRadius: '6px', border: "1px solid #ddd" }}
                                             />
                                         </div>
                                     )}

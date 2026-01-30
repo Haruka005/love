@@ -21,6 +21,7 @@ export function RestaurantList({ status, title, onStatusUpdate }) {
         setLoading(true);
         try {
             const token = localStorage.getItem("admintoken");
+            // 公開中(2)などを取得
             const url = `${API_URL}/approved?year_month=${selectedYearMonth}&status=${status}`;
             const response = await fetch(url, { 
                 headers: { "Authorization": `Bearer ${token}`, "Accept": "application/json" } 
@@ -103,8 +104,9 @@ export function RestaurantList({ status, title, onStatusUpdate }) {
                                 </div>
                                 <div style={actionAreaStyle}>
                                     <button onClick={() => navigate(`/RestaurantEdit/${shop.id}`, { state: { fromAdmin: true } })} style={editButtonStyle}>編集</button>
-                                    <button onClick={(e) => handleToggleStatus(e, shop.id, status === 1 ? 9 : 1)} style={status === 1 ? hideButtonStyle : showButtonStyle}>
-                                        {status === 1 ? "非公開にする" : "再公開する"}
+                                    {/* 公開中(2)なら非公開(9)へ。status変数と比較して切り替え */}
+                                    <button onClick={(e) => handleToggleStatus(e, shop.id, Number(status) === 2 ? 9 : 2)} style={Number(status) === 2 ? hideButtonStyle : showButtonStyle}>
+                                        {Number(status) === 2 ? "非公開にする" : "再公開する"}
                                     </button>
                                 </div>
                             </div>
@@ -138,11 +140,15 @@ export default function RestaurantApproval({ onUpdate }) {
 
     const handleStatusUpdate = async (shopId, statusId) => {
         let rejectionReason = null;
-        if (statusId === 2) {
+        // 設計通り 3 が却下
+        if (statusId === 3) {
             rejectionReason = window.prompt("却下する理由を入力してください:");
             if (rejectionReason === null) return;
         }
-        if (!window.confirm(`この店舗を${statusId === 1 ? '承認' : '却下'}しますか？`)) return;
+        
+        // メッセージを分かりやすく修正
+        const actionLabel = statusId === 2 ? '承認して公開' : '却下';
+        if (!window.confirm(`この店舗を${actionLabel}しますか？`)) return;
 
         try {
             const token = localStorage.getItem("admintoken");
@@ -153,10 +159,14 @@ export default function RestaurantApproval({ onUpdate }) {
             });
             if (response.ok) {
                 alert("更新が完了しました。");
+                // リストから消す
                 setPendingShops(prev => prev.filter(shop => shop.id !== shopId));
                 if (onUpdate) onUpdate(); 
+            } else {
+                const err = await response.json();
+                alert(`エラー: ${err.message || "更新に失敗しました"}`);
             }
-        } catch (error) { alert("エラーが発生しました。"); }
+        } catch (error) { alert("ネットワークエラーが発生しました。"); }
     };
 
     if (loading) return <p style={{ padding: "20px" }}>読み込み中...</p>;
@@ -168,7 +178,8 @@ export default function RestaurantApproval({ onUpdate }) {
                 <p style={{ color: "green", fontWeight: "bold" }}>現在、承認待ちの申請はありません。</p>
             ) : (
                 pendingShops.map((shop) => {
-                    const isResubmitted = Number(shop.approval_status_id) === 3;
+                    // 再申請の判定（以前に却下理由がある、かつ現在ステータス1）
+                    const isResubmitted = shop.rejection_reason !== null;
                     return (
                         <div key={shop.id} style={{ ...cardStyle, backgroundColor: isResubmitted ? "#fffaf0" : "#fff" }}>
                             <div onClick={() => setExpandedId(expandedId === shop.id ? null : shop.id)} style={cardHeaderStyle}>
@@ -205,8 +216,10 @@ export default function RestaurantApproval({ onUpdate }) {
                                     </div>
                                     <div style={actionAreaStyle}>
                                         <button onClick={() => navigate(`/RestaurantEdit/${shop.id}`, { state: { fromAdmin: true } })} style={editButtonStyle}>編集</button>
-                                        <button onClick={() => handleStatusUpdate(shop.id, 2)} style={rejectButtonStyle}>却下する</button>
-                                        <button onClick={() => handleStatusUpdate(shop.id, 1)} style={approveButtonStyle}>承認して公開</button>
+                                        {/* 却下は 3 を送る */}
+                                        <button onClick={() => handleStatusUpdate(shop.id, 3)} style={rejectButtonStyle}>却下する</button>
+                                        {/* 承認は 2 を送る */}
+                                        <button onClick={() => handleStatusUpdate(shop.id, 2)} style={approveButtonStyle}>承認して公開</button>
                                     </div>
                                 </div>
                             )}
@@ -238,3 +251,4 @@ const rejectButtonStyle = { padding: "8px 15px", backgroundColor: "#f44336", col
 const editButtonStyle = { padding: "8px 16px", backgroundColor: "#6c757d", color: "#fff", border: "none", borderRadius: "4px", marginRight: "10px", fontWeight: "bold", cursor: "pointer" };
 const hideButtonStyle = { padding: "8px 16px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", fontWeight: "bold", cursor: "pointer" };
 const showButtonStyle = { padding: "8px 16px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "4px", fontWeight: "bold", cursor: "pointer" };
+
