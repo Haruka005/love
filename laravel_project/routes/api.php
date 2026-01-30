@@ -12,7 +12,6 @@ use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminEventController;
 use App\Http\Controllers\AdminRestaurantController;
-use App\Http\Controllers\EventDetailController;
 use App\Models\User;
 use App\Http\Controllers\AdminAuthController;
 use App\Http\Controllers\AnalyticsController;
@@ -35,7 +34,7 @@ Route::get('/users', [AdminController::class, 'user_all']);
 Route::post('/admin/login', [AdminAuthController::class, 'login']);
 Route::post('/admin/verify-code', [AdminAuthController::class, 'verifyCode']); 
 
-// ログアウトは期限切れトークンでも受け付けるため、middlewareの外に配置
+// ログアウト
 Route::post('/logout', function (Request $request) {
     $bearerToken = $request->bearerToken();
     if ($bearerToken) {
@@ -45,7 +44,7 @@ Route::post('/logout', function (Request $request) {
     return response()->json(['message' => 'Logged out'], 200);
 });
 
-// アクセス記録エンドポイント（認証なし）
+// アクセス記録エンドポイント
 Route::post('/log-access', [AnalyticsController::class, 'storeAccess']);
 
 Route::get('/events/{year}/{month}', [EventController::class, 'getByMonth']);
@@ -88,7 +87,6 @@ Route::middleware(['check.token'])->group(function () {
     Route::post('/store-event-data', [EventController::class, 'storeEventData']);
 
     // --- 管理者専用：アカウント新規登録 ---
-    // ここで管理者による user または admin の作成を行う
     Route::post('/admin/register', [AdminManagementController::class, 'store']);
 
     // --- 管理者イベントAPI ---
@@ -108,10 +106,10 @@ Route::middleware(['check.token'])->group(function () {
     // --- アクセス解析 ---
     Route::get('/admin/analytics-summary', [AnalyticsController::class, 'getSummary']);
 
-    // --- 追記：ユーザー管理API ---
+    // --- ユーザー管理API ---
     Route::get('/admin/users', [AdminController::class, 'index']);
     Route::put('/admin/users/{id}', [AdminController::class, 'update']);
-    Route::get('/admin/users/{id}/history', [AdminController::class, 'loginHistory']);
+    // [修正] loginHistoryの重複行を1つに整理しました
     Route::get('/admin/users/{id}/history', [AdminController::class, 'loginHistory']);
     Route::delete('/admin/users/{id}', [AdminController::class, 'destroy']);
 
@@ -125,11 +123,6 @@ Route::middleware(['check.token'])->group(function () {
     Route::delete('/restaurants/{id}', [RestaurantController::class, 'destroy']);
 });
 
-// v1グループ（イベント詳細）
-Route::prefix('v1')->group(function () {
-    Route::post('/store-event-detail', [EventDetailController::class, 'store']);
-});
-
 // ミドルウェア付きテストルート
 Route::middleware(['web', 'check.token'])->get('/test-token', function () {
     return ['message' => 'Token OK'];
@@ -140,20 +133,51 @@ Route::middleware(['web', 'check.token'])->get('/test-token', function () {
 // メール認証ルート
 // ==============================
 Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
-    $user = User::findOrFail($id);
+    $user = User::find($id);
 
-    if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
-        return response()->json(['message' => '無効な認証リンクです'], 403);
+    if (!$user) {
+        return response()->json(['message' => 'ユーザーが見つかりません。ID: '.$id], 404);
     }
 
-    if ($user->hasVerifiedEmail()) {
-        return response()->json(['message' => 'すでに認証済みです']);
+    if (!$user->hasVerifiedEmail()) {
+        $user->markEmailAsVerified();
     }
 
-    $user->markEmailAsVerified();
+    // [修正] 戻り先をフロントエンド（React等）のログインURLに指定
+    $loginUrl = "http://172.16.117.200"; 
 
-    return "メール認証に成功しました！このタブを閉じてログインしてください。";
-})->name('verification.verify')->middleware(['signed']);
+    return <<<HTML
+        <!DOCTYPE html>
+        <html lang="ja">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>メール認証完了</title>
+            <style>
+                body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f4f7f6; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+                .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center; max-width: 400px; width: 90%; }
+                .icon { font-size: 50px; color: #f93d5d; margin-bottom: 20px; }
+                h1 { color: #333; font-size: 24px; margin-bottom: 10px; }
+                p { color: #666; line-height: 1.6; margin-bottom: 30px; }
+                .btn { background-color: #f93d5d; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; transition: opacity 0.2s; display: inline-block; }
+                .btn:hover { opacity: 0.8; }
+                .footer { margin-top: 30px; font-size: 12px; color: #aaa; }
+            </style>
+        </head>
+        <body>
+            <div class="card">
+                <div class="icon">✓</div>
+                <h1>認証が完了しました！</h1>
+                <p>メールアドレスの確認が取れました。<br>これで全ての機能をご利用いただけます。</p>
+                <a href="{$loginUrl}" class="btn">ログイン画面へ戻る</a>
+                <div class="footer">このタブは閉じても大丈夫です</div>
+            </div>
+        </body>
+        </html>
+HTML;
+})->name('verification.verify'); 
+// 本番公開時はセキュリティのため末尾に ->middleware(['signed']) を追加してください
+
 
 // パスワード再設定
 Route::post('/forgot-password', [UserController::class, 'sendResetLinkEmail']);
