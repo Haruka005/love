@@ -158,14 +158,14 @@ class EventController extends Controller
         $event = Event::where('confirmation_token', $token)->first();
 
         if (!$event) {
-            return redirect('http://172.16.117.200/event-registration-error');
+            return redirect('http://localhost:3000/event-registration-error');
         }
 
         $event->approval_status_id = 1; 
         $event->confirmation_token = null;
         $event->save();
 
-        return redirect('http://172.16.117.200/event-registration-success');
+        return redirect('http://localhost:3000/event-registration-success');
     }
 
     /**

@@ -7,7 +7,7 @@ import React, { useState, useEffect } from "react";
  * 環境変数の末尾が /api かどうかを判定し、二重スラッシュや二重apiパスを防ぎます
  */
 const getBaseApiUrl = () => {
-    const envUrl = process.env.REACT_APP_API_URL || "http://localhost:8000";
+    const envUrl = process.env.REACT_APP_API_URL || "http://172.16.117.200";
     // 環境変数が /api で終わっていればそのまま、そうでなければ /api を足す
     const base = envUrl.endsWith("/api") ? envUrl : `${envUrl}/api`;
     return `${base}/admin/events`;
@@ -174,6 +174,7 @@ export default function EventApproval({ onUpdate }) {
                                         <strong>予約区分:</strong> <span>{Number(event.is_free_participation) === 1 ? "自由参加" : "要予約"}</span>
                                         <strong>主催者:</strong> <span>{event.organizer}</span>
                                         <strong>URL:</strong> <a href={event.url} target="_blank" rel="noopener noreferrer" style={{ color: "#007bff", wordBreak: "break-all" }}>{event.url}</a>
+                                         <strong>注意事項:</strong> <span>{event.description || "未入力"}</span>
                                     </div>
 
                                     <div style={{ marginTop: "12px" }}>
