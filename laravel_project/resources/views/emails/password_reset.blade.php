@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <style>
         .button {
-            background-color: #F93D5D;
+            background-color: #f93d5d;
             color: white;
             padding: 12px 24px;
             text-decoration: none;

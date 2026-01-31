@@ -15,7 +15,7 @@ const EmailChangeForm = () => {
         setLoading(true);
 
         // ローカルストレージ等に保存してある認証トークンを取得
-        const token = localStorage.getItem('token'); 
+        const token = localStorage.getItem('usertoken'); 
 
         try {
             // 先ほどUserControllerで作ったエンドポイントへ送信
